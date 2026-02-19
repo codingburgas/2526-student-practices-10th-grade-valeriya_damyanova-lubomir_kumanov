@@ -1,0 +1,9 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="BLL/BLL.vcxproj" Id="36382cb1-c177-4cdd-b3f1-80140f9b677c" />
+  <Project Path="DAL/DAL.vcxproj" Id="1ff12c29-47c2-4306-873c-ef1b71f8a198" />
+  <Project Path="PL/PL.vcxproj" Id="d2ff3577-318b-4dd3-a7a3-7901af7d5fb0" />
+</Solution>
