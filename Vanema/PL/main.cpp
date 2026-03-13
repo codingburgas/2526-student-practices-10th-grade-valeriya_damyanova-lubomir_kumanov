@@ -1,12 +1,9 @@
-#include <iostream>
-#include "../BLL/BLL.h"
-using namespace std;
+#include "menu.h"
+#include <QApplication>
 
-int main() {
-    cout << "PL is working!" << endl;
-
-    BLL b;
-    b.showBLL();  
-
-    return 0;
+int main(int argc, char* argv[]) {
+    QApplication a(argc, argv);
+    Menu w;
+    w.show();
+    return a.exec();
 }

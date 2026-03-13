@@ -1,7 +1,7 @@
 #pragma once
-#include "../DAL/DAL.h"
+#include <string>
 
-class BLL {
+class BLLClass {
 public:
-    void showBLL();
+    std::string process();
 };

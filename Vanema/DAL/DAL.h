@@ -1,7 +1,9 @@
 #pragma once
+#include <string>
 
-class DAL {
+class DALClass {
 public:
-    void showDAL();
+    std::string getTestData() {
+        return "DAL";
+    }
 };
-

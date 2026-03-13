@@ -1,10 +1,7 @@
-﻿#include <iostream>
 #include "BLL.h"
-using namespace std;
+#include "../DAL/DAL.h" 
 
-void BLL::showBLL() {
-    cout << "BLL is working!" << endl;
-
-    DAL d;
-    d.showDAL();  
+std::string BLLClass::process() {
+    DALClass dal;
+    return "BLL" + dal.getTestData();
 }
