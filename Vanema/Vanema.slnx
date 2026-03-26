@@ -2,7 +2,7 @@
   <Configurations>
     <Platform Name="x64" />
   </Configurations>
-  <Project Path="BLL/BLL.vcxproj" />
-  <Project Path="DAL/DAL.vcxproj" />
-  <Project Path="PL/PL.vcxproj" />
+  <Project Path="BLL/BLL.vcxproj" Id="f10d7bc8-0962-43db-b5b1-9b7d5f64e02d" />
+  <Project Path="DAL/DAL.vcxproj" Id="aa98d49f-2790-4159-83ca-e9e9218905ab" />
+  <Project Path="PL/PL.vcxproj" Id="83171ce2-ad0b-4865-8dc0-c741e390ca82" />
 </Solution>

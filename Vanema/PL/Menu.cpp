@@ -7,6 +7,8 @@ Menu::Menu(QWidget* parent)
     , ui(new Ui::MenuClass)
 {
     ui->setupUi(this);
+    connect(ui->pushButton, &QPushButton::clicked, this, &Menu::on_btnTest_clicked);
+
 }
 
 Menu::~Menu()

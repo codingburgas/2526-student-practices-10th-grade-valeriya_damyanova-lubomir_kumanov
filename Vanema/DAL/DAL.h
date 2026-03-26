@@ -3,7 +3,5 @@
 
 class DALClass {
 public:
-    std::string getTestData() {
-        return "DAL";
-    }
+    std::string getTestData();
 };
