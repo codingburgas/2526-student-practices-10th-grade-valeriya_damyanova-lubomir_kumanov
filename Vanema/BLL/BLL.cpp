@@ -1,5 +1,6 @@
 #include "BLL.h"
+#include "DAL.h"
 
-std::string BLLClass::process() {
-    return "BLL";
+int Process() {
+    return GetNumber() + 1;
 }

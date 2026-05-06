@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{f10d7bc8-0962-43db-b5b1-9b7d5f64e02d}</ProjectGuid>
+    <ProjectGuid>{452efc78-9d53-460d-8fe0-bba7022d7de0}</ProjectGuid>
     <RootNamespace>BLL</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -77,8 +77,10 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\DAL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -95,8 +97,10 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\DAL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -112,8 +116,10 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)DAL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\DAL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -130,8 +136,11 @@
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\DAL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -140,10 +149,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="BLL.h" />
+    <ClCompile Include="BLL.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BLL.cpp" />
+    <ProjectReference Include="..\DAL\DAL.vcxproj">
+      <Project>{987100c3-d45b-4c3f-9235-92cc2d3c1ee7}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BLL.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

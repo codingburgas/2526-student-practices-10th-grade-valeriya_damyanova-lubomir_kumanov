@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{aa98d49f-2790-4159-83ca-e9e9218905ab}</ProjectGuid>
+    <ProjectGuid>{987100c3-d45b-4c3f-9235-92cc2d3c1ee7}</ProjectGuid>
     <RootNamespace>DAL</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -77,8 +77,9 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -95,8 +96,9 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -112,7 +114,9 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -129,8 +133,10 @@
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -139,10 +145,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="DAL.h" />
+    <ClCompile Include="DAL.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DAL.cpp" />
+    <ClInclude Include="DAL.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

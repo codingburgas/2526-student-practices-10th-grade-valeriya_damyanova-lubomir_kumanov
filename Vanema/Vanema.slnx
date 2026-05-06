@@ -1,8 +1,15 @@
 <Solution>
   <Configurations>
     <Platform Name="x64" />
+    <Platform Name="x86" />
   </Configurations>
-  <Project Path="BLL/BLL.vcxproj" Id="f10d7bc8-0962-43db-b5b1-9b7d5f64e02d" />
-  <Project Path="DAL/DAL.vcxproj" Id="aa98d49f-2790-4159-83ca-e9e9218905ab" />
-  <Project Path="PL/PL.vcxproj" Id="83171ce2-ad0b-4865-8dc0-c741e390ca82" />
+  <Project Path="BLL/BLL.vcxproj" Id="452efc78-9d53-460d-8fe0-bba7022d7de0">
+    <Platform Solution="Debug|x86" Project="x64" />
+  </Project>
+  <Project Path="DAL/DAL.vcxproj" Id="987100c3-d45b-4c3f-9235-92cc2d3c1ee7">
+    <Platform Solution="Debug|x86" Project="x64" />
+  </Project>
+  <Project Path="PL/PL.vcxproj" Id="0fc7919d-67ed-42fb-8837-b0a19ccb05d1">
+    <Platform Solution="Debug|x86" Project="x64" />
+  </Project>
 </Solution>
