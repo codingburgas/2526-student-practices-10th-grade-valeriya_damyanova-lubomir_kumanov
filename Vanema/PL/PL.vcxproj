@@ -150,11 +150,15 @@ user32.lib;opengl32.lib;kernel32.lib;msvcrt.lib;%(AdditionalDependencies)</Addit
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Menu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BLL\BLL.vcxproj">
       <Project>{452efc78-9d53-460d-8fe0-bba7022d7de0}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Menu.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
