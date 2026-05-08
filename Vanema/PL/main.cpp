@@ -1,32 +1,63 @@
 #include <iostream>
 #include "raylib.h"
-
-#include "Menu.h"   
-#include "BLL.h"
+#include "Login.h"
+#include "Menu.h"
 
 int main() {
-    InitWindow(1520, 980, "Vanema");
-    SetTargetFPS(60); 
+    InitWindow(1600, 980, "Vanema");
+    SetTargetFPS(60);
 
-    Menu menu;  
+    Menu menu;
+    Login login;
+    bool showLogin = false;
+
+    login.Init();
 
     while (!WindowShouldClose()) {
 
-        menu.Update();
+        if (!showLogin) {
+            
+            menu.Update();
+
+            if (menu.IsStartPressed()) {
+                showLogin = true;  
+                login.Reset();     
+            }
+
+            if (menu.IsExitPressed()) {
+                break;
+            }
+        }
+        else {
+            
+            login.Update();
+
+            if (login.IsCompleted()) {
+                
+                std::cout << "Login successful!" << std::endl;
+                showLogin = false;  
+                login.Reset();
+            }
+
+            if (IsKeyPressed(KEY_ESCAPE)) {
+                showLogin = false;
+                login.Reset();
+            }
+        }
 
         BeginDrawing();
-        menu.Draw();
-        EndDrawing();
- 
-        if (menu.IsStartPressed()) {
-            std::cout << "Start pressed\n";
+
+        if (!showLogin) {
+            menu.Draw();
+        }
+        else {
+            login.Draw();
         }
 
-        if (menu.IsExitPressed()) {
-            break;
-        }
+        EndDrawing();
     }
 
+    login.Unload();
     CloseWindow();
     return 0;
 }

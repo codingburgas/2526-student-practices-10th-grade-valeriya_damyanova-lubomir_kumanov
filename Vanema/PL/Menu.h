@@ -15,6 +15,8 @@ public:
 
 private:
     Texture2D background{};
+    Texture2D logo{};
+    Font gameFont;
 
     Rectangle startBounds{};
     Rectangle exitBounds{};
@@ -22,5 +24,6 @@ private:
     bool startPressed = false;
     bool exitPressed = false;
 
+    void DrawLogo(int screenWidth);
     void DrawButton(Rectangle bounds, const char* text, bool hover);
 };

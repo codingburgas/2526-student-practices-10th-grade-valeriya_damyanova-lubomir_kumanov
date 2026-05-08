@@ -149,6 +149,7 @@ user32.lib;opengl32.lib;kernel32.lib;msvcrt.lib;%(AdditionalDependencies)</Addit
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Login.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Menu.cpp" />
   </ItemGroup>
@@ -158,6 +159,7 @@ user32.lib;opengl32.lib;kernel32.lib;msvcrt.lib;%(AdditionalDependencies)</Addit
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Login.h" />
     <ClInclude Include="Menu.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
