@@ -1,56 +1,14 @@
 #include "Login.h"
 #include <string>
-#include <cmath>
 
 using namespace std;
-
-void DrawRoundedRectangleRec(Rectangle rect, float radius, Color color)
-{
-    if (radius <= 0)
-    {
-        DrawRectangleRec(rect, color);
-        return;
-    }
-
-    if (radius > rect.width / 2) radius = rect.width / 2;
-    if (radius > rect.height / 2) radius = rect.height / 2;
-
-    DrawRectangle(rect.x + radius, rect.y, rect.width - 2 * radius, rect.height, color);
-    DrawRectangle(rect.x, rect.y + radius, rect.width, rect.height - 2 * radius, color);
-
-    DrawCircle(rect.x + radius, rect.y + radius, radius, color);
-    DrawCircle(rect.x + rect.width - radius, rect.y + radius, radius, color);
-    DrawCircle(rect.x + radius, rect.y + rect.height - radius, radius, color);
-    DrawCircle(rect.x + rect.width - radius, rect.y + rect.height - radius, radius, color);
-}
-
-void DrawRoundedRectangleLines(Rectangle rect, float radius, float thickness, Color color)
-{
-    if (radius <= 0)
-    {
-        DrawRectangleLinesEx(rect, thickness, color);
-        return;
-    }
-
-    if (radius > rect.width / 2) radius = rect.width / 2;
-    if (radius > rect.height / 2) radius = rect.height / 2;
-
-    DrawLineEx({ rect.x + radius, rect.y }, { rect.x + rect.width - radius, rect.y }, thickness, color);
-    DrawLineEx({ rect.x + rect.width, rect.y + radius }, { rect.x + rect.width, rect.y + rect.height - radius }, thickness, color);
-    DrawLineEx({ rect.x + radius, rect.y + rect.height }, { rect.x + rect.width - radius, rect.y + rect.height }, thickness, color);
-    DrawLineEx({ rect.x, rect.y + radius }, { rect.x, rect.y + rect.height - radius }, thickness, color);
-
-    float radiusOffset = thickness / 2;
-    DrawCircleLines(rect.x + radius, rect.y + radius, radius - radiusOffset, color);
-    DrawCircleLines(rect.x + rect.width - radius, rect.y + radius, radius - radiusOffset, color);
-    DrawCircleLines(rect.x + radius, rect.y + rect.height - radius, radius - radiusOffset, color);
-    DrawCircleLines(rect.x + rect.width - radius, rect.y + rect.height - radius, radius - radiusOffset, color);
-}
 
 void Login::Init()
 {
     background = LoadTexture("../../assets/login.png");
     logo = LoadTexture("../../assets/logo.png");
+    headerFont = LoadFontEx("../../assets/fonts/PlayfairDisplay-Bold.ttf", 60, 0, 0);
+    bodyFont = LoadFontEx("../../assets/fonts/PlayfairDisplay-Medium.ttf", 32, 0, 0);
 
     username.clear();
     password.clear();
@@ -67,24 +25,20 @@ void Login::Unload()
 {
     UnloadTexture(background);
     UnloadTexture(logo);
+    UnloadFont(headerFont);
+    UnloadFont(bodyFont);
 }
 
 void Login::Update()
 {
     Vector2 mouse = GetMousePosition();
 
-    Rectangle formRect = { 200, 150, 600, 650 };  // Moved to the left
-    Rectangle usernameBox = { formRect.x + 50, formRect.y + 260, 500, 40 };
-    Rectangle passBox = { formRect.x + 50, formRect.y + 320, 500, 40 };
-    Rectangle loginBtn = { formRect.x + 200, formRect.y + 450, 200, 50 };
-    Rectangle signupLink = { formRect.x + 390, formRect.y + 380, 120, 30 };
+    Rectangle formRect = { 500, 180, 800, 600 };
 
-    if (showErrorPopup)
-    {
-        errorPopupTimer -= GetFrameTime();
-        if (errorPopupTimer <= 0)
-            showErrorPopup = false;
-    }
+    Rectangle usernameBox = { formRect.x + 50, formRect.y + 260, 700, 40 };
+    Rectangle passBox = { formRect.x + 50, formRect.y + 320, 700, 40 };
+    Rectangle loginBtn = { formRect.x + 200, formRect.y + 450, 200, 50 };
+    Rectangle signupLink = { formRect.x + 175, formRect.y + 175, 120, 30 };
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
@@ -100,23 +54,6 @@ void Login::Update()
                 showErrorPopup = true;
                 errorPopupTimer = 2.0f;
                 return;
-            }
-            bool success = false;
-
-            // TODO: Add actual login validation here
-            // For example: if (username == "user" && password == "pass") success = true;
-
-            if (!success)
-            {
-                loginError = true;
-                showErrorPopup = true;
-                errorPopupTimer = 2.5f;
-                completed = false;
-            }
-            else
-            {
-                loginError = false;
-                completed = true;
             }
         }
 
@@ -152,65 +89,190 @@ void Login::Draw()
         background,
         { 0, 0, (float)background.width, (float)background.height },
         { 0, 0, (float)GetScreenWidth(), (float)GetScreenHeight() },
-        { 0, 0 }, 0, WHITE
+        { 0, 0 }, 0, GRAY
     );
 
-    Rectangle formRect = { 200, 150, 600, 650 };  // Moved to the left
+    Rectangle formRect = { 500, 180, 570, 650 };
 
-    // Draw rounded rectangle with transparency
-    DrawRoundedRectangleRec(formRect, 20.0f, ColorAlpha(WHITE, 0.85f));
-    DrawRoundedRectangleLines(formRect, 20.0f, 3, ColorAlpha(BLACK, 0.5f));
+    Rectangle usernameBox = {
+        formRect.x + 35,
+        formRect.y + 290,
+        formRect.width - 70,
+        40
+    };
 
-    float logoScale = 0.5f;
+    Rectangle passBox = {
+        formRect.x + 35,
+        formRect.y + 370,
+        formRect.width - 70,
+        40
+    };
+
+    Rectangle loginBtn = {
+        formRect.x + (formRect.width - 200) / 2,
+        formRect.y + 460,
+        200,
+        50
+    };
+
+    Rectangle signupLink = {
+        formRect.x + 200,
+        formRect.y + 380,
+        120,
+        30
+    };
+
+    for (int i = 8; i > 0; i--)
+    {
+        DrawRectangle(
+            formRect.x + i,
+            formRect.y + i,
+            formRect.width,
+            formRect.height,
+            Fade(BLACK, 0.03f)
+        );
+    }
+
+    for (int i = 20; i > 0; i--)
+    {
+        DrawRectangleRounded(
+            {
+                formRect.x + i * 0.5f,
+                formRect.y + i * 0.5f,
+                formRect.width,
+                formRect.height
+            },
+            0.08f,
+            10,
+            Fade(GRAY, 0.02f)
+        );
+    }
+
+    DrawRectangleRounded(
+        formRect,
+        0.08f,
+        20,
+        Fade(WHITE, 0.82f)
+    );
+
+    DrawRectangleRoundedLines(
+        formRect,
+        0.08f,
+        20,
+        2,
+        Fade(WHITE, 0.4f)
+    );
+    
+    float logoScale = 0.4f;
     float logoWidth = logo.width * logoScale;
-    float logoHeight = logo.height * logoScale;
 
     Vector2 logoPos = {
         formRect.x + (formRect.width / 2) - (logoWidth / 2),
-        formRect.y + 20
+        formRect.y
     };
 
     DrawTextureEx(logo, logoPos, 0.0f, logoScale, WHITE);
 
-    DrawText("LOG IN", formRect.x + 240, formRect.y + 185, 50, BLACK);  // Adjusted position
+    DrawTextEx(
+        headerFont,
+        "LOGIN",
+        {formRect.x + 210, formRect.y + 185}, 
+        55, 
+        3,
+        BLACK
+    );
 
-    Rectangle usernameBox = { formRect.x + 50, formRect.y + 260, 500, 40 };
-    Rectangle passBox = { formRect.x + 50, formRect.y + 320, 500, 40 };
-    Rectangle loginBtn = { formRect.x + 200, formRect.y + 450, 200, 50 };
-    Rectangle signupLink = { formRect.x + 390, formRect.y + 380, 120, 30 };
+    DrawRectangleRounded(usernameBox, 0.2f, 10, WHITE);
+    DrawRectangleRounded(passBox, 0.2f, 10, WHITE);
 
-    DrawRectangleLinesEx(usernameBox, 2, activeField == 0 ? BLUE : BLACK);
-    DrawRectangleLinesEx(passBox, 2, activeField == 1 ? BLUE : BLACK);
+    DrawRectangleRoundedLines(usernameBox, 0.2f, 10, 2, activeField == 0 ? BLUE : GRAY);
+    DrawRectangleRoundedLines(passBox, 0.2f, 10, 2, activeField == 1 ? BLUE : GRAY);
 
     if (username.empty())
-        DrawText("Enter username or email", usernameBox.x + 10, usernameBox.y + 10, 20, GRAY);
+        DrawTextEx(
+            bodyFont, 
+            "Username", 
+            { usernameBox.x + 10, usernameBox.y + 5 }, 
+            30,
+            3,
+            GRAY
+        );
     else
         DrawText(username.c_str(), usernameBox.x + 10, usernameBox.y + 10, 20, BLACK);
 
     if (password.empty())
-        DrawText("Enter password", passBox.x + 10, passBox.y + 10, 20, GRAY);
+        DrawTextEx(
+            bodyFont,
+            "Password",
+            { passBox.x + 10, passBox.y + 5 },
+            30,
+            3,
+            GRAY
+        );
     else
     {
         string masked(password.length(), '*');
         DrawText(masked.c_str(), passBox.x + 10, passBox.y + 10, 20, BLACK);
     }
 
-    DrawRectangleRec(loginBtn, Color{ 16, 29, 66, 255 });
-    DrawText("LOG IN", loginBtn.x + 60, loginBtn.y + 15, 20, WHITE);
-
-    DrawText("Don't have an account?", formRect.x + 130, formRect.y + 380, 20, BLACK);
-
     Vector2 mouse = GetMousePosition();
+    bool hoverLogin = CheckCollisionPointRec(mouse, loginBtn);
+
+    Color buttonColor = { 164, 192, 213, 255 };
+
+    if (hoverLogin)
+    {
+        DrawRectangle(
+            loginBtn.x + 4,
+            loginBtn.y + 4,
+            loginBtn.width,
+            loginBtn.height,
+            Fade(BLACK, 0.35f)
+        );
+    }
+
+    DrawRectangleRounded(loginBtn, 0.3f, 10, buttonColor);
+
+    DrawRectangleRoundedLines(
+        loginBtn,
+        0.3f,
+        10,
+        2,
+        buttonColor
+    );
+
+    DrawTextEx(
+        headerFont,
+        "Login",
+        { loginBtn.x + 60, loginBtn.y + 10 },
+        35,
+        2,
+        BLACK
+    );
+
+    DrawTextEx(
+        bodyFont, 
+        "Don't have an account?", 
+        { formRect.x + 100, formRect.y + 555 }, 
+        30, 
+        2,
+        BLACK
+    );
+
     bool hover = CheckCollisionPointRec(mouse, signupLink);
 
-    DrawText("Sign up",
-        signupLink.x,
-        signupLink.y,
-        20,
+    DrawTextEx(
+        bodyFont,
+        "Sign up",
+        { signupLink.x + 175,
+        signupLink.y + 175 },
+        30,
+        2,
         hover ? DARKBLUE : BLUE
     );
 
     if (hover)
+    {
         DrawLine(
             signupLink.x - 3,
             signupLink.y + 22,
@@ -218,6 +280,7 @@ void Login::Draw()
             signupLink.y + 22,
             DARKBLUE
         );
+    }
 
     if (showErrorPopup)
     {
@@ -226,33 +289,15 @@ void Login::Draw()
         float x = (GetScreenWidth() - w) / 2 - 10;
         float y = 400;
 
-        DrawRectangle(x, y + 4, w, h, Fade(LIGHTGRAY, 0.3f));
+        DrawRectangle(x + 4, y + 4, w, h, Fade(BLACK, 0.2f));
         DrawRectangle(x, y, w, h, LIGHTGRAY);
         DrawRectangleLinesEx({ x, y, w, h }, 3, LIGHTGRAY);
 
-        DrawText("Wrong username or password",
-            x + 25, y + 50, 24, BLACK);
+        DrawText(
+            "Wrong username or password",
+            x + 25, y + 50,
+            24,
+            BLACK
+        );
     }
-}
-
-bool Login::IsCompleted() const
-{
-    return completed;
-}
-
-bool Login::ShouldOpenSignup() const
-{
-    return openSignup;
-}
-
-void Login::Reset()
-{
-    username.clear();
-    password.clear();
-    activeField = -1;
-    loginError = false;
-    openSignup = false;
-    showErrorPopup = false;
-    errorPopupTimer = 0.0f;
-    completed = false;
 }

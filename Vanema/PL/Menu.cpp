@@ -43,7 +43,7 @@ void Menu::Draw()
         { 0, 0, (float)screenWidth, (float)screenHeight },
         { 0, 0 },
         0.0f,
-        WHITE
+        GRAY
     );
 
     DrawLogo(screenWidth);

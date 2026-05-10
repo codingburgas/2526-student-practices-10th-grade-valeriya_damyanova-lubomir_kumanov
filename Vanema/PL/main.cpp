@@ -3,54 +3,54 @@
 #include "Login.h"
 #include "Menu.h"
 
-int main() {
+enum Screen {
+    MENU,
+    LOGIN
+};
+
+int main()
+{
     InitWindow(1600, 980, "Vanema");
     SetTargetFPS(60);
 
     Menu menu;
     Login login;
-    bool showLogin = false;
 
     login.Init();
 
-    while (!WindowShouldClose()) {
+    Screen currentScreen = MENU;
 
-        if (!showLogin) {
-            
+    while (!WindowShouldClose())
+    {
+        if (currentScreen == MENU)
+        {
             menu.Update();
 
-            if (menu.IsStartPressed()) {
-                showLogin = true;  
-                login.Reset();     
+            if (menu.IsStartPressed())
+            {
+                currentScreen = LOGIN;
             }
 
-            if (menu.IsExitPressed()) {
+            if (menu.IsExitPressed())
+            {
                 break;
             }
         }
-        else {
-            
+        else if (currentScreen == LOGIN)
+        {
             login.Update();
-
-            if (login.IsCompleted()) {
-                
-                std::cout << "Login successful!" << std::endl;
-                showLogin = false;  
-                login.Reset();
-            }
-
-            if (IsKeyPressed(KEY_ESCAPE)) {
-                showLogin = false;
-                login.Reset();
-            }
         }
 
         BeginDrawing();
 
-        if (!showLogin) {
+        ClearBackground(WHITE);
+
+        if (currentScreen == MENU)
+        {
             menu.Draw();
         }
-        else {
+        else if (currentScreen == LOGIN)
+        {
             login.Draw();
         }
 
@@ -58,6 +58,8 @@ int main() {
     }
 
     login.Unload();
+
     CloseWindow();
+
     return 0;
 }
