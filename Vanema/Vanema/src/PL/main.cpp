@@ -2,10 +2,12 @@
 #include "raylib.h"
 #include "Login.h"
 #include "Menu.h"
+#include "Booking.h"
 
 enum Screen {
     MENU,
-    LOGIN
+    LOGIN,
+    BOOKING
 };
 
 int main()
@@ -15,6 +17,7 @@ int main()
 
     Menu menu;
     Login login;
+    Booking booking;
 
     login.Init();
 
@@ -28,7 +31,7 @@ int main()
 
             if (menu.IsStartPressed())
             {
-                currentScreen = LOGIN;
+                currentScreen = BOOKING;
             }
 
             if (menu.IsExitPressed())
@@ -49,14 +52,15 @@ int main()
         {
             menu.Draw();
         }
-        else if (currentScreen == LOGIN)
+        else if (currentScreen == BOOKING)
         {
-            login.Draw();
+            booking.Draw();
         }
 
         EndDrawing();
     }
 
+    booking.Unload();
     login.Unload();
 
     CloseWindow();

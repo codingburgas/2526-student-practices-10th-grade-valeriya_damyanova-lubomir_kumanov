@@ -16,7 +16,7 @@ add_executable(Vanema
     "src/PL/Login.cpp"
     "src/PL/Menu.cpp"
     "src/PL/main.cpp"
-)
+ "src/PL/Booking.cpp" )
 
 target_link_libraries(Vanema
     PRIVATE
@@ -27,3 +27,8 @@ target_link_libraries(Vanema
 set_target_properties(Vanema PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 )
+
+file(COPY ${CMAKE_SOURCE_DIR}/assets
+     DESTINATION ${CMAKE_BINARY_DIR})
+
+file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
