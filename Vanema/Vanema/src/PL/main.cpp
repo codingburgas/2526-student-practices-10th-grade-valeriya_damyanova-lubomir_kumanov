@@ -4,12 +4,6 @@
 #include "Menu.h"
 #include "Booking.h"
 
-enum Screen {
-    MENU,
-    LOGIN,
-    BOOKING
-};
-
 int main()
 {
     InitWindow(1600, 980, "Vanema");
@@ -19,40 +13,45 @@ int main()
     Login login;
     Booking booking;
 
-    login.Init();
+    int currentScreen = 0;
 
-    Screen currentScreen = MENU;
+    booking.currentScreen = &currentScreen;
+
+    login.Init();
 
     while (!WindowShouldClose())
     {
-        if (currentScreen == MENU)
+        if (currentScreen == 0)
         {
             menu.Update();
 
             if (menu.IsStartPressed())
-            {
-                currentScreen = BOOKING;
-            }
+                currentScreen = 2;
 
             if (menu.IsExitPressed())
-            {
                 break;
-            }
         }
-        else if (currentScreen == LOGIN)
+        else if (currentScreen == 1)
         {
             login.Update();
         }
+        else if (currentScreen == 2)
+        {
+            booking.Update();
+        }
 
         BeginDrawing();
-
         ClearBackground(WHITE);
 
-        if (currentScreen == MENU)
+        if (currentScreen == 0)
         {
             menu.Draw();
         }
-        else if (currentScreen == BOOKING)
+        else if (currentScreen == 1)
+        {
+            login.Draw();
+        }
+        else if (currentScreen == 2)
         {
             booking.Draw();
         }

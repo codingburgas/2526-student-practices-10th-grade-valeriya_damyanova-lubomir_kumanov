@@ -9,7 +9,7 @@ Booking::Booking()
     iconFilms = LoadTexture("assets/icon_films.png");
     iconOffers = LoadTexture("assets/icon_offers.png");
     iconProfile = LoadTexture("assets/icon_profile.png");
-    customFont = LoadFontEx("assets/fonts/PlayfairDisplay-Black.ttf", 32, 0, 0);
+    customFont = LoadFont("assets/PlayfairDisplay-Medium.ttf");
 }
 
 Booking::~Booking()
@@ -30,7 +30,6 @@ void Booking::Unload()
 
 void Booking::Update()
 {
-
 }
 
 void Booking::Draw()
@@ -71,8 +70,8 @@ void Booking::Draw()
     DrawTextEx(
         customFont,
         "Vanema",
-        { navBarRect.x + 130, navBarRect.y + 37 },
-        42,
+        { navBarRect.x + 130, navBarRect.y + 40 },
+        34,
         1,
         BLACK
     );
@@ -140,7 +139,7 @@ void Booking::Draw()
             customFont,
             labels[i],
             { itemX + 30, navBarRect.y + 70 },
-            22,
+            20,
             1,
             BLACK
         );
@@ -154,11 +153,27 @@ void Booking::Draw()
         50
     };
 
+    Vector2 mousePos = GetMousePosition();
+    bool isProfileHovered = CheckCollisionPointRec(mousePos, profileRect);
+
+    if (isProfileHovered)
+    {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            if (currentScreen != nullptr)
+            {
+                *currentScreen = 1;
+            }
+        }
+    }
+
     DrawTextureEx(
         iconProfile,
         { profileRect.x - 15, profileRect.y + 10 },
         0.0f,
         0.1f,
-        DARKBLUE
+        isProfileHovered ? BLUE : DARKBLUE
     );
 }

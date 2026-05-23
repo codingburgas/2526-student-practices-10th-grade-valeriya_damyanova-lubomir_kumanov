@@ -16,7 +16,7 @@ add_executable(Vanema
     "src/PL/Login.cpp"
     "src/PL/Menu.cpp"
     "src/PL/main.cpp"
- "src/PL/Booking.cpp" )
+ "src/PL/Booking.cpp"  )
 
 target_link_libraries(Vanema
     PRIVATE
