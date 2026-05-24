@@ -22,7 +22,7 @@ public:
     void Unload();
     void Update();
     void Draw();
-    int* currentScreen = nullptr;  // Pointer to current screen variable
+    int* currentScreen = nullptr;  
 };
 
 #endif

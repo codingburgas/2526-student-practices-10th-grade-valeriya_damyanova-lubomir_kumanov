@@ -3,6 +3,7 @@
 #include "Login.h"
 #include "Menu.h"
 #include "Booking.h"
+#include "SignUp.h"  
 
 int main()
 {
@@ -12,12 +13,17 @@ int main()
     Menu menu;
     Login login;
     Booking booking;
-
+    SignUp signup;  
     int currentScreen = 0;
 
+    std::cout << "currentScreen = " << currentScreen << std::endl;
+
+    login.currentScreen = &currentScreen;
+    signup.currentScreen = &currentScreen;
     booking.currentScreen = &currentScreen;
 
     login.Init();
+    signup.Init();
 
     while (!WindowShouldClose())
     {
@@ -31,13 +37,17 @@ int main()
             if (menu.IsExitPressed())
                 break;
         }
-        else if (currentScreen == 1)
+        else if (currentScreen == 1)  
         {
             login.Update();
         }
-        else if (currentScreen == 2)
+        else if (currentScreen == 2)  
         {
             booking.Update();
+        }
+        else if (currentScreen == 3)  
+        {
+            signup.Update();
         }
 
         BeginDrawing();
@@ -55,12 +65,17 @@ int main()
         {
             booking.Draw();
         }
+        else if (currentScreen == 3)
+        {
+            signup.Draw();
+        }
 
         EndDrawing();
     }
 
     booking.Unload();
     login.Unload();
+    signup.Unload();
 
     CloseWindow();
 

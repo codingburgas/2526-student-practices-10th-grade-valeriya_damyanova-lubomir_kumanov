@@ -1,17 +1,17 @@
-#ifndef LOGIN_H
-#define LOGIN_H
+#ifndef SIGNUP_H
+#define SIGNUP_H
 
 #include "raylib.h"
 #include <string>
 
-class Login {
+class SignUp {
 public:
     void Init();
     void Unload();
     void Update();
     void Draw();
 
-    int* currentScreen;
+    int* currentScreen;  
 
 private:
     Texture2D background;
@@ -19,16 +19,17 @@ private:
     Font headerFont;
     Font bodyFont;
 
+    std::string name;
+    std::string email;
     std::string username;
     std::string password;
 
     int activeField;
-
-    bool loginError;
-    bool openSignup;
     bool showErrorPopup;
+    bool showSuccessPopup;
     float errorPopupTimer;
-    bool completed;
+    float successPopupTimer;
+    std::string errorMessage;
 };
 
 #endif

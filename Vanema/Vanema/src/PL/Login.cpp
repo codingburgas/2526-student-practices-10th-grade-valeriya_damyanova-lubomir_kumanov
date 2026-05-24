@@ -19,6 +19,7 @@ void Login::Init()
     showErrorPopup = false;
     errorPopupTimer = 0.0f;
     completed = false;
+
 }
 
 void Login::Unload()
@@ -38,14 +39,17 @@ void Login::Update()
     Rectangle usernameBox = { formRect.x + 50, formRect.y + 260, 700, 40 };
     Rectangle passBox = { formRect.x + 50, formRect.y + 320, 700, 40 };
     Rectangle loginBtn = { formRect.x + 200, formRect.y + 450, 200, 50 };
-    Rectangle signupLink = { formRect.x + 175, formRect.y + 175, 120, 30 };
+
+    Rectangle signupLink = { 870, 735, 100, 30 };
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
         activeField = -1;
 
-        if (CheckCollisionPointRec(mouse, usernameBox)) activeField = 0;
-        else if (CheckCollisionPointRec(mouse, passBox)) activeField = 1;
+        if (CheckCollisionPointRec(mouse, usernameBox))
+            activeField = 0;
+        else if (CheckCollisionPointRec(mouse, passBox))
+            activeField = 1;
 
         if (CheckCollisionPointRec(mouse, loginBtn))
         {
@@ -59,11 +63,15 @@ void Login::Update()
 
         if (CheckCollisionPointRec(mouse, signupLink))
         {
-            openSignup = true;
+            if (currentScreen != nullptr)
+            {
+                *currentScreen = 3;
+            }
         }
     }
 
     int key = GetCharPressed();
+
     while (key > 0)
     {
         if (activeField == 0 && username.length() < 30)
@@ -78,8 +86,19 @@ void Login::Update()
     {
         if (activeField == 0 && !username.empty())
             username.pop_back();
+
         if (activeField == 1 && !password.empty())
             password.pop_back();
+    }
+
+    if (showErrorPopup)
+    {
+        errorPopupTimer -= GetFrameTime();
+
+        if (errorPopupTimer <= 0.0f)
+        {
+            showErrorPopup = false;
+        }
     }
 }
 
@@ -115,12 +134,7 @@ void Login::Draw()
         50
     };
 
-    Rectangle signupLink = {
-        formRect.x + 200,
-        formRect.y + 380,
-        120,
-        30
-    };
+    Rectangle signupLink = { 870, 735, 100, 30 };
 
     for (int i = 8; i > 0; i--)
     {
@@ -162,7 +176,7 @@ void Login::Draw()
         2,
         Fade(WHITE, 0.4f)
     );
-    
+
     float logoScale = 0.4f;
     float logoWidth = logo.width * logoScale;
 
@@ -176,8 +190,8 @@ void Login::Draw()
     DrawTextEx(
         headerFont,
         "LOGIN",
-        {formRect.x + 210, formRect.y + 185}, 
-        55, 
+        { formRect.x + 210, formRect.y + 185 },
+        55,
         3,
         BLACK
     );
@@ -185,22 +199,36 @@ void Login::Draw()
     DrawRectangleRounded(usernameBox, 0.2f, 10, WHITE);
     DrawRectangleRounded(passBox, 0.2f, 10, WHITE);
 
-    DrawRectangleRoundedLines(usernameBox, 0.2f, 10, 2, activeField == 0 ? BLUE : GRAY);
-    DrawRectangleRoundedLines(passBox, 0.2f, 10, 2, activeField == 1 ? BLUE : GRAY);
+    DrawRectangleRoundedLines(usernameBox, 0.2f, 10, 2,
+        activeField == 0 ? BLUE : GRAY);
+
+    DrawRectangleRoundedLines(passBox, 0.2f, 10, 2,
+        activeField == 1 ? BLUE : GRAY);
 
     if (username.empty())
+    {
         DrawTextEx(
-            bodyFont, 
-            "Username", 
-            { usernameBox.x + 10, usernameBox.y + 5 }, 
+            bodyFont,
+            "Username",
+            { usernameBox.x + 10, usernameBox.y + 5 },
             30,
             3,
             GRAY
         );
+    }
     else
-        DrawText(username.c_str(), usernameBox.x + 10, usernameBox.y + 10, 20, BLACK);
+    {
+        DrawText(
+            username.c_str(),
+            usernameBox.x + 10,
+            usernameBox.y + 10,
+            20,
+            BLACK
+        );
+    }
 
     if (password.empty())
+    {
         DrawTextEx(
             bodyFont,
             "Password",
@@ -209,13 +237,22 @@ void Login::Draw()
             3,
             GRAY
         );
+    }
     else
     {
         string masked(password.length(), '*');
-        DrawText(masked.c_str(), passBox.x + 10, passBox.y + 10, 20, BLACK);
+
+        DrawText(
+            masked.c_str(),
+            passBox.x + 10,
+            passBox.y + 10,
+            20,
+            BLACK
+        );
     }
 
     Vector2 mouse = GetMousePosition();
+
     bool hoverLogin = CheckCollisionPointRec(mouse, loginBtn);
 
     Color buttonColor = { 164, 192, 213, 255 };
@@ -251,10 +288,10 @@ void Login::Draw()
     );
 
     DrawTextEx(
-        bodyFont, 
-        "Don't have an account?", 
-        { formRect.x + 100, formRect.y + 555 }, 
-        30, 
+        bodyFont,
+        "Don't have an account?",
+        { formRect.x + 100, formRect.y + 555 },
+        30,
         2,
         BLACK
     );
@@ -264,8 +301,7 @@ void Login::Draw()
     DrawTextEx(
         bodyFont,
         "Sign up",
-        { signupLink.x + 175,
-        signupLink.y + 175 },
+        { signupLink.x , signupLink.y},
         30,
         2,
         hover ? DARKBLUE : BLUE
@@ -295,7 +331,8 @@ void Login::Draw()
 
         DrawText(
             "Wrong username or password",
-            x + 25, y + 50,
+            x + 25,
+            y + 50,
             24,
             BLACK
         );
