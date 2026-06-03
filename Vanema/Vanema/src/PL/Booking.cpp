@@ -239,6 +239,15 @@ void Booking::DrawNavigationBar()
             {
                 activeIndex = i;
                 printf("Navigation switched to: %s\n", labels[i]);
+
+                if (currentScreen != nullptr)
+                {
+                    if (i == 2) 
+                    {
+                        *currentScreen = 4; 
+                        printf("Switching state to Films screen\n");
+                    }
+                }
             }
         }
 

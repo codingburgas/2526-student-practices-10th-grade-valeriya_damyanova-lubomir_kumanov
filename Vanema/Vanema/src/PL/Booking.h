@@ -6,7 +6,6 @@
 class Booking
 {
 private:
-    // Textures
     Texture2D background;
     Texture2D logo;
     Texture2D iconHome;
@@ -16,19 +15,15 @@ private:
     Texture2D iconProfile;
     Texture2D suggestedPhotos[4];
 
-    // Font
     Font customFont;
 
-    // Business Logic
     MovieService movieService;
     std::vector<Movie> currentSuggestedMovies;
 
-    // UI State
     float scrollOffset;
     float maxScroll;
     float mouseScrollAccumulator;
 
-    // Private methods
     void loadRandomSuggestions();
     void Unload();
     void DrawNavigationBar();

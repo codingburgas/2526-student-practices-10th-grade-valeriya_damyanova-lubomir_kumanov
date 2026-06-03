@@ -21,7 +21,8 @@ add_executable(Vanema
 
     src/BLL/Movie.cpp
     src/BLL/MovieService.cpp
-)
+    src/PL/Films.cpp 
+    src/PL/Films.h)
 
 target_link_libraries(Vanema PRIVATE
     raylib

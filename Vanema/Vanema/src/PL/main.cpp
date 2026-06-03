@@ -4,6 +4,7 @@
 #include "Menu.h"
 #include "Booking.h"
 #include "SignUp.h"
+#include "Films.h"
 
 int main()
 {
@@ -14,6 +15,7 @@ int main()
     Login login;
     Booking booking;
     SignUp signup;
+    Films films;
 
     int currentScreen = 0;
 
@@ -48,6 +50,10 @@ int main()
         {
             signup.Update();
         }
+        else if (currentScreen == 4)
+        {
+            films.Update();
+        }
 
         BeginDrawing();
 
@@ -68,6 +74,10 @@ int main()
         else if (currentScreen == 3)
         {
             signup.Draw();
+        }
+        else if (currentScreen == 4)
+        {
+            films.Draw();
         }
 
         EndDrawing();
