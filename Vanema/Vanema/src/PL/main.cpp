@@ -3,7 +3,7 @@
 #include "Login.h"
 #include "Menu.h"
 #include "Booking.h"
-#include "SignUp.h"  
+#include "SignUp.h"
 
 int main()
 {
@@ -13,10 +13,9 @@ int main()
     Menu menu;
     Login login;
     Booking booking;
-    SignUp signup;  
-    int currentScreen = 0;
+    SignUp signup;
 
-    std::cout << "currentScreen = " << currentScreen << std::endl;
+    int currentScreen = 0;
 
     login.currentScreen = &currentScreen;
     signup.currentScreen = &currentScreen;
@@ -37,20 +36,21 @@ int main()
             if (menu.IsExitPressed())
                 break;
         }
-        else if (currentScreen == 1)  
+        else if (currentScreen == 1)
         {
             login.Update();
         }
-        else if (currentScreen == 2)  
+        else if (currentScreen == 2)
         {
             booking.Update();
         }
-        else if (currentScreen == 3)  
+        else if (currentScreen == 3)
         {
             signup.Update();
         }
 
         BeginDrawing();
+
         ClearBackground(WHITE);
 
         if (currentScreen == 0)
@@ -72,10 +72,6 @@ int main()
 
         EndDrawing();
     }
-
-    booking.Unload();
-    login.Unload();
-    signup.Unload();
 
     CloseWindow();
 

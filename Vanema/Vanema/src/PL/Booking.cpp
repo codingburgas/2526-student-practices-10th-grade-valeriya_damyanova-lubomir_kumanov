@@ -1,15 +1,59 @@
 #include "Booking.h"
+#include <stdio.h>
+#include <stdarg.h>
+#include <fstream>
+#include <iostream>
+
+#ifdef _WIN32
+#include <direct.h>
+#define getcwd _getcwd
+#else
+#include <unistd.h>
+#endif
 
 Booking::Booking()
 {
+    char cwd[1024];
+    if (getcwd(cwd, sizeof(cwd)) != NULL)
+    {
+        printf("Current working directory: %s\n", cwd);
+    }
+
     background = LoadTexture("assets/booking.png");
+    if (background.id == 0) printf("Failed to load: assets/booking.png\n");
+
     logo = LoadTexture("assets/logo.png");
+    if (logo.id == 0) printf("Failed to load: assets/logo.png\n");
+
     iconHome = LoadTexture("assets/icon_home.png");
     iconMap = LoadTexture("assets/icon_map.png");
     iconFilms = LoadTexture("assets/icon_films.png");
     iconOffers = LoadTexture("assets/icon_offers.png");
     iconProfile = LoadTexture("assets/icon_profile.png");
-    customFont = LoadFont("assets/PlayfairDisplay-Medium.ttf");
+
+    if (iconHome.id == 0) printf("Failed to load: assets/icon_home.png\n");
+    if (iconMap.id == 0) printf("Failed to load: assets/icon_map.png\n");
+    if (iconFilms.id == 0) printf("Failed to load: assets/icon_films.png\n");
+    if (iconOffers.id == 0) printf("Failed to load: assets/icon_offers.png\n");
+    if (iconProfile.id == 0) printf("Failed to load: assets/icon_profile.png\n");
+
+    for (int i = 0; i < 4; i++)
+    {
+        suggestedPhotos[i].id = 0;
+    }
+
+    customFont = LoadFont("assets/fonts/PlayfairDisplay-Medium.ttf");
+    if (customFont.texture.id == 0) printf("Failed to load font\n");
+
+    loadRandomSuggestions();
+
+    scrollOffset = 0;
+    maxScroll = 500;
+    activeIndex = 0;
+    currentScreen = nullptr;
+    mouseScrollAccumulator = 0;
+
+    printf("Booking initialized successfully!\n");
 }
 
 Booking::~Booking()
@@ -17,34 +61,136 @@ Booking::~Booking()
     Unload();
 }
 
+void Booking::loadRandomSuggestions()
+{
+    currentSuggestedMovies = movieService.getRandomMovies(4);
+
+    if (currentSuggestedMovies.empty())
+    {
+        printf("No movies loaded from service!\n");
+        return;
+    }
+
+    printf("Loading %zu movies...\n", currentSuggestedMovies.size());
+
+    for (size_t i = 0; i < currentSuggestedMovies.size() && i < 4; i++)
+    {
+        std::string rawPath = currentSuggestedMovies[i].getPosterPath();
+        std::string posterPath = rawPath;
+
+        std::ifstream fileCheck(posterPath);
+        if (!fileCheck.good())
+        {
+            posterPath = "Vanema/" + rawPath;
+            std::ifstream nestedCheck(posterPath);
+            if (!nestedCheck.good())
+            {
+                posterPath = "../" + rawPath;
+            }
+        }
+
+        std::ifstream finalCheck(posterPath);
+        if (finalCheck.good())
+        {
+            suggestedPhotos[i] = LoadTexture(posterPath.c_str());
+            if (suggestedPhotos[i].id != 0)
+            {
+                printf("✓ Loaded: %s (Rating: %.1f) - %s [%dx%d]\n",
+                    currentSuggestedMovies[i].getTitle().c_str(),
+                    currentSuggestedMovies[i].getRating(),
+                    currentSuggestedMovies[i].getGenre().c_str(),
+                    suggestedPhotos[i].width,
+                    suggestedPhotos[i].height);
+            }
+            else
+            {
+                printf("✗ Failed to load texture: %s\n", posterPath.c_str());
+            }
+        }
+        else
+        {
+            printf("✗ File not found anywhere: %s\n", rawPath.c_str());
+            suggestedPhotos[i].id = 0;
+        }
+    }
+}
+
+void Booking::RefreshSuggestions()
+{
+    for (int i = 0; i < 4; i++)
+    {
+        if (suggestedPhotos[i].id != 0)
+        {
+            UnloadTexture(suggestedPhotos[i]);
+            suggestedPhotos[i].id = 0;
+        }
+    }
+
+    loadRandomSuggestions();
+}
+
+void Booking::SetScreenPointer(int* screen)
+{
+    currentScreen = screen;
+}
+
 void Booking::Unload()
 {
-    UnloadTexture(background);
-    UnloadTexture(logo);
-    UnloadTexture(iconHome);
-    UnloadTexture(iconMap);
-    UnloadTexture(iconFilms);
-    UnloadTexture(iconOffers);
-    UnloadTexture(iconProfile);
+    if (background.id != 0)
+        UnloadTexture(background);
+
+    if (logo.id != 0)
+        UnloadTexture(logo);
+
+    if (iconHome.id != 0)
+        UnloadTexture(iconHome);
+
+    if (iconMap.id != 0)
+        UnloadTexture(iconMap);
+
+    if (iconFilms.id != 0)
+        UnloadTexture(iconFilms);
+
+    if (iconOffers.id != 0)
+        UnloadTexture(iconOffers);
+
+    if (iconProfile.id != 0)
+        UnloadTexture(iconProfile);
+
+    for (int i = 0; i < 4; i++)
+    {
+        if (suggestedPhotos[i].id != 0)
+        {
+            UnloadTexture(suggestedPhotos[i]);
+        }
+    }
+
+    if (customFont.texture.id != 0)
+    {
+        UnloadFont(customFont);
+    }
+
+    printf("Booking resources unloaded\n");
 }
 
 void Booking::Update()
 {
+    float wheelMove = GetMouseWheelMove();
+    if (wheelMove != 0)
+    {
+        scrollOffset -= wheelMove * 40;
+
+        if (scrollOffset < 0)
+            scrollOffset = 0;
+        if (scrollOffset > maxScroll)
+            scrollOffset = maxScroll;
+    }
 }
 
-void Booking::Draw()
+void Booking::DrawNavigationBar()
 {
     int screenWidth = GetScreenWidth();
     int screenHeight = GetScreenHeight();
-
-    DrawTexturePro(
-        background,
-        { 0, 0, (float)background.width, (float)background.height },
-        { 0, 0, (float)screenWidth, (float)screenHeight },
-        { 0,0 },
-        0.0f,
-        WHITE
-    );
 
     float navWidth = screenWidth * 0.9f;
     float navHeight = 100.0f;
@@ -59,121 +205,207 @@ void Booking::Draw()
 
     DrawRectangleRounded(navBarRect, 0.5f, 10, WHITE);
 
-    DrawTextureEx(
-        logo,
-        { navBarRect.x - 2, navBarRect.y - 20 },
-        0.1f,
-        0.3f,
-        WHITE
-    );
-
-    DrawTextEx(
-        customFont,
-        "Vanema",
-        { navBarRect.x + 130, navBarRect.y + 40 },
-        34,
-        1,
-        BLACK
-    );
-
-    const char* labels[] =
+    if (logo.id != 0)
     {
-        "Home",
-        "Map",
-        "Films",
-        "Offers"
-    };
+        DrawTextureEx(logo, { navBarRect.x - 2, navBarRect.y - 20 }, 0.0f, 0.3f, WHITE);
+    }
 
-    Texture2D icons[] =
+    if (customFont.texture.id != 0)
     {
-        iconHome,
-        iconMap,
-        iconFilms,
-        iconOffers
-    };
+        DrawTextEx(customFont, "Vanema", { navBarRect.x + 130, navBarRect.y + 40 }, 34, 1, BLACK);
+    }
+
+    const char* labels[] = { "Home", "Map", "Films", "Offers" };
+    Texture2D icons[] = { iconHome, iconMap, iconFilms, iconOffers };
 
     float spacing = 94.0f;
     float startX = navBarRect.x + 930;
 
     SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+    Vector2 mousePos = GetMousePosition();
 
     for (int i = 0; i < 4; i++)
     {
         float itemX = startX + (i * spacing);
 
-        Rectangle btnRect =
-        {
-            itemX,
-            navBarRect.y,
-            110,
-            navHeight
-        };
-
-        Vector2 mousePos = GetMousePosition();
-
-        bool isHovered =
-            CheckCollisionPointRec(mousePos, btnRect);
-
-        Color tint =
-            (i == activeIndex) ? BLUE : DARKBLUE;
+        Rectangle btnRect = { itemX, navBarRect.y, 110, navHeight };
+        bool isHovered = CheckCollisionPointRec(mousePos, btnRect);
+        Color tint = (i == activeIndex) ? BLUE : DARKBLUE;
 
         if (isHovered)
         {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 activeIndex = i;
+                printf("Navigation switched to: %s\n", labels[i]);
             }
         }
 
-        DrawTextureEx(
-            icons[i],
-            { itemX + 22, navBarRect.y + 5 },
-            0.0f,
-            0.1f,
-            tint
-        );
+        if (icons[i].id != 0)
+        {
+            DrawTextureEx(icons[i], { itemX + 22, navBarRect.y + 5 }, 0.0f, 0.1f, tint);
+        }
 
-        DrawTextEx(
-            customFont,
-            labels[i],
-            { itemX + 30, navBarRect.y + 70 },
-            20,
-            1,
-            BLACK
-        );
+        if (customFont.texture.id != 0)
+        {
+            DrawTextEx(customFont, labels[i], { itemX + 30, navBarRect.y + 70 }, 20, 1, BLACK);
+        }
     }
 
-    Rectangle profileRect =
-    {
-        navBarRect.x + navWidth - 70,
-        navBarRect.y + 15,
-        50,
-        50
-    };
-
-    Vector2 mousePos = GetMousePosition();
+    Rectangle profileRect = { navBarRect.x + navWidth - 70, navBarRect.y + 15, 50, 50 };
     bool isProfileHovered = CheckCollisionPointRec(mousePos, profileRect);
 
     if (isProfileHovered)
     {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr)
         {
-            if (currentScreen != nullptr)
-            {
-                *currentScreen = 1;
-            }
+            *currentScreen = 1;
+            printf("Switching to Profile screen\n");
         }
     }
 
-    DrawTextureEx(
-        iconProfile,
-        { profileRect.x - 15, profileRect.y + 10 },
-        0.0f,
-        0.1f,
-        isProfileHovered ? BLUE : DARKBLUE
+    if (iconProfile.id != 0)
+    {
+        DrawTextureEx(iconProfile, { profileRect.x - 15, profileRect.y + 10 }, 0.0f, 0.1f,
+            isProfileHovered ? BLUE : DARKBLUE);
+    }
+}
+
+void Booking::DrawMoviePosters()
+{
+    int screenWidth = GetScreenWidth();
+    int screenHeight = GetScreenHeight();
+
+    float navWidth = screenWidth * 0.9f;
+    float navHeight = 100.0f;
+
+    Rectangle navBarRect =
+    {
+        (screenWidth - navWidth) / 2,
+        20,
+        navWidth,
+        navHeight
+    };
+
+    float contentY = navBarRect.y + navBarRect.height + 40 - scrollOffset;
+
+    if (customFont.texture.id != 0)
+    {
+        DrawTextEx(customFont, "Suggested for You:", { navBarRect.x + 20, contentY }, 40, 1, WHITE);
+    }
+
+    float posterWidth = 260;
+    float posterHeight = 380;
+    float spacingX = 35;
+
+    float startPosterX = navBarRect.x + 20;
+    float startPosterY = contentY + 80;
+
+    Vector2 mousePos = GetMousePosition();
+
+    for (size_t i = 0; i < currentSuggestedMovies.size() && i < 4; i++)
+    {
+        float x = startPosterX + i * (posterWidth + spacingX);
+
+        Rectangle posterRect = { x, startPosterY, posterWidth, posterHeight };
+        bool hovered = CheckCollisionPointRec(mousePos, posterRect);
+
+        if (suggestedPhotos[i].id != 0)
+        {
+            DrawTexturePro(
+                suggestedPhotos[i],
+                { 0, 0, (float)suggestedPhotos[i].width, (float)suggestedPhotos[i].height },
+                posterRect,
+                { 0, 0 },
+                0.0f,
+                hovered ? LIGHTGRAY : WHITE
+            );
+        }
+        else
+        {
+            DrawRectangleRec(posterRect, DARKGRAY);
+            if (customFont.texture.id != 0)
+            {
+                DrawTextEx(customFont, "No Image", { x + 80, startPosterY + posterHeight / 2 }, 20, 1, WHITE);
+            }
+        }
+
+        if (customFont.texture.id != 0)
+        {
+            DrawTextEx(customFont,
+                currentSuggestedMovies[i].getTitle().c_str(),
+                { x + 10, startPosterY + posterHeight + 5 },
+                18, 1, WHITE);
+
+            char ratingText[32];
+            sprintf(ratingText, "★ %.1f", currentSuggestedMovies[i].getRating());
+            DrawTextEx(customFont, ratingText, { x + 10, startPosterY + posterHeight + 30 }, 14, 1, YELLOW);
+
+            DrawTextEx(customFont,
+                currentSuggestedMovies[i].getGenre().c_str(),
+                { x + 10, startPosterY + posterHeight + 50 },
+                14, 1, LIGHTGRAY);
+        }
+
+        DrawRectangleRoundedLines(posterRect, 0.08f, 8, 4, hovered ? BLUE : WHITE);
+
+        if (hovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            printf("Selected movie: %s (Rating: %.1f)\n",
+                currentSuggestedMovies[i].getTitle().c_str(),
+                currentSuggestedMovies[i].getRating());
+        }
+    }
+}
+
+void Booking::DrawScrollbar()
+{
+    int screenWidth = GetScreenWidth();
+
+    float scrollbarHeight = 350;
+    float scrollbarWidth = 10;
+
+    float scrollbarX = screenWidth - 25;
+    float scrollbarY = 150;
+
+    DrawRectangleRounded(
+        { scrollbarX, scrollbarY, scrollbarWidth, scrollbarHeight },
+        0.5f, 8, Fade(LIGHTGRAY, 0.4f)
     );
+
+    float thumbHeight = 80;
+    float thumbY = scrollbarY;
+
+    if (maxScroll > 0)
+    {
+        thumbY = scrollbarY + (scrollOffset / maxScroll) * (scrollbarHeight - thumbHeight);
+    }
+
+    DrawRectangleRounded(
+        { scrollbarX, thumbY, scrollbarWidth, thumbHeight },
+        0.5f, 8, DARKBLUE
+    );
+}
+
+void Booking::Draw()
+{
+    if (background.id != 0)
+    {
+        DrawTexturePro(
+            background,
+            { 0, 0, (float)background.width, (float)background.height },
+            { 0, 0, (float)GetScreenWidth(), (float)GetScreenHeight() },
+            { 0, 0 }, 0.0f, WHITE
+        );
+    }
+    else
+    {
+        ClearBackground(RAYWHITE);
+    }
+
+    DrawNavigationBar();
+    DrawMoviePosters();
+    DrawScrollbar();
 }

@@ -1,11 +1,12 @@
-#ifndef BOOKING_H
-#define BOOKING_H
-
+#pragma once
 #include "raylib.h"
+#include "../BLL/MovieService.h"
+#include <vector>
 
 class Booking
 {
 private:
+    // Textures
     Texture2D background;
     Texture2D logo;
     Texture2D iconHome;
@@ -13,16 +14,39 @@ private:
     Texture2D iconFilms;
     Texture2D iconOffers;
     Texture2D iconProfile;
+    Texture2D suggestedPhotos[4];
+
+    // Font
     Font customFont;
-    int activeIndex = 0;
+
+    // Business Logic
+    MovieService movieService;
+    std::vector<Movie> currentSuggestedMovies;
+
+    // UI State
+    float scrollOffset;
+    float maxScroll;
+    float mouseScrollAccumulator;
+
+    // Private methods
+    void loadRandomSuggestions();
+    void Unload();
+    void DrawNavigationBar();
+    void DrawMoviePosters();
+    void DrawScrollbar();
 
 public:
+    // Public members (for screen management)
+    int* currentScreen;
+    int activeIndex;
+
+    // Constructor & Destructor
     Booking();
     ~Booking();
-    void Unload();
+
+    // Public methods
     void Update();
     void Draw();
-    int* currentScreen = nullptr;  
+    void RefreshSuggestions();
+    void SetScreenPointer(int* screen);
 };
-
-#endif
