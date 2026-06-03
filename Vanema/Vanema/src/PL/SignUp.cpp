@@ -37,27 +37,41 @@ void SignUp::Update()
 {
     Vector2 mouse = GetMousePosition();
 
-    Rectangle formRect = { 500, 100, 800, 750 };
+    Rectangle formRect = { 500, 100, 570, 720 };
 
-    Rectangle usernameBox = { formRect.x + 50, formRect.y + 240, 700, 40 };
-    Rectangle emailBox = { formRect.x + 50, formRect.y + 310, 700, 40 };
-    Rectangle passBox = { formRect.x + 50, formRect.y + 380, 700, 40 };
-    Rectangle confirmPassBox = { formRect.x + 50, formRect.y + 450, 700, 40 };
-    Rectangle signupBtn = { formRect.x + 200, formRect.y + 560, 200, 50 };
-    Rectangle backToLogin = { formRect.x + 175, formRect.y + 650, 200, 30 };
+    Rectangle usernameBox = { formRect.x + 35, formRect.y + 260, formRect.width - 70, 40 };
+    Rectangle emailBox = { formRect.x + 35, formRect.y + 330, formRect.width - 70, 40 };
+    Rectangle passBox = { formRect.x + 35, formRect.y + 400, formRect.width - 70, 40 };
+    Rectangle nameBox = { formRect.x + 35, formRect.y + 470, formRect.width - 70, 40 };
+
+    Rectangle signupBtn = { formRect.x + (formRect.width - 200) / 2, formRect.y + 560, 200, 50 };
+    Rectangle backLink = { formRect.x + 395, formRect.y + 640, 200, 30 };
+
+    if (CheckCollisionPointRec(mouse, usernameBox) ||
+        CheckCollisionPointRec(mouse, emailBox) ||
+        CheckCollisionPointRec(mouse, passBox) ||
+        CheckCollisionPointRec(mouse, nameBox) ||
+        CheckCollisionPointRec(mouse, signupBtn) ||
+        CheckCollisionPointRec(mouse, backLink))
+    {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+    }
+    else
+    {
+        SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+    }
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
         activeField = -1;
 
-        if (CheckCollisionPointRec(mouse, usernameBox)) activeField = 0;
-        else if (CheckCollisionPointRec(mouse, emailBox)) activeField = 1;
-        else if (CheckCollisionPointRec(mouse, passBox)) activeField = 2;
-        else if (CheckCollisionPointRec(mouse, confirmPassBox)) activeField = 3;
+        if (CheckCollisionPointRec(mouse, usernameBox))      activeField = 0; 
+        else if (CheckCollisionPointRec(mouse, emailBox))    activeField = 1; 
+        else if (CheckCollisionPointRec(mouse, passBox))     activeField = 2; 
+        else if (CheckCollisionPointRec(mouse, nameBox))     activeField = 3; 
 
         if (CheckCollisionPointRec(mouse, signupBtn))
         {
-            // Validation
             if (name.empty() || email.empty() || username.empty() || password.empty())
             {
                 errorMessage = "Please fill in all fields";
@@ -78,11 +92,11 @@ void SignUp::Update()
             successPopupTimer = 2.0f;
         }
 
-        if (CheckCollisionPointRec(mouse, backToLogin))
+        if (CheckCollisionPointRec(mouse, backLink))
         {
             if (currentScreen != nullptr)
             {
-                *currentScreen = 1;  
+                *currentScreen = 1;
             }
         }
     }
@@ -90,38 +104,30 @@ void SignUp::Update()
     int key = GetCharPressed();
     while (key > 0)
     {
-        if (activeField == 0 && name.length() < 30)
-            name += (char)key;
+        if (activeField == 0 && username.length() < 20)
+            username += (char)key;
         else if (activeField == 1 && email.length() < 50)
             email += (char)key;
-        else if (activeField == 2 && username.length() < 20)
-            username += (char)key;
-        else if (activeField == 3 && password.length() < 20)
+        else if (activeField == 2 && password.length() < 20)
             password += (char)key;
+        else if (activeField == 3 && name.length() < 30)
+            name += (char)key;
 
         key = GetCharPressed();
     }
 
     if (IsKeyPressed(KEY_BACKSPACE))
     {
-        if (activeField == 0 && !name.empty())
-            name.pop_back();
-        else if (activeField == 1 && !email.empty())
-            email.pop_back();
-        else if (activeField == 2 && !username.empty())
-            username.pop_back();
-        else if (activeField == 3 && !password.empty())
-            password.pop_back();
+        if (activeField == 0 && !username.empty()) username.pop_back();
+        else if (activeField == 1 && !email.empty()) email.pop_back();
+        else if (activeField == 2 && !password.empty()) password.pop_back();
+        else if (activeField == 3 && !name.empty()) name.pop_back();
     }
 
-    // Update timers
     if (showErrorPopup)
     {
         errorPopupTimer -= GetFrameTime();
-        if (errorPopupTimer <= 0.0f)
-        {
-            showErrorPopup = false;
-        }
+        if (errorPopupTimer <= 0.0f) showErrorPopup = false;
     }
 
     if (showSuccessPopup)
@@ -130,11 +136,7 @@ void SignUp::Update()
         if (successPopupTimer <= 0.0f)
         {
             showSuccessPopup = false;
-           
-            if (currentScreen != nullptr)
-            {
-                *currentScreen = 1;
-            }
+            if (currentScreen != nullptr) *currentScreen = 1;
         }
     }
 }
@@ -227,7 +229,7 @@ void SignUp::Draw()
     DrawTextEx(
         headerFont,
         "SIGN UP",
-        { formRect.x + 195, formRect.y + 120 },
+        { formRect.x + 195, formRect.y + 150 },
         50,
         3,
         BLACK
@@ -238,10 +240,10 @@ void SignUp::Draw()
     DrawRectangleRounded(usernameBox, 0.2f, 10, WHITE);
     DrawRectangleRounded(passBox, 0.2f, 10, WHITE);
     
-    DrawRectangleRoundedLines(nameBox, 0.2f, 10, 2, activeField == 0 ? BLUE : GRAY);
+    DrawRectangleRoundedLines(usernameBox, 0.2f, 10, 2, activeField == 0 ? BLUE : GRAY);
     DrawRectangleRoundedLines(emailBox, 0.2f, 10, 2, activeField == 1 ? BLUE : GRAY);
-    DrawRectangleRoundedLines(usernameBox, 0.2f, 10, 2, activeField == 2 ? BLUE : GRAY);
-    DrawRectangleRoundedLines(passBox, 0.2f, 10, 2, activeField == 3 ? BLUE : GRAY);
+    DrawRectangleRoundedLines(passBox, 0.2f, 10, 2, activeField == 2 ? BLUE : GRAY);
+    DrawRectangleRoundedLines(nameBox, 0.2f, 10, 2, activeField == 3 ? BLUE : GRAY);
     
 
 
@@ -251,7 +253,7 @@ void SignUp::Draw()
     }
     else
     {
-        DrawText(email.c_str(), nameBox.x + 10, nameBox.y + 10, 20, BLACK);
+        DrawText(name.c_str(), nameBox.x + 10, nameBox.y + 10, 20, BLACK);
     }
 
     if (username.empty())
@@ -295,13 +297,13 @@ void SignUp::Draw()
     DrawRectangleRounded(signupBtn, 0.3f, 10, buttonColor);
     DrawRectangleRoundedLines(signupBtn, 0.3f, 10, 2, buttonColor);
 
-    DrawTextEx(headerFont, "Sign Up", { signupBtn.x + 50, signupBtn.y + 10 }, 35, 2, BLACK);
+    DrawTextEx(headerFont, "Sign Up", { signupBtn.x + 45, signupBtn.y + 5 }, 35, 2, BLACK);
 
     Rectangle backLink = { formRect.x + 185, formRect.y + 640, 200, 30 };
     bool hoverBack = CheckCollisionPointRec(mouse, backLink);
 
-    DrawTextEx(bodyFont, "Already have an account?", { formRect.x + 100, formRect.y + 640 }, 28, 2, BLACK);
-    DrawTextEx(bodyFont, "Login", { backLink.x + 175, backLink.y }, 28, 2, hoverBack ? DARKBLUE : BLUE);
+    DrawTextEx(bodyFont, "Already have an account?", { formRect.x + 105, formRect.y + 640 }, 28, 2, BLACK);
+    DrawTextEx(bodyFont, "Login", { backLink.x + 205, backLink.y }, 28, 2, hoverBack ? DARKBLUE : BLUE);
 
     if (hoverBack)
     {

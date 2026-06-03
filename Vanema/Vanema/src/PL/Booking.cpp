@@ -215,7 +215,7 @@ void Booking::DrawNavigationBar()
         DrawTextEx(customFont, "Vanema", { navBarRect.x + 130, navBarRect.y + 40 }, 34, 1, BLACK);
     }
 
-    const char* labels[] = { "Home", "Map", "Films", "Offers" };
+    const char* labels[] = { "Home", "Spots", "Films", "Offers" };
     Texture2D icons[] = { iconHome, iconMap, iconFilms, iconOffers };
 
     float spacing = 94.0f;
