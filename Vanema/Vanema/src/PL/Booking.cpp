@@ -276,7 +276,6 @@ void Booking::DrawNavigationBar()
 void Booking::DrawMoviePosters()
 {
     int screenWidth = GetScreenWidth();
-    int screenHeight = GetScreenHeight();
 
     float navWidth = screenWidth * 0.9f;
     float navHeight = 100.0f;
@@ -289,18 +288,25 @@ void Booking::DrawMoviePosters()
         navHeight
     };
 
+    BeginScissorMode(
+        (int)navBarRect.x,
+        (int)(navBarRect.y + navBarRect.height),
+        (int)navBarRect.width,
+        GetScreenHeight() - (int)(navBarRect.y + navBarRect.height)
+    );
+
     float contentY = navBarRect.y + navBarRect.height + 40 - scrollOffset;
 
     if (customFont.texture.id != 0)
     {
-        DrawTextEx(customFont, "Suggested for You:", { navBarRect.x + 20, contentY }, 40, 1, WHITE);
+        DrawTextEx(customFont, "Suggested for You:", { navBarRect.x + 20, contentY }, 40, 1, BLACK);
     }
 
     float posterWidth = 260;
     float posterHeight = 380;
-    float spacingX = 35;
+    float spacingX = 45;
 
-    float startPosterX = navBarRect.x + 20;
+    float startPosterX = navBarRect.x + 120;
     float startPosterY = contentY + 80;
 
     Vector2 mousePos = GetMousePosition();
@@ -326,6 +332,7 @@ void Booking::DrawMoviePosters()
         else
         {
             DrawRectangleRec(posterRect, DARKGRAY);
+
             if (customFont.texture.id != 0)
             {
                 DrawTextEx(customFont, "No Image", { x + 80, startPosterY + posterHeight / 2 }, 20, 1, WHITE);
@@ -334,30 +341,56 @@ void Booking::DrawMoviePosters()
 
         if (customFont.texture.id != 0)
         {
-            DrawTextEx(customFont,
+            DrawTextEx(
+                customFont,
                 currentSuggestedMovies[i].getTitle().c_str(),
                 { x + 10, startPosterY + posterHeight + 5 },
-                18, 1, WHITE);
+                27,
+                1,
+                BLACK
+            );
 
             char ratingText[32];
-            sprintf(ratingText, "★ %.1f", currentSuggestedMovies[i].getRating());
-            DrawTextEx(customFont, ratingText, { x + 10, startPosterY + posterHeight + 30 }, 14, 1, YELLOW);
+            snprintf(ratingText, sizeof(ratingText), "Rating: %.1f", currentSuggestedMovies[i].getRating());
 
-            DrawTextEx(customFont,
+            DrawTextEx(
+                customFont,
+                ratingText,
+                { x + 10, startPosterY + posterHeight + 30 },
+                24,
+                1,
+                ORANGE
+            );
+
+            DrawTextEx(
+                customFont,
                 currentSuggestedMovies[i].getGenre().c_str(),
                 { x + 10, startPosterY + posterHeight + 50 },
-                14, 1, LIGHTGRAY);
+                23,
+                1,
+                BLACK
+            );
         }
 
-        DrawRectangleRoundedLines(posterRect, 0.08f, 8, 4, hovered ? BLUE : WHITE);
+        DrawRectangleRoundedLines(
+            posterRect,
+            0.08f,
+            8,
+            4,
+            hovered ? BLUE : WHITE
+        );
 
         if (hovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
-            printf("Selected movie: %s (Rating: %.1f)\n",
+            printf(
+                "Selected movie: %s (Rating: %.1f)\n",
                 currentSuggestedMovies[i].getTitle().c_str(),
-                currentSuggestedMovies[i].getRating());
+                currentSuggestedMovies[i].getRating()
+            );
         }
     }
+
+    EndScissorMode();
 }
 
 void Booking::DrawScrollbar()
@@ -397,7 +430,9 @@ void Booking::Draw()
             background,
             { 0, 0, (float)background.width, (float)background.height },
             { 0, 0, (float)GetScreenWidth(), (float)GetScreenHeight() },
-            { 0, 0 }, 0.0f, WHITE
+            { 0, 0 },
+            0.0f,
+            WHITE
         );
     }
     else
@@ -405,7 +440,7 @@ void Booking::Draw()
         ClearBackground(RAYWHITE);
     }
 
-    DrawNavigationBar();
     DrawMoviePosters();
     DrawScrollbar();
+    DrawNavigationBar();
 }

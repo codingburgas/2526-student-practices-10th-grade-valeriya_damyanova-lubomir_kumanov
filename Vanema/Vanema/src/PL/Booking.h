@@ -36,15 +36,12 @@ private:
     void DrawScrollbar();
 
 public:
-    // Public members (for screen management)
     int* currentScreen;
     int activeIndex;
 
-    // Constructor & Destructor
     Booking();
     ~Booking();
 
-    // Public methods
     void Update();
     void Draw();
     void RefreshSuggestions();

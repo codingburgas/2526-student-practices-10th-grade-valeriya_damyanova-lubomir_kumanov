@@ -15,14 +15,12 @@ public:
     Movie(int id, const std::string& title, const std::string& posterPath,
         const std::string& genre, float rating);
 
-    // Getters
     int getId() const;
     std::string getTitle() const;
     std::string getPosterPath() const;
     std::string getGenre() const;
     float getRating() const;
 
-    // Setters
     void setId(int id);
     void setTitle(const std::string& title);
     void setPosterPath(const std::string& posterPath);
