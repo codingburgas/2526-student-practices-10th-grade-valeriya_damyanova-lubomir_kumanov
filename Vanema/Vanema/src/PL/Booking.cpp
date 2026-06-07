@@ -185,6 +185,13 @@ void Booking::Update()
         if (scrollOffset > maxScroll)
             scrollOffset = maxScroll;
     }
+
+    // Static variables preserve their data state layout across consecutive frames.
+    // When returning from the Login screen, flip this to true to proceed with ticket selection.
+    static bool isUserLoggedIn = false;
+
+    // Optional placeholder check: Add code logic here if you want to pull down 
+    // real-time active user states from your global UserService session state.
 }
 
 void Booking::DrawNavigationBar()
@@ -242,9 +249,9 @@ void Booking::DrawNavigationBar()
 
                 if (currentScreen != nullptr)
                 {
-                    if (i == 2) 
+                    if (i == 2)
                     {
-                        *currentScreen = 4; 
+                        *currentScreen = 4;
                         printf("Switching state to Films screen\n");
                     }
                 }
@@ -270,8 +277,9 @@ void Booking::DrawNavigationBar()
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr)
         {
+            // Profile icon opens the account login authentication gate directly
             *currentScreen = 1;
-            printf("Switching to Profile screen\n");
+            printf("Switching to Profile Login screen\n");
         }
     }
 
@@ -319,6 +327,9 @@ void Booking::DrawMoviePosters()
     float startPosterY = contentY + 80;
 
     Vector2 mousePos = GetMousePosition();
+
+    // Session state check (Replace with a unified session helper object if desired)
+    bool isUserLoggedIn = false;
 
     for (size_t i = 0; i < currentSuggestedMovies.size() && i < 4; i++)
     {
@@ -391,11 +402,23 @@ void Booking::DrawMoviePosters()
 
         if (hovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
-            printf(
-                "Selected movie: %s (Rating: %.1f)\n",
-                currentSuggestedMovies[i].getTitle().c_str(),
-                currentSuggestedMovies[i].getRating()
-            );
+            printf("Selected movie: %s\n", currentSuggestedMovies[i].getTitle().c_str());
+
+            if (!isUserLoggedIn)
+            {
+                printf("User unauthenticated! Redirecting to login sequence.\n");
+                if (currentScreen != nullptr)
+                {
+                    *currentScreen = 1; // Redirects smoothly to Login (Screen 1)
+                    EndScissorMode();
+                    return;
+                }
+            }
+            else
+            {
+                // Authenticated path: Proceed directly to seat selection layout here
+                printf("User verified. Opening seat chart details layout...\n");
+            }
         }
     }
 

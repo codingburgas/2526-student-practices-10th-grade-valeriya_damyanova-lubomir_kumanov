@@ -59,6 +59,22 @@ void Login::Update()
                 errorPopupTimer = 2.0f;
                 return;
             }
+
+            // Verify against database securely
+            if (userService.authenticateUser(username, password))
+            {
+                // Optional: Update your session manager here to mark user as active/authenticated
+
+                if (currentScreen != nullptr)
+                {
+                    *currentScreen = 2; // 🔄 SUCCESS! Redirects back to Booking automatically.
+                }
+            }
+            else
+            {
+                showErrorPopup = true;
+                errorPopupTimer = 2.0f;
+            }
         }
 
         if (CheckCollisionPointRec(mouse, signupLink))

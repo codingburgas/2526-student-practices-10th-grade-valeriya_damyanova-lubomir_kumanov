@@ -1,6 +1,7 @@
 #ifndef SIGNUP_H
 #define SIGNUP_H
 
+#include "../BLL/UserService.h"
 #include "raylib.h"
 #include <string>
 
@@ -14,6 +15,8 @@ public:
     int* currentScreen;  
 
 private:
+    UserService userService; 
+
     Texture2D background;
     Texture2D logo;
     Font headerFont;

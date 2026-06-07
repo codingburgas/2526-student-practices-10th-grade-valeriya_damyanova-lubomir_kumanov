@@ -88,8 +88,20 @@ void SignUp::Update()
                 return;
             }
 
-            showSuccessPopup = true;
-            successPopupTimer = 2.0f;
+            std::string serviceError;
+            // Passes UI input strings down to database layer checking uniqueness constraints
+            if (userService.registerUser(username, email, password, name, serviceError))
+            {
+                showSuccessPopup = true;
+                successPopupTimer = 2.0f;
+            }
+            else
+            {
+                // Display specific database constraint errors (e.g., Email already registered)
+                errorMessage = serviceError;
+                showErrorPopup = true;
+                errorPopupTimer = 2.0f;
+            }
         }
 
         if (CheckCollisionPointRec(mouse, backLink))

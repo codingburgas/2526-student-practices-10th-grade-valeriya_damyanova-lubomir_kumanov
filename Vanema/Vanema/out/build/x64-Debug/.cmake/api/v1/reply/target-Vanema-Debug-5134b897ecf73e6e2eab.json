@@ -36,7 +36,7 @@
 			{
 				"command" : 1,
 				"file" : 1,
-				"line" : 15,
+				"line" : 14,
 				"parent" : 0
 			},
 			{
@@ -48,13 +48,13 @@
 			{
 				"command" : 2,
 				"file" : 1,
-				"line" : 27,
+				"line" : 46,
 				"parent" : 0
 			},
 			{
 				"command" : 5,
 				"file" : 1,
-				"line" : 8,
+				"line" : 7,
 				"parent" : 0
 			},
 			{
@@ -82,7 +82,7 @@
 			{
 				"command" : 7,
 				"file" : 1,
-				"line" : 32,
+				"line" : 51,
 				"parent" : 0
 			}
 		]
@@ -138,6 +138,10 @@
 					"path" : "C:/Users/TP14s/2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov/Vanema/Vanema/src/BLL"
 				},
 				{
+					"backtrace" : 9,
+					"path" : "C:/Users/TP14s/2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov/Vanema/Vanema/src/DAL"
+				},
+				{
 					"backtrace" : 3,
 					"isSystem" : true,
 					"path" : "C:/Users/TP14s/vcpkg/installed/x64-windows/include"
@@ -160,8 +164,15 @@
 				3,
 				4,
 				5,
-				6,
-				7
+				7,
+				8,
+				11,
+				13,
+				15,
+				17,
+				19,
+				21,
+				23
 			]
 		}
 	],
@@ -241,20 +252,41 @@
 				3,
 				4,
 				5,
-				6,
-				7
+				7,
+				8,
+				11,
+				13,
+				15,
+				17,
+				19,
+				21,
+				23
 			]
 		},
 		{
 			"name" : "Header Files",
 			"sourceIndexes" : 
 			[
-				8
+				6,
+				9,
+				10,
+				12,
+				14,
+				16,
+				18,
+				20,
+				22
 			]
 		}
 	],
 	"sources" : 
 	[
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/PL/main.cpp",
+			"sourceGroupIndex" : 0
+		},
 		{
 			"backtrace" : 2,
 			"compileGroupIndex" : 0,
@@ -265,12 +297,6 @@
 			"backtrace" : 2,
 			"compileGroupIndex" : 0,
 			"path" : "src/PL/Menu.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 2,
-			"compileGroupIndex" : 0,
-			"path" : "src/PL/main.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
@@ -288,6 +314,17 @@
 		{
 			"backtrace" : 2,
 			"compileGroupIndex" : 0,
+			"path" : "src/PL/Films.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/PL/Films.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
 			"path" : "src/BLL/Movie.cpp",
 			"sourceGroupIndex" : 0
 		},
@@ -299,14 +336,85 @@
 		},
 		{
 			"backtrace" : 2,
+			"path" : "src/BLL/MovieService.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/BLL/User.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
 			"compileGroupIndex" : 0,
-			"path" : "src/PL/Films.cpp",
+			"path" : "src/BLL/User.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 2,
-			"path" : "src/PL/Films.h",
+			"path" : "src/BLL/UserService.h",
 			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/BLL/UserService.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/DAL/MovieRepository.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/DAL/MovieRepository.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/DAL/DataSeeder.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/DAL/DataSeeder.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/DAL/UserRepository.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/DAL/UserRepository.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/DAL/UserSeeder.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/DAL/UserSeeder.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/DAL/bcrypt.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/DAL/bcrypt.cpp",
+			"sourceGroupIndex" : 0
 		}
 	],
 	"type" : "EXECUTABLE"

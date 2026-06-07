@@ -5,7 +5,6 @@ class Films {
 public:
     int* currentScreen;
 
-    // UI Assets
     Texture2D background;
     Texture2D logo;
     Texture2D iconHome;
@@ -18,6 +17,10 @@ public:
     float scrollOffset;
     float maxScroll;
     int activeIndex; 
+
+    char searchQuery[64] = "\0";
+    int letterCount = 0;
+    bool searchActive = false;
 
     Films();
     ~Films();

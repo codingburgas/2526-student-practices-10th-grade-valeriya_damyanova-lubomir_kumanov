@@ -7,21 +7,21 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "SQLiteCpp::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-SQLiteCpp-Debug-264e9740fb8f92bb70ec.json",
+					"jsonFile" : "target-SQLiteCpp-Debug-fa13f13297e066c50d0d.json",
 					"name" : "SQLiteCpp",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "raylib::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-raylib-Debug-2556101d0a6f25a272ee.json",
+					"jsonFile" : "target-raylib-Debug-34a9e300e48005781715.json",
 					"name" : "raylib",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "unofficial::sqlite3::sqlite3::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-unofficial__sqlite3__sqlite3-Debug-79138ceb464381ab7be7.json",
+					"jsonFile" : "target-unofficial__sqlite3__sqlite3-Debug-d505df4e2046856678b1.json",
 					"name" : "unofficial::sqlite3::sqlite3",
 					"projectIndex" : 0
 				}
@@ -75,7 +75,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "Vanema::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-Vanema-Debug-5697be8d6f9f8a46df50.json",
+					"jsonFile" : "target-Vanema-Debug-5134b897ecf73e6e2eab.json",
 					"name" : "Vanema",
 					"projectIndex" : 0
 				}

@@ -41,6 +41,43 @@ void Films::Update() {
         if (scrollOffset < 0) scrollOffset = 0;
         if (scrollOffset > maxScroll) scrollOffset = maxScroll;
     }
+
+    Vector2 mousePos = GetMousePosition();
+
+    Rectangle searchBox = { 1150, 205 - scrollOffset, 250, 40 };
+
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+    {
+        if (CheckCollisionPointRec(mousePos, searchBox))
+        {
+            searchActive = true;
+        }
+        else
+        {
+            searchActive = false;
+        }
+    }
+
+    if (searchActive) {
+        SetMouseCursor(MOUSE_CURSOR_IBEAM);
+
+        int key = GetCharPressed();
+        while (key > 0) {
+
+            if ((key >= 32) && (key <= 125) && (letterCount < 63)) {
+                searchQuery[letterCount] = (char)key;
+                searchQuery[letterCount + 1] = '\0';
+                letterCount++;
+            }
+            key = GetCharPressed();
+        }
+
+        if (IsKeyPressed(KEY_BACKSPACE)) {
+            letterCount--;
+            if (letterCount < 0) letterCount = 0;
+            searchQuery[letterCount] = '\0';
+        }
+    }
 }
 
 void Films::DrawNavigationBar() {
@@ -106,23 +143,33 @@ void Films::DrawNavigationBar() {
     }
 }
 
-void Films::DrawScrollbar() {
+void Films::DrawScrollbar()
+{
     int screenWidth = GetScreenWidth();
+
     float scrollbarHeight = 350;
     float scrollbarWidth = 10;
+
     float scrollbarX = screenWidth - 25;
     float scrollbarY = 150;
 
-    DrawRectangleRounded({ scrollbarX, scrollbarY, scrollbarWidth, scrollbarHeight }, 0.5f, 8, Fade(LIGHTGRAY, 0.4f));
+    DrawRectangleRounded(
+        { scrollbarX, scrollbarY, scrollbarWidth, scrollbarHeight },
+        0.5f, 8, Fade(LIGHTGRAY, 0.4f)
+    );
 
     float thumbHeight = 80;
     float thumbY = scrollbarY;
 
-    if (maxScroll > 0) {
+    if (maxScroll > 0)
+    {
         thumbY = scrollbarY + (scrollOffset / maxScroll) * (scrollbarHeight - thumbHeight);
     }
 
-    DrawRectangleRounded({ scrollbarX, thumbY, scrollbarWidth, thumbHeight }, 0.5f, 8, DARKBLUE);
+    DrawRectangleRounded(
+        { scrollbarX, thumbY, scrollbarWidth, thumbHeight },
+        0.5f, 8, DARKBLUE
+    );
 }
 
 void Films::Draw() {
@@ -138,11 +185,39 @@ void Films::Draw() {
         ClearBackground(RAYWHITE);
     }
 
-    if (customFont.texture.id != 0) {
-        DrawTextEx(customFont, "Films", { 120, 150 - scrollOffset }, 45, 1, BLACK);
-        DrawTextEx(customFont, "Discover by genre, trending and more", { 120, 200 - scrollOffset }, 30, 1, BLACK);
+    int contentTopY = 140;
+    int contentHeight = GetScreenHeight() - contentTopY;
+
+    BeginScissorMode(0, contentTopY, GetScreenWidth(), contentHeight);
+
+    if (customFont.texture.id != 0) 
+    {   
+        DrawTextEx(customFont, "Films", { 120, 160 - scrollOffset }, 45, 1, BLACK);
+        DrawTextEx(customFont, "Discover by genre, trending and more", { 120, 210 - scrollOffset }, 30, 1, BLACK);
     }
 
+    Rectangle searchBox = { 1150, 205 - scrollOffset, 260, 50 };
+
+    DrawRectangleRounded(searchBox, 0.3f, 6, searchActive ? WHITE : Fade(WHITE, 0.7f));
+    DrawRectangleRoundedLines(searchBox, 0.3f, 6, 2, searchActive ? BLUE : WHITE);
+
+    if (letterCount == 0 && !searchActive)
+    {
+        DrawText("Search films...", searchBox.x + 30, searchBox.y + 15, 20, BLACK);
+    }
+    else
+    {
+        DrawText(searchQuery, searchBox.x + 30, searchBox.y + 15, 20, BLACK);
+    }
+
+    if (searchActive) {
+        if (((int)(GetTime() * 2) % 2) == 0) {
+            int textWidth = MeasureText(searchQuery, 20);
+            DrawRectangle(searchBox.x + 12 + textWidth, searchBox.y + 15, 2, 20, BLACK);
+        }
+    }
+
+    EndScissorMode(); 
     DrawScrollbar();
     DrawNavigationBar();
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "Movie.h"
+#include "../DAL/MovieRepository.h"
 #include <vector>
 #include <random>
 #include <string>
@@ -7,13 +8,14 @@
 class MovieService
 {
 private:
+    MovieRepository dbRepo;
     std::vector<Movie> availableMovies;
     std::mt19937 rng;
 
     void initializeMovies();
 
 public:
-    MovieService();
+    MovieService(const std::string& dbPath = "movies.db");
 
     std::vector<Movie> getRandomMovies(int count);
 

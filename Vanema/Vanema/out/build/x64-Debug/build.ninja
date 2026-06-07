@@ -49,11 +49,22 @@ cmake_ninja_workdir = C$:\Users\TP14s\2526-student-practices-10th-grade-valeriya
 
 build cmake_object_order_depends_target_Vanema: phony || .
 
+build CMakeFiles\Vanema.dir\src\PL\main.cpp.obj: CXX_COMPILER__Vanema_unscanned_Debug C$:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL\main.cpp || cmake_object_order_depends_target_Vanema
+  CONFIG = Debug
+  DEFINES = -DSQLITECPP_COMPILE_DLL -DSQLITE_ENABLE_COLUMN_METADATA
+  FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd
+  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
+  OBJECT_DIR = CMakeFiles\Vanema.dir
+  OBJECT_FILE_DIR = CMakeFiles\Vanema.dir\src\PL
+  TARGET_COMPILE_PDB = CMakeFiles\Vanema.dir\
+  TARGET_PDB = bin\Debug\Vanema.pdb
+  TARGET_SUPPORT_DIR = CMakeFiles\Vanema.dir
+
 build CMakeFiles\Vanema.dir\src\PL\Login.cpp.obj: CXX_COMPILER__Vanema_unscanned_Debug C$:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL\Login.cpp || cmake_object_order_depends_target_Vanema
   CONFIG = Debug
   DEFINES = -DSQLITECPP_COMPILE_DLL -DSQLITE_ENABLE_COLUMN_METADATA
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd
-  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
+  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
   OBJECT_DIR = CMakeFiles\Vanema.dir
   OBJECT_FILE_DIR = CMakeFiles\Vanema.dir\src\PL
   TARGET_COMPILE_PDB = CMakeFiles\Vanema.dir\
@@ -64,18 +75,7 @@ build CMakeFiles\Vanema.dir\src\PL\Menu.cpp.obj: CXX_COMPILER__Vanema_unscanned_
   CONFIG = Debug
   DEFINES = -DSQLITECPP_COMPILE_DLL -DSQLITE_ENABLE_COLUMN_METADATA
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd
-  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
-  OBJECT_DIR = CMakeFiles\Vanema.dir
-  OBJECT_FILE_DIR = CMakeFiles\Vanema.dir\src\PL
-  TARGET_COMPILE_PDB = CMakeFiles\Vanema.dir\
-  TARGET_PDB = bin\Debug\Vanema.pdb
-  TARGET_SUPPORT_DIR = CMakeFiles\Vanema.dir
-
-build CMakeFiles\Vanema.dir\src\PL\main.cpp.obj: CXX_COMPILER__Vanema_unscanned_Debug C$:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL\main.cpp || cmake_object_order_depends_target_Vanema
-  CONFIG = Debug
-  DEFINES = -DSQLITECPP_COMPILE_DLL -DSQLITE_ENABLE_COLUMN_METADATA
-  FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd
-  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
+  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
   OBJECT_DIR = CMakeFiles\Vanema.dir
   OBJECT_FILE_DIR = CMakeFiles\Vanema.dir\src\PL
   TARGET_COMPILE_PDB = CMakeFiles\Vanema.dir\
@@ -86,7 +86,7 @@ build CMakeFiles\Vanema.dir\src\PL\Booking.cpp.obj: CXX_COMPILER__Vanema_unscann
   CONFIG = Debug
   DEFINES = -DSQLITECPP_COMPILE_DLL -DSQLITE_ENABLE_COLUMN_METADATA
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd
-  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
+  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
   OBJECT_DIR = CMakeFiles\Vanema.dir
   OBJECT_FILE_DIR = CMakeFiles\Vanema.dir\src\PL
   TARGET_COMPILE_PDB = CMakeFiles\Vanema.dir\
@@ -97,7 +97,18 @@ build CMakeFiles\Vanema.dir\src\PL\SignUp.cpp.obj: CXX_COMPILER__Vanema_unscanne
   CONFIG = Debug
   DEFINES = -DSQLITECPP_COMPILE_DLL -DSQLITE_ENABLE_COLUMN_METADATA
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd
-  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
+  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
+  OBJECT_DIR = CMakeFiles\Vanema.dir
+  OBJECT_FILE_DIR = CMakeFiles\Vanema.dir\src\PL
+  TARGET_COMPILE_PDB = CMakeFiles\Vanema.dir\
+  TARGET_PDB = bin\Debug\Vanema.pdb
+  TARGET_SUPPORT_DIR = CMakeFiles\Vanema.dir
+
+build CMakeFiles\Vanema.dir\src\PL\Films.cpp.obj: CXX_COMPILER__Vanema_unscanned_Debug C$:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL\Films.cpp || cmake_object_order_depends_target_Vanema
+  CONFIG = Debug
+  DEFINES = -DSQLITECPP_COMPILE_DLL -DSQLITE_ENABLE_COLUMN_METADATA
+  FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd
+  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
   OBJECT_DIR = CMakeFiles\Vanema.dir
   OBJECT_FILE_DIR = CMakeFiles\Vanema.dir\src\PL
   TARGET_COMPILE_PDB = CMakeFiles\Vanema.dir\
@@ -108,7 +119,7 @@ build CMakeFiles\Vanema.dir\src\BLL\Movie.cpp.obj: CXX_COMPILER__Vanema_unscanne
   CONFIG = Debug
   DEFINES = -DSQLITECPP_COMPILE_DLL -DSQLITE_ENABLE_COLUMN_METADATA
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd
-  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
+  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
   OBJECT_DIR = CMakeFiles\Vanema.dir
   OBJECT_FILE_DIR = CMakeFiles\Vanema.dir\src\BLL
   TARGET_COMPILE_PDB = CMakeFiles\Vanema.dir\
@@ -119,20 +130,86 @@ build CMakeFiles\Vanema.dir\src\BLL\MovieService.cpp.obj: CXX_COMPILER__Vanema_u
   CONFIG = Debug
   DEFINES = -DSQLITECPP_COMPILE_DLL -DSQLITE_ENABLE_COLUMN_METADATA
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd
-  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
+  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
   OBJECT_DIR = CMakeFiles\Vanema.dir
   OBJECT_FILE_DIR = CMakeFiles\Vanema.dir\src\BLL
   TARGET_COMPILE_PDB = CMakeFiles\Vanema.dir\
   TARGET_PDB = bin\Debug\Vanema.pdb
   TARGET_SUPPORT_DIR = CMakeFiles\Vanema.dir
 
-build CMakeFiles\Vanema.dir\src\PL\Films.cpp.obj: CXX_COMPILER__Vanema_unscanned_Debug C$:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL\Films.cpp || cmake_object_order_depends_target_Vanema
+build CMakeFiles\Vanema.dir\src\BLL\User.cpp.obj: CXX_COMPILER__Vanema_unscanned_Debug C$:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL\User.cpp || cmake_object_order_depends_target_Vanema
   CONFIG = Debug
   DEFINES = -DSQLITECPP_COMPILE_DLL -DSQLITE_ENABLE_COLUMN_METADATA
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd
-  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
+  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
   OBJECT_DIR = CMakeFiles\Vanema.dir
-  OBJECT_FILE_DIR = CMakeFiles\Vanema.dir\src\PL
+  OBJECT_FILE_DIR = CMakeFiles\Vanema.dir\src\BLL
+  TARGET_COMPILE_PDB = CMakeFiles\Vanema.dir\
+  TARGET_PDB = bin\Debug\Vanema.pdb
+  TARGET_SUPPORT_DIR = CMakeFiles\Vanema.dir
+
+build CMakeFiles\Vanema.dir\src\BLL\UserService.cpp.obj: CXX_COMPILER__Vanema_unscanned_Debug C$:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL\UserService.cpp || cmake_object_order_depends_target_Vanema
+  CONFIG = Debug
+  DEFINES = -DSQLITECPP_COMPILE_DLL -DSQLITE_ENABLE_COLUMN_METADATA
+  FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd
+  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
+  OBJECT_DIR = CMakeFiles\Vanema.dir
+  OBJECT_FILE_DIR = CMakeFiles\Vanema.dir\src\BLL
+  TARGET_COMPILE_PDB = CMakeFiles\Vanema.dir\
+  TARGET_PDB = bin\Debug\Vanema.pdb
+  TARGET_SUPPORT_DIR = CMakeFiles\Vanema.dir
+
+build CMakeFiles\Vanema.dir\src\DAL\MovieRepository.cpp.obj: CXX_COMPILER__Vanema_unscanned_Debug C$:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL\MovieRepository.cpp || cmake_object_order_depends_target_Vanema
+  CONFIG = Debug
+  DEFINES = -DSQLITECPP_COMPILE_DLL -DSQLITE_ENABLE_COLUMN_METADATA
+  FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd
+  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
+  OBJECT_DIR = CMakeFiles\Vanema.dir
+  OBJECT_FILE_DIR = CMakeFiles\Vanema.dir\src\DAL
+  TARGET_COMPILE_PDB = CMakeFiles\Vanema.dir\
+  TARGET_PDB = bin\Debug\Vanema.pdb
+  TARGET_SUPPORT_DIR = CMakeFiles\Vanema.dir
+
+build CMakeFiles\Vanema.dir\src\DAL\DataSeeder.cpp.obj: CXX_COMPILER__Vanema_unscanned_Debug C$:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL\DataSeeder.cpp || cmake_object_order_depends_target_Vanema
+  CONFIG = Debug
+  DEFINES = -DSQLITECPP_COMPILE_DLL -DSQLITE_ENABLE_COLUMN_METADATA
+  FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd
+  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
+  OBJECT_DIR = CMakeFiles\Vanema.dir
+  OBJECT_FILE_DIR = CMakeFiles\Vanema.dir\src\DAL
+  TARGET_COMPILE_PDB = CMakeFiles\Vanema.dir\
+  TARGET_PDB = bin\Debug\Vanema.pdb
+  TARGET_SUPPORT_DIR = CMakeFiles\Vanema.dir
+
+build CMakeFiles\Vanema.dir\src\DAL\UserRepository.cpp.obj: CXX_COMPILER__Vanema_unscanned_Debug C$:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL\UserRepository.cpp || cmake_object_order_depends_target_Vanema
+  CONFIG = Debug
+  DEFINES = -DSQLITECPP_COMPILE_DLL -DSQLITE_ENABLE_COLUMN_METADATA
+  FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd
+  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
+  OBJECT_DIR = CMakeFiles\Vanema.dir
+  OBJECT_FILE_DIR = CMakeFiles\Vanema.dir\src\DAL
+  TARGET_COMPILE_PDB = CMakeFiles\Vanema.dir\
+  TARGET_PDB = bin\Debug\Vanema.pdb
+  TARGET_SUPPORT_DIR = CMakeFiles\Vanema.dir
+
+build CMakeFiles\Vanema.dir\src\DAL\UserSeeder.cpp.obj: CXX_COMPILER__Vanema_unscanned_Debug C$:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL\UserSeeder.cpp || cmake_object_order_depends_target_Vanema
+  CONFIG = Debug
+  DEFINES = -DSQLITECPP_COMPILE_DLL -DSQLITE_ENABLE_COLUMN_METADATA
+  FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd
+  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
+  OBJECT_DIR = CMakeFiles\Vanema.dir
+  OBJECT_FILE_DIR = CMakeFiles\Vanema.dir\src\DAL
+  TARGET_COMPILE_PDB = CMakeFiles\Vanema.dir\
+  TARGET_PDB = bin\Debug\Vanema.pdb
+  TARGET_SUPPORT_DIR = CMakeFiles\Vanema.dir
+
+build CMakeFiles\Vanema.dir\src\DAL\bcrypt.cpp.obj: CXX_COMPILER__Vanema_unscanned_Debug C$:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL\bcrypt.cpp || cmake_object_order_depends_target_Vanema
+  CONFIG = Debug
+  DEFINES = -DSQLITECPP_COMPILE_DLL -DSQLITE_ENABLE_COLUMN_METADATA
+  FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd
+  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
+  OBJECT_DIR = CMakeFiles\Vanema.dir
+  OBJECT_FILE_DIR = CMakeFiles\Vanema.dir\src\DAL
   TARGET_COMPILE_PDB = CMakeFiles\Vanema.dir\
   TARGET_PDB = bin\Debug\Vanema.pdb
   TARGET_SUPPORT_DIR = CMakeFiles\Vanema.dir
@@ -145,7 +222,7 @@ build CMakeFiles\Vanema.dir\src\PL\Films.cpp.obj: CXX_COMPILER__Vanema_unscanned
 #############################################
 # Link the executable bin\Debug\Vanema.exe
 
-build bin\Debug\Vanema.exe: CXX_EXECUTABLE_LINKER__Vanema_Debug CMakeFiles\Vanema.dir\src\PL\Login.cpp.obj CMakeFiles\Vanema.dir\src\PL\Menu.cpp.obj CMakeFiles\Vanema.dir\src\PL\main.cpp.obj CMakeFiles\Vanema.dir\src\PL\Booking.cpp.obj CMakeFiles\Vanema.dir\src\PL\SignUp.cpp.obj CMakeFiles\Vanema.dir\src\BLL\Movie.cpp.obj CMakeFiles\Vanema.dir\src\BLL\MovieService.cpp.obj CMakeFiles\Vanema.dir\src\PL\Films.cpp.obj | C$:\Users\TP14s\vcpkg\installed\x64-windows\debug\lib\raylib.lib C$:\Users\TP14s\vcpkg\installed\x64-windows\debug\lib\SQLiteCpp.lib C$:\Users\TP14s\vcpkg\installed\x64-windows\debug\lib\raylib.lib
+build bin\Debug\Vanema.exe: CXX_EXECUTABLE_LINKER__Vanema_Debug CMakeFiles\Vanema.dir\src\PL\main.cpp.obj CMakeFiles\Vanema.dir\src\PL\Login.cpp.obj CMakeFiles\Vanema.dir\src\PL\Menu.cpp.obj CMakeFiles\Vanema.dir\src\PL\Booking.cpp.obj CMakeFiles\Vanema.dir\src\PL\SignUp.cpp.obj CMakeFiles\Vanema.dir\src\PL\Films.cpp.obj CMakeFiles\Vanema.dir\src\BLL\Movie.cpp.obj CMakeFiles\Vanema.dir\src\BLL\MovieService.cpp.obj CMakeFiles\Vanema.dir\src\BLL\User.cpp.obj CMakeFiles\Vanema.dir\src\BLL\UserService.cpp.obj CMakeFiles\Vanema.dir\src\DAL\MovieRepository.cpp.obj CMakeFiles\Vanema.dir\src\DAL\DataSeeder.cpp.obj CMakeFiles\Vanema.dir\src\DAL\UserRepository.cpp.obj CMakeFiles\Vanema.dir\src\DAL\UserSeeder.cpp.obj CMakeFiles\Vanema.dir\src\DAL\bcrypt.cpp.obj | C$:\Users\TP14s\vcpkg\installed\x64-windows\debug\lib\raylib.lib C$:\Users\TP14s\vcpkg\installed\x64-windows\debug\lib\SQLiteCpp.lib C$:\Users\TP14s\vcpkg\installed\x64-windows\debug\lib\raylib.lib
   CONFIG = Debug
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
   LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:console
