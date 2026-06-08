@@ -13,6 +13,19 @@ Films::Films() {
 
     customFont = LoadFont("assets/fonts/PlayfairDisplay-Medium.ttf");
 
+    genres = {
+        {"All"},
+        {"Action"},
+        {"Adventure"},
+        {"Animation"},
+        {"Comedy"},
+        {"Drama"},
+        {"Horror"},
+        {"Sci-Fi"},
+        {"Thriller"},
+        {"Other"}
+    };
+
     currentScreen = nullptr;
     scrollOffset = 0.0f;
     maxScroll = 500.0f;
@@ -20,6 +33,11 @@ Films::Films() {
     searchActive = false;
     letterCount = 0;
     searchQuery[0] = '\0';
+    selectedGenreIndex = 0;
+
+    genreScrollX = 0.0f;
+    targetGenreScrollX = 0.0f;
+    maxGenreScrollWidth = 0.0f;
 }
 
 Films::~Films() {
@@ -118,12 +136,12 @@ void Films::DrawNavigationBar() {
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr) {
                 if (i == 0) {
                     searchActive = false;
-                    *currentScreen = 2; 
+                    *currentScreen = 2;
                     printf("Films -> Switching to Booking screen\n");
                     return;
                 }
                 else if (i == 2) {
-                    *currentScreen = 4; 
+                    *currentScreen = 4;
                 }
             }
         }
@@ -143,15 +161,15 @@ void Films::DrawNavigationBar() {
     if (isProfileHovered) {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr) {
-            bool isUserLoggedIn = false; 
+            bool isUserLoggedIn = false;
 
             searchActive = false;
             if (!isUserLoggedIn) {
-                *currentScreen = 1; 
+                *currentScreen = 1;
                 printf("Films -> Switching to Login screen\n");
             }
             else {
-                *currentScreen = 2; 
+                *currentScreen = 2;
                 printf("Films -> Active session found, heading to Booking dashboard\n");
             }
             return;
@@ -237,7 +255,107 @@ void Films::Draw() {
         }
     }
 
+    DrawGenreBar(290.0f - scrollOffset);
+
     EndScissorMode();
     DrawScrollbar();
     DrawNavigationBar();
+}
+
+void Films::DrawGenreBar(float startY) {
+    if (customFont.texture.id == 0) return;
+
+    DrawTextEx(customFont, "Browse by Genre", { 120, startY }, 35, 1, BLACK);
+
+    genreScrollX += (targetGenreScrollX - genreScrollX) * 0.15f;
+
+    float baseStartX = 180.0f;
+    float viewRightBoundary = GetScreenWidth() - 180.0f;
+
+    float genresStartX = 230.0f; 
+    float currentX = genresStartX + genreScrollX;
+
+    float buttonsY = startY + 55.0f;
+    float buttonWidth = 150.0f;
+    float buttonHeight = 50.0f;
+    float spacingBetween = 16.0f;
+
+    Vector2 mousePos = GetMousePosition();
+
+    for (size_t i = 0; i < genres.size(); i++) {
+        Rectangle pillRect = { currentX, buttonsY, buttonWidth, buttonHeight };
+
+        bool isVisible = (pillRect.x >= baseStartX - 5.0f) && (pillRect.x + pillRect.width <= viewRightBoundary + 5.0f);
+        bool isHovered = isVisible && CheckCollisionPointRec(mousePos, pillRect);
+
+        if (isHovered) {
+            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                selectedGenreIndex = (int)i;
+            }
+        }
+
+        if (isVisible) {
+            bool isActive = (selectedGenreIndex == (int)i);
+            Color bgCol = isActive ? Color{ 14, 21, 61, 255 } : Color{ 240, 244, 248, 255 };
+            Color textCol = isActive ? WHITE : Color{ 60, 70, 90, 255 };
+
+            DrawRectangleRounded(pillRect, 0.45f, 8, bgCol);
+            if (!isActive) {
+                DrawRectangleRoundedLines(pillRect, 0.45f, 8, 1, Color{ 220, 226, 235, 255 });
+            }
+
+            float targetFontSize = 26.0f;
+            Vector2 textSize = MeasureTextEx(customFont, genres[i].name.c_str(), targetFontSize, 1);
+            float textX = pillRect.x + (buttonWidth - textSize.x) / 2.0f;
+            float textY = pillRect.y + (buttonHeight - textSize.y) / 2.0f;
+
+            DrawTextEx(customFont, genres[i].name.c_str(), { textX, textY }, targetFontSize, 1, textCol);
+        }
+
+        currentX += buttonWidth + spacingBetween;
+    }
+
+    maxGenreScrollWidth = (genres.size() * (buttonWidth + spacingBetween)) - spacingBetween;
+    float visibleWidthBoundary = viewRightBoundary - baseStartX;
+    float maxScrollAllowed = maxGenreScrollWidth - visibleWidthBoundary;
+
+    if (maxScrollAllowed < 0) maxScrollAllowed = 0;
+
+    float arrowButtonSize = 50.0f;
+    float stepSlideAmount = 166.0f;
+
+    if (targetGenreScrollX < 0) {
+        Rectangle leftBtn = { baseStartX - 65, buttonsY, arrowButtonSize, buttonHeight };
+        bool leftHover = CheckCollisionPointRec(mousePos, leftBtn);
+
+        DrawRectangleRounded(leftBtn, 0.45f, 8, leftHover ? LIGHTGRAY : Color{ 240, 244, 248, 255 });
+        DrawRectangleRoundedLines(leftBtn, 0.45f, 8, 1, Color{ 220, 226, 235, 255 });
+        DrawText("<", leftBtn.x + 18, leftBtn.y + 13, 24, BLACK);
+
+        if (leftHover) {
+            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                targetGenreScrollX += stepSlideAmount;
+                if (targetGenreScrollX > 0) targetGenreScrollX = 0;
+            }
+        }
+    }
+
+    if (maxGenreScrollWidth > visibleWidthBoundary && targetGenreScrollX > -maxScrollAllowed) {
+        Rectangle rightBtn = { viewRightBoundary + 15, buttonsY, arrowButtonSize, buttonHeight };
+        bool rightHover = CheckCollisionPointRec(mousePos, rightBtn);
+
+        DrawRectangleRounded(rightBtn, 0.45f, 8, rightHover ? LIGHTGRAY : Color{ 240, 244, 248, 255 });
+        DrawRectangleRoundedLines(rightBtn, 0.45f, 8, 1, Color{ 220, 226, 235, 255 });
+        DrawText(">", rightBtn.x + 20, rightBtn.y + 13, 24, BLACK);
+
+        if (rightHover) {
+            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                targetGenreScrollX -= stepSlideAmount;
+                if (targetGenreScrollX < -maxScrollAllowed) targetGenreScrollX = -maxScrollAllowed;
+            }
+        }
+    }
 }

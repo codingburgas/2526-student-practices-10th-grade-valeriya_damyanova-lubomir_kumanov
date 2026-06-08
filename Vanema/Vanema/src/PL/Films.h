@@ -1,5 +1,11 @@
 #pragma once
 #include "raylib.h"
+#include <vector>
+#include <string>
+
+struct GenreItem {
+    std::string name;
+};
 
 class Films {
 public:
@@ -16,7 +22,7 @@ public:
 
     float scrollOffset;
     float maxScroll;
-    int activeIndex; 
+    int activeIndex;
 
     char searchQuery[64] = "\0";
     int letterCount = 0;
@@ -29,8 +35,16 @@ public:
     void Update();
     void Draw();
     void Unload();
+    void DrawGenreBar(float startY);
 
 private:
+    std::vector<GenreItem> genres;
+    int selectedGenreIndex;
+
+    float genreScrollX;
+    float targetGenreScrollX;
+    float maxGenreScrollWidth;
+
     void DrawNavigationBar();
     void DrawScrollbar();
 };
