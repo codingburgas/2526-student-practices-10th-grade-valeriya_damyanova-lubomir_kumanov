@@ -16,7 +16,10 @@ Films::Films() {
     currentScreen = nullptr;
     scrollOffset = 0.0f;
     maxScroll = 500.0f;
-    activeIndex = 2; 
+    activeIndex = 2;
+    searchActive = false;
+    letterCount = 0;
+    searchQuery[0] = '\0';
 }
 
 Films::~Films() {
@@ -44,7 +47,7 @@ void Films::Update() {
 
     Vector2 mousePos = GetMousePosition();
 
-    Rectangle searchBox = { 1150, 205 - scrollOffset, 250, 40 };
+    Rectangle searchBox = { 1150, 205 - scrollOffset, 260, 50 };
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
@@ -54,7 +57,9 @@ void Films::Update() {
         }
         else
         {
-            searchActive = false;
+            if (mousePos.y > 140) {
+                searchActive = false;
+            }
         }
     }
 
@@ -63,7 +68,6 @@ void Films::Update() {
 
         int key = GetCharPressed();
         while (key > 0) {
-
             if ((key >= 32) && (key <= 125) && (letterCount < 63)) {
                 searchQuery[letterCount] = (char)key;
                 searchQuery[letterCount + 1] = '\0';
@@ -101,7 +105,6 @@ void Films::DrawNavigationBar() {
     float spacing = 94.0f;
     float startX = navBarRect.x + 930;
 
-    SetMouseCursor(MOUSE_CURSOR_DEFAULT);
     Vector2 mousePos = GetMousePosition();
 
     for (int i = 0; i < 4; i++) {
@@ -114,7 +117,13 @@ void Films::DrawNavigationBar() {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr) {
                 if (i == 0) {
+                    searchActive = false;
                     *currentScreen = 2; 
+                    printf("Films -> Switching to Booking screen\n");
+                    return;
+                }
+                else if (i == 2) {
+                    *currentScreen = 4; 
                 }
             }
         }
@@ -134,7 +143,18 @@ void Films::DrawNavigationBar() {
     if (isProfileHovered) {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr) {
-            *currentScreen = 1; 
+            bool isUserLoggedIn = false; 
+
+            searchActive = false;
+            if (!isUserLoggedIn) {
+                *currentScreen = 1; 
+                printf("Films -> Switching to Login screen\n");
+            }
+            else {
+                *currentScreen = 2; 
+                printf("Films -> Active session found, heading to Booking dashboard\n");
+            }
+            return;
         }
     }
 
@@ -190,8 +210,8 @@ void Films::Draw() {
 
     BeginScissorMode(0, contentTopY, GetScreenWidth(), contentHeight);
 
-    if (customFont.texture.id != 0) 
-    {   
+    if (customFont.texture.id != 0)
+    {
         DrawTextEx(customFont, "Films", { 120, 160 - scrollOffset }, 45, 1, BLACK);
         DrawTextEx(customFont, "Discover by genre, trending and more", { 120, 210 - scrollOffset }, 30, 1, BLACK);
     }
@@ -203,21 +223,21 @@ void Films::Draw() {
 
     if (letterCount == 0 && !searchActive)
     {
-        DrawText("Search films...", searchBox.x + 30, searchBox.y + 15, 20, BLACK);
+        DrawText("Search films...", searchBox.x + 15, searchBox.y + 15, 20, GRAY);
     }
     else
     {
-        DrawText(searchQuery, searchBox.x + 30, searchBox.y + 15, 20, BLACK);
+        DrawText(searchQuery, searchBox.x + 15, searchBox.y + 15, 20, BLACK);
     }
 
     if (searchActive) {
         if (((int)(GetTime() * 2) % 2) == 0) {
             int textWidth = MeasureText(searchQuery, 20);
-            DrawRectangle(searchBox.x + 12 + textWidth, searchBox.y + 15, 2, 20, BLACK);
+            DrawRectangle(searchBox.x + 15 + textWidth + 2, searchBox.y + 15, 2, 20, BLACK);
         }
     }
 
-    EndScissorMode(); 
+    EndScissorMode();
     DrawScrollbar();
     DrawNavigationBar();
 }

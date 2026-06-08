@@ -22,6 +22,7 @@ int main()
     login.currentScreen = &currentScreen;
     signup.currentScreen = &currentScreen;
     booking.currentScreen = &currentScreen;
+    films.currentScreen = &currentScreen; 
 
     login.Init();
     signup.Init();
@@ -56,7 +57,6 @@ int main()
         }
 
         BeginDrawing();
-
         ClearBackground(WHITE);
 
         if (currentScreen == 0)
@@ -84,6 +84,5 @@ int main()
     }
 
     CloseWindow();
-
     return 0;
 }
