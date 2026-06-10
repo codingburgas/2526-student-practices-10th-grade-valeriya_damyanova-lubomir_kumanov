@@ -5,7 +5,6 @@
 
 class DataSeeder {
 public:
-    // Checks if the database is empty and seeds it if necessary
     static void SeedIfEmpty(MovieRepository& repo);
 };
 

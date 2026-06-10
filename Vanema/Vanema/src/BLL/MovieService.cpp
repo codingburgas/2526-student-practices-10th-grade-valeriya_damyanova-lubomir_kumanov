@@ -1,74 +1,56 @@
 #include "MovieService.h"
-#include "../DAL/DataSeeder.h"
 #include <algorithm>
-#include <chrono>
 #include <random>
-#include <iostream>
+#include <ctime>
 
-#define ASSET_PATH "assets/"
-
-MovieService::MovieService(const std::string& dbPath) : dbRepo(dbPath)
-{
-    rng.seed(std::chrono::steady_clock::now().time_since_epoch().count());
-    initializeMovies();
-}
-
-void MovieService::initializeMovies()
-{
-    DataSeeder::SeedIfEmpty(dbRepo);
-}
-
-std::vector<Movie> MovieService::getRandomMovies(int count)
-{
-    std::vector<Movie> shuffled = dbRepo.getAllMovies();
-    std::shuffle(shuffled.begin(), shuffled.end(), rng);
-
-    if (shuffled.size() > (size_t)count) {
-        shuffled.resize(count);
+MovieService::MovieService(const std::string& dbPath) : repo(dbPath) {
+    static bool seeded = false;
+    if (!seeded) {
+        srand(static_cast<unsigned int>(time(nullptr)));
+        seeded = true;
     }
-    return shuffled;
 }
 
-std::vector<Movie> MovieService::getMoviesByGenre(const std::string& genre, int count)
-{
-    std::vector<Movie> filtered = dbRepo.getMoviesByGenre(genre);
-    if (filtered.size() > (size_t)count) {
-        filtered.resize(count);
+std::vector<Movie> MovieService::getMoviesByGenre(const std::string& genre) {
+    return repo.getMoviesByGenre(genre);
+}
+
+std::vector<Movie> MovieService::getRandomMixForAll() {
+    std::vector<Movie> mixResult;
+
+    std::vector<std::string> activeGenres = {
+        "Action", "Adventure", "Animation", "Comedy",
+        "Drama", "Horror", "Sci-Fi", "Romance", "Family"
+    };
+
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(activeGenres.begin(), activeGenres.end(), g);
+
+    for (int i = 0; i < 8; i++) {
+        std::vector<Movie> pool = repo.getMoviesByGenre(activeGenres[i]);
+        if (!pool.empty()) {
+            int randomIdx = rand() % pool.size();
+            mixResult.push_back(pool[randomIdx]);
+        }
     }
-    return filtered;
+
+    return mixResult;
 }
 
-std::vector<Movie> MovieService::getTopRatedMovies(int count)
-{
-    std::vector<Movie> sorted = dbRepo.getTopRatedMovies();
-    if (sorted.size() > (size_t)count) {
-        sorted.resize(count);
+std::vector<Movie> MovieService::getRandomMovies(int count) {
+    std::vector<Movie> allMovies = repo.getAllMovies();
+    std::vector<Movie> randomSelection;
+
+    if (allMovies.empty()) return randomSelection;
+
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(allMovies.begin(), allMovies.end(), g);
+
+    for (int i = 0; i < count && i < allMovies.size(); i++) {
+        randomSelection.push_back(allMovies[i]);
     }
-    return sorted;
-}
 
-std::vector<Movie> MovieService::searchMovies(const std::string& query)
-{
-    if (query.empty()) return {};
-    return dbRepo.searchMovies(query);
-}
-
-std::vector<Movie> MovieService::getAllMovies() const
-{
-    return const_cast<MovieRepository&>(dbRepo).getAllMovies();
-}
-
-Movie MovieService::getMovieById(int id)
-{
-    return dbRepo.getMovieById(id);
-}
-
-void MovieService::addMovie(const Movie& movie)
-{
-    dbRepo.addMovie(movie);
-}
-
-void MovieService::removeMovie(int id)
-{
-    dbRepo.removeMovie(id);
+    return randomSelection;
 }

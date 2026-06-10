@@ -63,7 +63,12 @@ Booking::~Booking()
 
 void Booking::loadRandomSuggestions()
 {
-    currentSuggestedMovies = movieService.getRandomMovies(4);
+    if (movieService == nullptr)
+    {
+        return;
+    }
+
+    currentSuggestedMovies = movieService->getRandomMovies(4);
 
     if (currentSuggestedMovies.empty())
     {
@@ -186,12 +191,7 @@ void Booking::Update()
             scrollOffset = maxScroll;
     }
 
-    // Static variables preserve their data state layout across consecutive frames.
-    // When returning from the Login screen, flip this to true to proceed with ticket selection.
     static bool isUserLoggedIn = false;
-
-    // Optional placeholder check: Add code logic here if you want to pull down 
-    // real-time active user states from your global UserService session state.
 }
 
 void Booking::DrawNavigationBar()
@@ -277,7 +277,6 @@ void Booking::DrawNavigationBar()
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr)
         {
-            // Profile icon opens the account login authentication gate directly
             *currentScreen = 1;
             printf("Switching to Profile Login screen\n");
         }
@@ -328,7 +327,6 @@ void Booking::DrawMoviePosters()
 
     Vector2 mousePos = GetMousePosition();
 
-    // Session state check (Replace with a unified session helper object if desired)
     bool isUserLoggedIn = false;
 
     for (size_t i = 0; i < currentSuggestedMovies.size() && i < 4; i++)
@@ -385,7 +383,7 @@ void Booking::DrawMoviePosters()
             DrawTextEx(
                 customFont,
                 currentSuggestedMovies[i].getGenre().c_str(),
-                { x + 10, startPosterY + posterHeight + 50 },
+                { x + 10, startPosterY + posterHeight + 5 },
                 23,
                 1,
                 BLACK
@@ -409,14 +407,13 @@ void Booking::DrawMoviePosters()
                 printf("User unauthenticated! Redirecting to login sequence.\n");
                 if (currentScreen != nullptr)
                 {
-                    *currentScreen = 1; // Redirects smoothly to Login (Screen 1)
+                    *currentScreen = 1;
                     EndScissorMode();
                     return;
                 }
             }
             else
             {
-                // Authenticated path: Proceed directly to seat selection layout here
                 printf("User verified. Opening seat chart details layout...\n");
             }
         }

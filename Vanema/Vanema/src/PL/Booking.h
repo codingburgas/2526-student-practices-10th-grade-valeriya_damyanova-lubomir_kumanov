@@ -1,4 +1,5 @@
 #pragma once
+
 #include "raylib.h"
 #include "../BLL/MovieService.h"
 #include <vector>
@@ -17,7 +18,7 @@ private:
 
     Font customFont;
 
-    MovieService movieService;
+    // REMOVED: movieService is no longer a private object here.
     std::vector<Movie> currentSuggestedMovies;
 
     float scrollOffset;
@@ -33,6 +34,8 @@ private:
 public:
     int* currentScreen;
     int activeIndex;
+
+    MovieService* movieService = nullptr;
 
     Booking();
     ~Booking();

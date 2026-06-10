@@ -8,7 +8,6 @@ MovieRepository::MovieRepository(const std::string& dbPath)
 }
 
 void MovieRepository::createTable() {
-    // SQLiteCpp throws an exception if execution fails
     try {
         db.exec("CREATE TABLE IF NOT EXISTS movies ("
             "id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -137,6 +136,30 @@ std::vector<Movie> MovieRepository::searchMovies(const std::string& queryStr) {
         SQLite::Statement query(db, "SELECT id, title, poster_path, genre, rating FROM movies WHERE title LIKE ?;");
         std::string wildQuery = "%" + queryStr + "%";
         query.bind(1, wildQuery);
+
+        while (query.executeStep()) {
+            movies.emplace_back(
+                query.getColumn(0).getInt(),
+                query.getColumn(1).getText(),
+                query.getColumn(2).getText(),
+                query.getColumn(3).getText(),
+                static_cast<float>(query.getColumn(4).getDouble())
+            );
+        }
+    }
+    catch (std::exception& e) {
+        std::cerr << "Database error: " << e.what() << std::endl;
+    }
+    return movies;
+}
+
+std::vector<Movie> MovieRepository::getRandomMoviePerGenre() {
+    std::vector<Movie> movies;
+    try {
+        SQLite::Statement query(db,
+            "SELECT id, title, poster_path, genre, rating FROM ("
+            "SELECT id, title, poster_path, genre, rating FROM movies ORDER BY RANDOM()"
+            ") GROUP BY genre;");
 
         while (query.executeStep()) {
             movies.emplace_back(

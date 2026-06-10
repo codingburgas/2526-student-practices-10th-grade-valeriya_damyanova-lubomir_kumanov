@@ -1,35 +1,23 @@
-#pragma once
-#include "Movie.h"
-#include "../DAL/MovieRepository.h"
+#ifndef MOVIESERVICE_H
+#define MOVIESERVICE_H
+
 #include <vector>
-#include <random>
 #include <string>
+#include "Movie.h"
+#include "DAL/MovieRepository.h"
 
-class MovieService
-{
+class MovieService {
 private:
-    MovieRepository dbRepo;
-    std::vector<Movie> availableMovies;
-    std::mt19937 rng;
-
-    void initializeMovies();
+    MovieRepository repo;
 
 public:
-    MovieService(const std::string& dbPath = "movies.db");
+    MovieService(const std::string& dbPath);
+    ~MovieService() = default;
+
+    std::vector<Movie> getMoviesByGenre(const std::string& genre);
+    std::vector<Movie> getRandomMixForAll(); 
 
     std::vector<Movie> getRandomMovies(int count);
-
-    std::vector<Movie> getMoviesByGenre(const std::string& genre, int count);
-
-    std::vector<Movie> getTopRatedMovies(int count);
-
-    std::vector<Movie> searchMovies(const std::string& query);
-
-    std::vector<Movie> getAllMovies() const;
-
-    Movie getMovieById(int id);
-
-    void addMovie(const Movie& movie);
-
-    void removeMovie(int id);
 };
+
+#endif

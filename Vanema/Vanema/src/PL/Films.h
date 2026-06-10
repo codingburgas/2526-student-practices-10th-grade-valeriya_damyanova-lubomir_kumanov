@@ -1,10 +1,20 @@
 #pragma once
+
 #include "raylib.h"
 #include <vector>
 #include <string>
+#include "../BLL/MovieService.h" 
+#include "../BLL/Movie.h"
 
 struct GenreItem {
     std::string name;
+};
+
+struct DisplayMovie {
+    std::string title;
+    std::string genre;
+    std::string rating;
+    Texture2D posterTexture;
 };
 
 class Films {
@@ -28,6 +38,8 @@ public:
     int letterCount = 0;
     bool searchActive = false;
 
+    MovieService* movieService = nullptr;
+
     Films();
     ~Films();
 
@@ -36,14 +48,19 @@ public:
     void Draw();
     void Unload();
     void DrawGenreBar(float startY);
+    void DrawMovieGrid(float startY);
+    void SyncDisplayWithDatabase();
 
 private:
     std::vector<GenreItem> genres;
     int selectedGenreIndex;
+    int lastSelectedGenreIndex;
 
     float genreScrollX;
     float targetGenreScrollX;
     float maxGenreScrollWidth;
+
+    std::vector<DisplayMovie> displayedMovies;
 
     void DrawNavigationBar();
     void DrawScrollbar();

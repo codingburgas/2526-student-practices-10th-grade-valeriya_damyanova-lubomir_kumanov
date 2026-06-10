@@ -6,10 +6,19 @@
 #include "SignUp.h"
 #include "Films.h"
 
+#include "DAL/MovieRepository.h"
+#include "DAL/DataSeeder.h"
+#include "BLL/MovieService.h"
+
 int main()
 {
     InitWindow(1600, 980, "Vanema");
     SetTargetFPS(60);
+
+    MovieRepository movieRepo("movies.db");
+    DataSeeder::SeedIfEmpty(movieRepo);
+
+    MovieService movieService("movies.db");
 
     Menu menu;
     Login login;
@@ -17,12 +26,15 @@ int main()
     SignUp signup;
     Films films;
 
+    booking.movieService = &movieService;
+    films.movieService = &movieService;
+
     int currentScreen = 0;
 
     login.currentScreen = &currentScreen;
     signup.currentScreen = &currentScreen;
     booking.currentScreen = &currentScreen;
-    films.currentScreen = &currentScreen; 
+    films.currentScreen = &currentScreen;
 
     login.Init();
     signup.Init();

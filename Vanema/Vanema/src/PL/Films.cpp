@@ -22,8 +22,8 @@ Films::Films() {
         {"Drama"},
         {"Horror"},
         {"Sci-Fi"},
-        {"Thriller"},
-        {"Other"}
+        {"Romance"},
+        {"Family"}
     };
 
     currentScreen = nullptr;
@@ -34,6 +34,7 @@ Films::Films() {
     letterCount = 0;
     searchQuery[0] = '\0';
     selectedGenreIndex = 0;
+    lastSelectedGenreIndex = -1;
 
     genreScrollX = 0.0f;
     targetGenreScrollX = 0.0f;
@@ -53,6 +54,48 @@ void Films::Unload() {
     UnloadTexture(iconOffers);
     UnloadTexture(iconProfile);
     UnloadFont(customFont);
+
+    for (size_t i = 0; i < displayedMovies.size(); i++) {
+        if (displayedMovies[i].posterTexture.id != 0) {
+            UnloadTexture(displayedMovies[i].posterTexture);
+        }
+    }
+    displayedMovies.clear();
+}
+
+void Films::SyncDisplayWithDatabase() {
+    if (movieService == nullptr) return;
+
+    for (size_t i = 0; i < displayedMovies.size(); i++) {
+        if (displayedMovies[i].posterTexture.id != 0) {
+            UnloadTexture(displayedMovies[i].posterTexture);
+        }
+    }
+    displayedMovies.clear();
+
+    std::string contextGenre = genres[selectedGenreIndex].name;
+    std::vector<Movie> rawDbMovies;
+
+    if (contextGenre == "All") {
+        rawDbMovies = movieService->getRandomMixForAll();
+    }
+    else {
+        rawDbMovies = movieService->getMoviesByGenre(contextGenre);
+    }
+
+    for (const auto& item : rawDbMovies) {
+        DisplayMovie uiCard;
+        uiCard.title = item.getTitle();
+        uiCard.genre = item.getGenre();
+        uiCard.rating = TextFormat("%.1f/10", item.getRating());
+        uiCard.posterTexture = LoadTexture(item.getPosterPath().c_str());
+
+        displayedMovies.push_back(uiCard);
+    }
+
+    int layoutRows = ((int)displayedMovies.size() + 3) / 4;
+    maxScroll = 320.0f + (layoutRows * 420.0f) - GetScreenHeight();
+    if (maxScroll < 400.0f) maxScroll = 400.0f;
 }
 
 void Films::Update() {
@@ -64,17 +107,13 @@ void Films::Update() {
     }
 
     Vector2 mousePos = GetMousePosition();
-
     Rectangle searchBox = { 1150, 205 - scrollOffset, 260, 50 };
 
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-    {
-        if (CheckCollisionPointRec(mousePos, searchBox))
-        {
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        if (CheckCollisionPointRec(mousePos, searchBox)) {
             searchActive = true;
         }
-        else
-        {
+        else {
             if (mousePos.y > 140) {
                 searchActive = false;
             }
@@ -83,7 +122,6 @@ void Films::Update() {
 
     if (searchActive) {
         SetMouseCursor(MOUSE_CURSOR_IBEAM);
-
         int key = GetCharPressed();
         while (key > 0) {
             if ((key >= 32) && (key <= 125) && (letterCount < 63)) {
@@ -99,6 +137,48 @@ void Films::Update() {
             if (letterCount < 0) letterCount = 0;
             searchQuery[letterCount] = '\0';
         }
+    }
+
+    if (selectedGenreIndex != lastSelectedGenreIndex) {
+        lastSelectedGenreIndex = selectedGenreIndex;
+        SyncDisplayWithDatabase();
+    }
+}
+
+void Films::DrawMovieGrid(float startY) {
+    float startX = 180.0f;
+    float cardWidth = 240.0f;
+    float cardHeight = 360.0f;
+    float spacingX = 40.0f;
+    float spacingY = 50.0f;
+    int maxColumns = 4;
+
+    for (size_t i = 0; i < displayedMovies.size(); i++) {
+        int targetCol = i % maxColumns;
+        int targetRow = i / maxColumns;
+
+        float posX = startX + targetCol * (cardWidth + spacingX);
+        float posY = startY + targetRow * (cardHeight + spacingY);
+        Rectangle cardBounds = { posX, posY, cardWidth, cardHeight };
+
+        if (displayedMovies[i].posterTexture.id != 0) {
+            DrawTexturePro(displayedMovies[i].posterTexture,
+                { 0, 0, (float)displayedMovies[i].posterTexture.width, (float)displayedMovies[i].posterTexture.height },
+                cardBounds, { 0, 0 }, 0.0f, WHITE);
+        }
+        else {
+            DrawRectangleRec(cardBounds, LIGHTGRAY);
+            DrawText("No Image Found", cardBounds.x + 45, cardBounds.y + 160, 18, DARKGRAY);
+        }
+
+        Rectangle plateBounds = { posX, posY + cardHeight - 80, cardWidth, 80 };
+        DrawRectangleRec(plateBounds, Fade(Color{ 14, 21, 61, 240 }, 0.9f));
+
+        DrawText(displayedMovies[i].title.c_str(), posX + 12, posY + cardHeight - 68, 18, WHITE);
+        DrawText(displayedMovies[i].genre.c_str(), posX + 12, posY + cardHeight - 40, 13, LIGHTGRAY);
+
+        int rateTextWidth = MeasureText(displayedMovies[i].rating.c_str(), 13);
+        DrawText(displayedMovies[i].rating.c_str(), posX + cardWidth - rateTextWidth - 12, posY + cardHeight - 40, 13, GOLD);
     }
 }
 
@@ -137,7 +217,6 @@ void Films::DrawNavigationBar() {
                 if (i == 0) {
                     searchActive = false;
                     *currentScreen = 2;
-                    printf("Films -> Switching to Booking screen\n");
                     return;
                 }
                 else if (i == 2) {
@@ -162,15 +241,12 @@ void Films::DrawNavigationBar() {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr) {
             bool isUserLoggedIn = false;
-
             searchActive = false;
             if (!isUserLoggedIn) {
                 *currentScreen = 1;
-                printf("Films -> Switching to Login screen\n");
             }
             else {
                 *currentScreen = 2;
-                printf("Films -> Active session found, heading to Booking dashboard\n");
             }
             return;
         }
@@ -181,13 +257,10 @@ void Films::DrawNavigationBar() {
     }
 }
 
-void Films::DrawScrollbar()
-{
+void Films::DrawScrollbar() {
     int screenWidth = GetScreenWidth();
-
     float scrollbarHeight = 350;
     float scrollbarWidth = 10;
-
     float scrollbarX = screenWidth - 25;
     float scrollbarY = 150;
 
@@ -199,8 +272,7 @@ void Films::DrawScrollbar()
     float thumbHeight = 80;
     float thumbY = scrollbarY;
 
-    if (maxScroll > 0)
-    {
+    if (maxScroll > 0) {
         thumbY = scrollbarY + (scrollOffset / maxScroll) * (scrollbarHeight - thumbHeight);
     }
 
@@ -228,23 +300,19 @@ void Films::Draw() {
 
     BeginScissorMode(0, contentTopY, GetScreenWidth(), contentHeight);
 
-    if (customFont.texture.id != 0)
-    {
+    if (customFont.texture.id != 0) {
         DrawTextEx(customFont, "Films", { 120, 160 - scrollOffset }, 45, 1, BLACK);
         DrawTextEx(customFont, "Discover by genre, trending and more", { 120, 210 - scrollOffset }, 30, 1, BLACK);
     }
 
     Rectangle searchBox = { 1150, 205 - scrollOffset, 260, 50 };
-
     DrawRectangleRounded(searchBox, 0.3f, 6, searchActive ? WHITE : Fade(WHITE, 0.7f));
     DrawRectangleRoundedLines(searchBox, 0.3f, 6, 2, searchActive ? BLUE : WHITE);
 
-    if (letterCount == 0 && !searchActive)
-    {
+    if (letterCount == 0 && !searchActive) {
         DrawText("Search films...", searchBox.x + 15, searchBox.y + 15, 20, GRAY);
     }
-    else
-    {
+    else {
         DrawText(searchQuery, searchBox.x + 15, searchBox.y + 15, 20, BLACK);
     }
 
@@ -256,6 +324,7 @@ void Films::Draw() {
     }
 
     DrawGenreBar(290.0f - scrollOffset);
+    DrawMovieGrid(430.0f - scrollOffset);
 
     EndScissorMode();
     DrawScrollbar();
@@ -266,13 +335,11 @@ void Films::DrawGenreBar(float startY) {
     if (customFont.texture.id == 0) return;
 
     DrawTextEx(customFont, "Browse by Genre", { 120, startY }, 35, 1, BLACK);
-
     genreScrollX += (targetGenreScrollX - genreScrollX) * 0.15f;
 
     float baseStartX = 180.0f;
     float viewRightBoundary = GetScreenWidth() - 180.0f;
-
-    float genresStartX = 230.0f; 
+    float genresStartX = 230.0f;
     float currentX = genresStartX + genreScrollX;
 
     float buttonsY = startY + 55.0f;
@@ -284,7 +351,6 @@ void Films::DrawGenreBar(float startY) {
 
     for (size_t i = 0; i < genres.size(); i++) {
         Rectangle pillRect = { currentX, buttonsY, buttonWidth, buttonHeight };
-
         bool isVisible = (pillRect.x >= baseStartX - 5.0f) && (pillRect.x + pillRect.width <= viewRightBoundary + 5.0f);
         bool isHovered = isVisible && CheckCollisionPointRec(mousePos, pillRect);
 
@@ -312,7 +378,6 @@ void Films::DrawGenreBar(float startY) {
 
             DrawTextEx(customFont, genres[i].name.c_str(), { textX, textY }, targetFontSize, 1, textCol);
         }
-
         currentX += buttonWidth + spacingBetween;
     }
 
@@ -321,7 +386,6 @@ void Films::DrawGenreBar(float startY) {
     float maxScrollAllowed = maxGenreScrollWidth - visibleWidthBoundary;
 
     if (maxScrollAllowed < 0) maxScrollAllowed = 0;
-
     float arrowButtonSize = 50.0f;
     float stepSlideAmount = 166.0f;
 

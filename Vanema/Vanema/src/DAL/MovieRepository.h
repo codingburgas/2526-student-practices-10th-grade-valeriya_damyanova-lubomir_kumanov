@@ -22,6 +22,7 @@ public:
     std::vector<Movie> getMoviesByGenre(const std::string& genre);
     std::vector<Movie> getTopRatedMovies();
     std::vector<Movie> searchMovies(const std::string& query);
+    std::vector<Movie> getRandomMoviePerGenre();
 };
 
 #endif
