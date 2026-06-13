@@ -5,6 +5,7 @@
 #include "Booking.h"
 #include "SignUp.h"
 #include "Films.h"
+#include "Spots.h"
 #include "DAL/MovieRepository.h"
 #include "DAL/DataSeeder.h"
 #include "BLL/MovieService.h"
@@ -24,6 +25,7 @@ int main()
     Booking booking;
     SignUp signup;
     Films films;
+    Spots spots;
 
     booking.movieService = &movieService;
     films.movieService = &movieService;
@@ -37,6 +39,7 @@ int main()
     signup.currentScreen = &currentScreen;
     booking.currentScreen = &currentScreen;
     films.currentScreen = &currentScreen;
+    spots.currentScreen = &currentScreen;
 
     login.Init();
     signup.Init();
@@ -48,7 +51,7 @@ int main()
             menu.Update();
 
             if (menu.IsStartPressed())
-                currentScreen = 2;
+                currentScreen = 2; 
 
             if (menu.IsExitPressed())
                 break;
@@ -69,15 +72,18 @@ int main()
         {
             films.Update();
         }
-
+        else if (currentScreen == 5)
+        {
+            spots.Update(); 
+        }
         if (login.IsLoggedIn())
         {
             std::string currentRealName = login.GetUserDisplayName();
             bool isAdminUser = login.IsAdmin();
             films.SetUserData(true, currentRealName, isAdminUser);
             booking.SetUserData(true, currentRealName, isAdminUser);
+            spots.SetUserData(true, currentRealName); 
         }
-
         BeginDrawing();
         ClearBackground(WHITE);
 
@@ -100,6 +106,10 @@ int main()
         else if (currentScreen == 4)
         {
             films.Draw();
+        }
+        else if (currentScreen == 5)
+        {
+            spots.Draw(); 
         }
 
         EndDrawing();

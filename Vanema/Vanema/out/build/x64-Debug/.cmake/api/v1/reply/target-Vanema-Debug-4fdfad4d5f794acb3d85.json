@@ -172,7 +172,8 @@
 				17,
 				19,
 				21,
-				23
+				23,
+				24
 			]
 		}
 	],
@@ -260,7 +261,8 @@
 				17,
 				19,
 				21,
-				23
+				23,
+				24
 			]
 		},
 		{
@@ -275,7 +277,8 @@
 				16,
 				18,
 				20,
-				22
+				22,
+				25
 			]
 		}
 	],
@@ -415,6 +418,17 @@
 			"compileGroupIndex" : 0,
 			"path" : "src/DAL/bcrypt.cpp",
 			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/PL/Spots.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/PL/Spots.h",
+			"sourceGroupIndex" : 1
 		}
 	],
 	"type" : "EXECUTABLE"

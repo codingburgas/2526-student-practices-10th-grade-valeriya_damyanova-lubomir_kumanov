@@ -256,9 +256,17 @@ void Booking::DrawNavigationBar()
                 activeIndex = i;
                 if (currentScreen != nullptr)
                 {
-                    if (i == 2)
+                    if (i == 0)
                     {
-                        *currentScreen = 4;
+                        *currentScreen = 0; 
+                    }
+                    else if (i == 1)
+                    {
+                        *currentScreen = 5; 
+                    }
+                    else if (i == 2)
+                    {
+                        *currentScreen = 4; 
                     }
                 }
             }
@@ -333,7 +341,6 @@ void Booking::DrawMoviePosters()
         navWidth,
         navHeight
     };
-
     BeginScissorMode(
         (int)navBarRect.x,
         (int)(navBarRect.y + navBarRect.height),
@@ -452,12 +459,13 @@ void Booking::DrawMoviePosters()
                 if (currentScreen != nullptr)
                 {
                     *currentScreen = 1;
-                    EndScissorMode();
+                    EndScissorMode(); 
                     return;
                 }
             }
         }
     }
+    EndScissorMode();
 
     float topRatedSectionY = startPosterY + posterHeight + 150;
 
@@ -530,8 +538,6 @@ void Booking::DrawMoviePosters()
             DrawTextEx(customFont, ratingStr, { scoreX, itemY + 23 }, 25, 1, DARKGRAY);
         }
     }
-
-    EndScissorMode();
 }
 
 void Booking::DrawScrollbar()
