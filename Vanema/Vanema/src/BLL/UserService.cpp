@@ -2,7 +2,6 @@
 #include "../DAL/UserSeeder.h"
 
 UserService::UserService(const std::string& dbPath) : userRepo(dbPath) {
-    // Seed initial admin user if DB is fresh
     UserSeeder::SeedIfEmpty(userRepo);
 }
 
@@ -19,10 +18,8 @@ bool UserService::registerUser(const std::string& username, const std::string& e
         return false;
     }
 
-    // Encrypt the plain-text password from the UI before storing it
     std::string securedHash = Crypto::hashPassword(password);
 
-    // New accounts created via standard Sign-Up default to UserRole::STANDARD
     User newUser(0, username, email, securedHash, name, UserRole::STANDARD);
     return userRepo.addUser(newUser);
 }
@@ -34,9 +31,13 @@ bool UserService::authenticateUser(const std::string& username, const std::strin
         user = userRepo.getUserByEmail(username);
     }
 
-    if (user.getId() == 0) return false; // Account not found
-
-    // Secure Verification: Passwords cannot be decrypted.
-    // Instead, bcrypt hashes the input password with the same salt and checks if the hashes match.
+    if (user.getId() == 0) return false; 
     return Crypto::verifyPassword(password, user.getPasswordHash());
+}
+User UserService::getUserDetails(const std::string& usernameOrEmail) {
+    User user = userRepo.getUserByUsername(usernameOrEmail);
+    if (user.getId() == 0) {
+        user = userRepo.getUserByEmail(usernameOrEmail);
+    }
+    return user;
 }

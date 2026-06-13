@@ -1,5 +1,6 @@
 #include "Films.h"
 #include <iostream>
+#include <fstream>
 
 Films::Films() {
     background = LoadTexture("assets/booking.png");
@@ -39,21 +40,36 @@ Films::Films() {
     genreScrollX = 0.0f;
     targetGenreScrollX = 0.0f;
     maxGenreScrollWidth = 0.0f;
+
+    isLoggedIn = false;
+    userName = "";
 }
 
 Films::~Films() {
     Unload();
 }
 
+void Films::SetUserData(bool loggedIn, const std::string& name) {
+    isLoggedIn = loggedIn;
+
+    // Look for the first space character to isolate the first name
+    size_t spacePos = name.find(' ');
+    if (spacePos != std::string::npos) {
+        userName = name.substr(0, spacePos); // Extract just the first name
+    }
+    else {
+        userName = name; // Fallback if there is no surname/space present
+    }
+}
+
 void Films::Unload() {
-    UnloadTexture(background);
-    UnloadTexture(logo);
-    UnloadTexture(iconHome);
-    UnloadTexture(iconMap);
-    UnloadTexture(iconFilms);
-    UnloadTexture(iconOffers);
-    UnloadTexture(iconProfile);
-    UnloadFont(customFont);
+    if (background.id != 0) UnloadTexture(background);
+    if (logo.id != 0) UnloadTexture(logo);
+    if (iconHome.id != 0) UnloadTexture(iconHome);
+    if (iconMap.id != 0) UnloadTexture(iconMap);
+    if (iconFilms.id != 0) UnloadTexture(iconFilms);
+    if (iconOffers.id != 0) UnloadTexture(iconOffers);
+    if (iconProfile.id != 0) UnloadTexture(iconProfile);
 
     for (size_t i = 0; i < displayedMovies.size(); i++) {
         if (displayedMovies[i].posterTexture.id != 0) {
@@ -61,6 +77,10 @@ void Films::Unload() {
         }
     }
     displayedMovies.clear();
+
+    if (customFont.texture.id != 0) {
+        UnloadFont(customFont);
+    }
 }
 
 void Films::SyncDisplayWithDatabase() {
@@ -87,14 +107,25 @@ void Films::SyncDisplayWithDatabase() {
         DisplayMovie uiCard;
         uiCard.title = item.getTitle();
         uiCard.genre = item.getGenre();
-        uiCard.rating = TextFormat("%.1f/10", item.getRating());
-        uiCard.posterTexture = LoadTexture(item.getPosterPath().c_str());
+        uiCard.rating = TextFormat("Rating: %.1f", item.getRating());
 
+        std::string rawPath = item.getPosterPath();
+        std::string verifiedPath = rawPath;
+        std::ifstream fileCheck(verifiedPath);
+        if (!fileCheck.good()) {
+            verifiedPath = "Vanema/" + rawPath;
+            std::ifstream nestedCheck(verifiedPath);
+            if (!nestedCheck.good()) {
+                verifiedPath = "../" + rawPath;
+            }
+        }
+
+        uiCard.posterTexture = LoadTexture(verifiedPath.c_str());
         displayedMovies.push_back(uiCard);
     }
 
     int layoutRows = ((int)displayedMovies.size() + 3) / 4;
-    maxScroll = 320.0f + (layoutRows * 420.0f) - GetScreenHeight();
+    maxScroll = 320.0f + (layoutRows * 500.0f) - GetScreenHeight();
     if (maxScroll < 400.0f) maxScroll = 400.0f;
 }
 
@@ -146,39 +177,84 @@ void Films::Update() {
 }
 
 void Films::DrawMovieGrid(float startY) {
-    float startX = 180.0f;
-    float cardWidth = 240.0f;
-    float cardHeight = 360.0f;
-    float spacingX = 40.0f;
-    float spacingY = 50.0f;
+    int screenWidth = GetScreenWidth();
+    float navWidth = screenWidth * 0.9f;
+    float navHeight = 100.0f;
+
+    Rectangle navBarRect =
+    {
+        (screenWidth - navWidth) / 2,
+        20,
+        navWidth,
+        navHeight
+    };
+
+    float posterWidth = 260;
+    float posterHeight = 380;
+    float spacingX = 45;
+
+    float startPosterX = navBarRect.x + 120;
+    float startPosterY = startY + 80;
     int maxColumns = 4;
+
+    Vector2 mousePos = GetMousePosition();
 
     for (size_t i = 0; i < displayedMovies.size(); i++) {
         int targetCol = i % maxColumns;
         int targetRow = i / maxColumns;
 
-        float posX = startX + targetCol * (cardWidth + spacingX);
-        float posY = startY + targetRow * (cardHeight + spacingY);
-        Rectangle cardBounds = { posX, posY, cardWidth, cardHeight };
+        float x = startPosterX + targetCol * (posterWidth + spacingX);
+        float y = startPosterY + targetRow * (posterHeight + 110.0f);
+        Rectangle posterRect = { x, y, posterWidth, posterHeight };
+
+        bool hovered = CheckCollisionPointRec(mousePos, posterRect);
 
         if (displayedMovies[i].posterTexture.id != 0) {
-            DrawTexturePro(displayedMovies[i].posterTexture,
+            DrawTexturePro(
+                displayedMovies[i].posterTexture,
                 { 0, 0, (float)displayedMovies[i].posterTexture.width, (float)displayedMovies[i].posterTexture.height },
-                cardBounds, { 0, 0 }, 0.0f, WHITE);
+                posterRect,
+                { 0, 0 },
+                0.0f,
+                hovered ? LIGHTGRAY : WHITE
+            );
         }
         else {
-            DrawRectangleRec(cardBounds, LIGHTGRAY);
-            DrawText("No Image Found", cardBounds.x + 45, cardBounds.y + 160, 18, DARKGRAY);
+            DrawRectangleRec(posterRect, DARKGRAY);
+            if (customFont.texture.id != 0) {
+                DrawTextEx(customFont, "No Image", { x + 80, y + posterHeight / 2 }, 20, 1, WHITE);
+            }
         }
 
-        Rectangle plateBounds = { posX, posY + cardHeight - 80, cardWidth, 80 };
-        DrawRectangleRec(plateBounds, Fade(Color{ 14, 21, 61, 240 }, 0.9f));
+        if (customFont.texture.id != 0) {
+            DrawTextEx(customFont, displayedMovies[i].title.c_str(),
+                { x + 10, y + posterHeight + 5 }, 27, 1, BLACK);
 
-        DrawText(displayedMovies[i].title.c_str(), posX + 12, posY + cardHeight - 68, 18, WHITE);
-        DrawText(displayedMovies[i].genre.c_str(), posX + 12, posY + cardHeight - 40, 13, LIGHTGRAY);
+            DrawTextEx(customFont, displayedMovies[i].rating.c_str(),
+                { x + 10, y + posterHeight + 33 }, 24, 1, ORANGE);
 
-        int rateTextWidth = MeasureText(displayedMovies[i].rating.c_str(), 13);
-        DrawText(displayedMovies[i].rating.c_str(), posX + cardWidth - rateTextWidth - 12, posY + cardHeight - 40, 13, GOLD);
+            DrawTextEx(customFont, displayedMovies[i].genre.c_str(),
+                { x + 10, y + posterHeight + 55 }, 23, 1, BLACK);
+        }
+
+        DrawRectangleRoundedLines(
+            posterRect,
+            0.08f,
+            8,
+            4,
+            hovered ? BLUE : WHITE
+        );
+
+        if (hovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            std::cout << "Selected movie: " << displayedMovies[i].title << "\n";
+            if (!isLoggedIn) {
+                if (currentScreen != nullptr) {
+                    *currentScreen = 1;
+                    EndScissorMode();
+                    return;
+                }
+            }
+        }
     }
 }
 
@@ -187,7 +263,14 @@ void Films::DrawNavigationBar() {
     float navWidth = screenWidth * 0.9f;
     float navHeight = 100.0f;
 
-    Rectangle navBarRect = { (screenWidth - navWidth) / 2, 20, navWidth, navHeight };
+    Rectangle navBarRect =
+    {
+        (screenWidth - navWidth) / 2,
+        20,
+        navWidth,
+        navHeight
+    };
+
     DrawRectangleRounded(navBarRect, 0.5f, 10, WHITE);
 
     if (logo.id != 0) {
@@ -200,6 +283,7 @@ void Films::DrawNavigationBar() {
 
     const char* labels[] = { "Home", "Spots", "Films", "Offers" };
     Texture2D icons[] = { iconHome, iconMap, iconFilms, iconOffers };
+
     float spacing = 94.0f;
     float startX = navBarRect.x + 930;
 
@@ -213,24 +297,27 @@ void Films::DrawNavigationBar() {
 
         if (isHovered) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr) {
-                if (i == 0) {
-                    searchActive = false;
-                    *currentScreen = 2;
-                    return;
-                }
-                else if (i == 2) {
-                    *currentScreen = 4;
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                activeIndex = i;
+                if (currentScreen != nullptr) {
+                    if (i == 0) {
+                        searchActive = false;
+                        *currentScreen = 2;
+                        return;
+                    }
+                    else if (i == 2) {
+                        *currentScreen = 4;
+                    }
                 }
             }
         }
 
         if (icons[i].id != 0) {
-            DrawTextureEx(icons[i], { itemX + 22, navBarRect.y + 5 }, 0.0f, 0.1f, tint);
+            DrawTextureEx(icons[i], { itemX + 50, navBarRect.y + 5 }, 0.0f, 0.1f, tint);
         }
 
         if (customFont.texture.id != 0) {
-            DrawTextEx(customFont, labels[i], { itemX + 30, navBarRect.y + 70 }, 20, 1, BLACK);
+            DrawTextEx(customFont, labels[i], { itemX + 58, navBarRect.y + 70 }, 20, 1, BLACK);
         }
     }
 
@@ -240,20 +327,42 @@ void Films::DrawNavigationBar() {
     if (isProfileHovered) {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr) {
-            bool isUserLoggedIn = false;
             searchActive = false;
-            if (!isUserLoggedIn) {
-                *currentScreen = 1;
-            }
-            else {
-                *currentScreen = 2;
-            }
+            *currentScreen = 1;
             return;
         }
     }
+    if (iconProfile.id != 0)
+    {
+        float iconYOffset = isLoggedIn ? -10.0f : 10.0f;
 
-    if (iconProfile.id != 0) {
-        DrawTextureEx(iconProfile, { profileRect.x - 15, profileRect.y + 10 }, 0.0f, 0.1f, isProfileHovered ? BLUE : DARKBLUE);
+        DrawTextureEx(
+            iconProfile,
+            { profileRect.x - 5, profileRect.y + iconYOffset },
+            0.0f,
+            0.1f,
+            isProfileHovered ? BLUE : DARKBLUE
+        );
+    }
+
+    if (isLoggedIn && !userName.empty()) {
+        std::cout << "Films class rendering user: " << userName << "\n";
+
+        float fontSize = 20.0f;
+        Color nameColor = MAROON;
+
+        if (customFont.texture.id != 0) {
+            Vector2 textSize = MeasureTextEx(customFont, userName.c_str(), fontSize, 1);
+            float textX = profileRect.x + (profileRect.width / 2.0f) - (textSize.x / 2.0f);
+            float textY = profileRect.y + profileRect.height + 5.0f;
+
+            DrawTextEx(customFont, userName.c_str(), { textX, textY }, fontSize, 1, nameColor);
+        }
+        else {
+            int textWidth = MeasureText(userName.c_str(), 16);
+            int textX = profileRect.x + (profileRect.width / 2) - (textWidth / 2);
+            DrawText(userName.c_str(), textX, profileRect.y + profileRect.height + 5, 16, BLACK);
+        }
     }
 }
 
@@ -288,24 +397,42 @@ void Films::Draw() {
             background,
             { 0, 0, (float)background.width, (float)background.height },
             { 0, 0, (float)GetScreenWidth(), (float)GetScreenHeight() },
-            { 0, 0 }, 0.0f, WHITE
+            { 0, 0 },
+            0.0f,
+            WHITE
         );
     }
     else {
         ClearBackground(RAYWHITE);
     }
 
-    int contentTopY = 140;
-    int contentHeight = GetScreenHeight() - contentTopY;
+    int screenWidth = GetScreenWidth();
+    float navWidth = screenWidth * 0.9f;
+    float navHeight = 100.0f;
 
-    BeginScissorMode(0, contentTopY, GetScreenWidth(), contentHeight);
+    Rectangle navBarRect =
+    {
+        (screenWidth - navWidth) / 2,
+        20,
+        navWidth,
+        navHeight
+    };
+
+    BeginScissorMode(
+        (int)navBarRect.x,
+        (int)(navBarRect.y + navBarRect.height),
+        (int)navBarRect.width,
+        GetScreenHeight() - (int)(navBarRect.y + navBarRect.height)
+    );
+
+    float contentY = navBarRect.y + navBarRect.height + 40 - scrollOffset;
 
     if (customFont.texture.id != 0) {
-        DrawTextEx(customFont, "Films", { 120, 160 - scrollOffset }, 45, 1, BLACK);
-        DrawTextEx(customFont, "Discover by genre, trending and more", { 120, 210 - scrollOffset }, 30, 1, BLACK);
+        DrawTextEx(customFont, "Films", { navBarRect.x + 20, contentY }, 45, 1, BLACK);
+        DrawTextEx(customFont, "Discover by genre, trending and more", { navBarRect.x + 20, contentY + 50 }, 30, 1, BLACK);
     }
 
-    Rectangle searchBox = { 1150, 205 - scrollOffset, 260, 50 };
+    Rectangle searchBox = { navBarRect.x + navWidth - 280, contentY + 15, 260, 50 };
     DrawRectangleRounded(searchBox, 0.3f, 6, searchActive ? WHITE : Fade(WHITE, 0.7f));
     DrawRectangleRoundedLines(searchBox, 0.3f, 6, 2, searchActive ? BLUE : WHITE);
 
@@ -323,8 +450,8 @@ void Films::Draw() {
         }
     }
 
-    DrawGenreBar(290.0f - scrollOffset);
-    DrawMovieGrid(430.0f - scrollOffset);
+    DrawGenreBar(contentY + 120.0f);
+    DrawMovieGrid(contentY + 230.0f);
 
     EndScissorMode();
     DrawScrollbar();
@@ -334,12 +461,16 @@ void Films::Draw() {
 void Films::DrawGenreBar(float startY) {
     if (customFont.texture.id == 0) return;
 
-    DrawTextEx(customFont, "Browse by Genre", { 120, startY }, 35, 1, BLACK);
+    int screenWidth = GetScreenWidth();
+    float navWidth = screenWidth * 0.9f;
+    float navBarX = (screenWidth - navWidth) / 2;
+
+    DrawTextEx(customFont, "Browse by Genre", { navBarX + 20, startY }, 35, 1, BLACK);
     genreScrollX += (targetGenreScrollX - genreScrollX) * 0.15f;
 
-    float baseStartX = 180.0f;
-    float viewRightBoundary = GetScreenWidth() - 180.0f;
-    float genresStartX = 230.0f;
+    float baseStartX = navBarX + 120.0f;
+    float viewRightBoundary = navBarX + navWidth - 120.0f;
+    float genresStartX = navBarX + 150.0f;
     float currentX = genresStartX + genreScrollX;
 
     float buttonsY = startY + 55.0f;

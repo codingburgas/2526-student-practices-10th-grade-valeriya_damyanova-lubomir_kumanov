@@ -1,7 +1,8 @@
 #pragma once
 
 #include "raylib.h"
-#include "../BLL/MovieService.h"
+#include "BLL/MovieService.h"
+#include "BLL/Movie.h"
 #include <vector>
 
 class Booking
@@ -15,33 +16,32 @@ private:
     Texture2D iconOffers;
     Texture2D iconProfile;
     Texture2D suggestedPhotos[4];
-
     Font customFont;
 
-    // REMOVED: movieService is no longer a private object here.
     std::vector<Movie> currentSuggestedMovies;
-
     float scrollOffset;
     float maxScroll;
-    float mouseScrollAccumulator;
-
-    void loadRandomSuggestions();
-    void Unload();
-    void DrawNavigationBar();
-    void DrawMoviePosters();
-    void DrawScrollbar();
+    int activeIndex;
+    int mouseScrollAccumulator;
+    bool isLoggedIn = false;
+    std::string userName = "";
 
 public:
     int* currentScreen;
-    int activeIndex;
 
     MovieService* movieService = nullptr;
 
     Booking();
     ~Booking();
 
-    void Update();
-    void Draw();
+    void loadRandomSuggestions();
     void RefreshSuggestions();
     void SetScreenPointer(int* screen);
+    void SetUserData(bool loggedIn, const std::string& name);
+    void Unload();
+    void Update();
+    void DrawNavigationBar();
+    void DrawMoviePosters();
+    void DrawScrollbar();
+    void Draw();
 };

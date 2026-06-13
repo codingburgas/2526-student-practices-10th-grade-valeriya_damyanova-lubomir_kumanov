@@ -5,7 +5,6 @@
 #include "Booking.h"
 #include "SignUp.h"
 #include "Films.h"
-
 #include "DAL/MovieRepository.h"
 #include "DAL/DataSeeder.h"
 #include "BLL/MovieService.h"
@@ -28,6 +27,9 @@ int main()
 
     booking.movieService = &movieService;
     films.movieService = &movieService;
+
+    booking.loadRandomSuggestions();
+    films.SyncDisplayWithDatabase();
 
     int currentScreen = 0;
 
@@ -54,6 +56,13 @@ int main()
         else if (currentScreen == 1)
         {
             login.Update();
+
+            if (login.IsLoggedIn())
+            {
+                std::string currentRealName = login.GetUserDisplayName();
+                films.SetUserData(true, currentRealName);
+                booking.SetUserData(true, currentRealName);
+            }
         }
         else if (currentScreen == 2)
         {

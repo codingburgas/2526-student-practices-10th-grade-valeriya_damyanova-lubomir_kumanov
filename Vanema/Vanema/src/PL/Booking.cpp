@@ -45,13 +45,13 @@ Booking::Booking()
     customFont = LoadFont("assets/fonts/PlayfairDisplay-Medium.ttf");
     if (customFont.texture.id == 0) printf("Failed to load font\n");
 
-    loadRandomSuggestions();
-
     scrollOffset = 0;
     maxScroll = 500;
     activeIndex = 0;
     currentScreen = nullptr;
     mouseScrollAccumulator = 0;
+    isLoggedIn = false;
+    userName = "";
 
     printf("Booking initialized successfully!\n");
 }
@@ -65,6 +65,7 @@ void Booking::loadRandomSuggestions()
 {
     if (movieService == nullptr)
     {
+        printf("✗ Error: movieService pointer is NULL inside loadRandomSuggestions!\n");
         return;
     }
 
@@ -141,26 +142,13 @@ void Booking::SetScreenPointer(int* screen)
 
 void Booking::Unload()
 {
-    if (background.id != 0)
-        UnloadTexture(background);
-
-    if (logo.id != 0)
-        UnloadTexture(logo);
-
-    if (iconHome.id != 0)
-        UnloadTexture(iconHome);
-
-    if (iconMap.id != 0)
-        UnloadTexture(iconMap);
-
-    if (iconFilms.id != 0)
-        UnloadTexture(iconFilms);
-
-    if (iconOffers.id != 0)
-        UnloadTexture(iconOffers);
-
-    if (iconProfile.id != 0)
-        UnloadTexture(iconProfile);
+    if (background.id != 0) UnloadTexture(background);
+    if (logo.id != 0) UnloadTexture(logo);
+    if (iconHome.id != 0) UnloadTexture(iconHome);
+    if (iconMap.id != 0) UnloadTexture(iconMap);
+    if (iconFilms.id != 0) UnloadTexture(iconFilms);
+    if (iconOffers.id != 0) UnloadTexture(iconOffers);
+    if (iconProfile.id != 0) UnloadTexture(iconProfile);
 
     for (int i = 0; i < 4; i++)
     {
@@ -185,20 +173,14 @@ void Booking::Update()
     {
         scrollOffset -= wheelMove * 40;
 
-        if (scrollOffset < 0)
-            scrollOffset = 0;
-        if (scrollOffset > maxScroll)
-            scrollOffset = maxScroll;
+        if (scrollOffset < 0) scrollOffset = 0;
+        if (scrollOffset > maxScroll) scrollOffset = maxScroll;
     }
-
-    static bool isUserLoggedIn = false;
 }
 
 void Booking::DrawNavigationBar()
 {
     int screenWidth = GetScreenWidth();
-    int screenHeight = GetScreenHeight();
-
     float navWidth = screenWidth * 0.9f;
     float navHeight = 100.0f;
 
@@ -228,7 +210,6 @@ void Booking::DrawNavigationBar()
     float spacing = 94.0f;
     float startX = navBarRect.x + 930;
 
-    SetMouseCursor(MOUSE_CURSOR_DEFAULT);
     Vector2 mousePos = GetMousePosition();
 
     for (int i = 0; i < 4; i++)
@@ -245,14 +226,11 @@ void Booking::DrawNavigationBar()
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 activeIndex = i;
-                printf("Navigation switched to: %s\n", labels[i]);
-
                 if (currentScreen != nullptr)
                 {
                     if (i == 2)
                     {
                         *currentScreen = 4;
-                        printf("Switching state to Films screen\n");
                     }
                 }
             }
@@ -260,12 +238,12 @@ void Booking::DrawNavigationBar()
 
         if (icons[i].id != 0)
         {
-            DrawTextureEx(icons[i], { itemX + 22, navBarRect.y + 5 }, 0.0f, 0.1f, tint);
+            DrawTextureEx(icons[i], { itemX + 50, navBarRect.y + 5 }, 0.0f, 0.1f, tint);
         }
 
         if (customFont.texture.id != 0)
         {
-            DrawTextEx(customFont, labels[i], { itemX + 30, navBarRect.y + 70 }, 20, 1, BLACK);
+            DrawTextEx(customFont, labels[i], { itemX + 58, navBarRect.y + 70 }, 20, 1, BLACK);
         }
     }
 
@@ -278,21 +256,45 @@ void Booking::DrawNavigationBar()
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr)
         {
             *currentScreen = 1;
-            printf("Switching to Profile Login screen\n");
         }
     }
-
     if (iconProfile.id != 0)
     {
-        DrawTextureEx(iconProfile, { profileRect.x - 15, profileRect.y + 10 }, 0.0f, 0.1f,
-            isProfileHovered ? BLUE : DARKBLUE);
+        float iconYOffset = isLoggedIn ? -5.0f : 10.0f;
+
+        DrawTextureEx(
+            iconProfile,
+            { profileRect.x - 15, profileRect.y + iconYOffset },
+            0.0f,
+            0.1f,
+            isProfileHovered ? BLUE : DARKBLUE
+        );
+    }
+    if (isLoggedIn && !userName.empty())
+    {
+        float fontSize = 22.0f;
+        Color nameColor = BLACK;
+
+        if (customFont.texture.id != 0)
+        {
+            Vector2 textSize = MeasureTextEx(customFont, userName.c_str(), fontSize, 1);
+            float textX = profileRect.x + (profileRect.width / 2.0f) - (textSize.x / 1.5f);
+            float textY = profileRect.y + profileRect.height + 5.0f;
+
+            DrawTextEx(customFont, userName.c_str(), { textX, textY }, fontSize, 1, nameColor);
+        }
+        else
+        {
+            int textWidth = MeasureText(userName.c_str(), 16);
+            int textX = profileRect.x + (profileRect.width / 2) - (textWidth / 2);
+            DrawText(userName.c_str(), textX, profileRect.y + profileRect.height + 5, 16, BLACK);
+        }
     }
 }
 
 void Booking::DrawMoviePosters()
 {
     int screenWidth = GetScreenWidth();
-
     float navWidth = screenWidth * 0.9f;
     float navHeight = 100.0f;
 
@@ -327,8 +329,6 @@ void Booking::DrawMoviePosters()
 
     Vector2 mousePos = GetMousePosition();
 
-    bool isUserLoggedIn = false;
-
     for (size_t i = 0; i < currentSuggestedMovies.size() && i < 4; i++)
     {
         float x = startPosterX + i * (posterWidth + spacingX);
@@ -359,35 +359,17 @@ void Booking::DrawMoviePosters()
 
         if (customFont.texture.id != 0)
         {
-            DrawTextEx(
-                customFont,
-                currentSuggestedMovies[i].getTitle().c_str(),
-                { x + 10, startPosterY + posterHeight + 5 },
-                27,
-                1,
-                BLACK
-            );
+            DrawTextEx(customFont, currentSuggestedMovies[i].getTitle().c_str(),
+                { x + 10, startPosterY + posterHeight + 5 }, 27, 1, BLACK);
 
             char ratingText[32];
             snprintf(ratingText, sizeof(ratingText), "Rating: %.1f", currentSuggestedMovies[i].getRating());
 
-            DrawTextEx(
-                customFont,
-                ratingText,
-                { x + 10, startPosterY + posterHeight + 30 },
-                24,
-                1,
-                ORANGE
-            );
+            DrawTextEx(customFont, ratingText,
+                { x + 10, startPosterY + posterHeight + 33 }, 24, 1, ORANGE);
 
-            DrawTextEx(
-                customFont,
-                currentSuggestedMovies[i].getGenre().c_str(),
-                { x + 10, startPosterY + posterHeight + 5 },
-                23,
-                1,
-                BLACK
-            );
+            DrawTextEx(customFont, currentSuggestedMovies[i].getGenre().c_str(),
+                { x + 10, startPosterY + posterHeight + 55 }, 23, 1, BLACK);
         }
 
         DrawRectangleRoundedLines(
@@ -402,19 +384,15 @@ void Booking::DrawMoviePosters()
         {
             printf("Selected movie: %s\n", currentSuggestedMovies[i].getTitle().c_str());
 
-            if (!isUserLoggedIn)
+            if (!isLoggedIn)
             {
-                printf("User unauthenticated! Redirecting to login sequence.\n");
+                printf("Redirecting to login.\n");
                 if (currentScreen != nullptr)
                 {
                     *currentScreen = 1;
                     EndScissorMode();
                     return;
                 }
-            }
-            else
-            {
-                printf("User verified. Opening seat chart details layout...\n");
             }
         }
     }
@@ -425,10 +403,8 @@ void Booking::DrawMoviePosters()
 void Booking::DrawScrollbar()
 {
     int screenWidth = GetScreenWidth();
-
     float scrollbarHeight = 350;
     float scrollbarWidth = 10;
-
     float scrollbarX = screenWidth - 25;
     float scrollbarY = 150;
 
@@ -472,4 +448,16 @@ void Booking::Draw()
     DrawMoviePosters();
     DrawScrollbar();
     DrawNavigationBar();
+}
+
+void Booking::SetUserData(bool loggedIn, const std::string& name) {
+    this->isLoggedIn = loggedIn;
+
+    size_t spacePos = name.find(' ');
+    if (spacePos != std::string::npos) {
+        this->userName = name.substr(0, spacePos); 
+    }
+    else {
+        this->userName = name; 
+    }
 }

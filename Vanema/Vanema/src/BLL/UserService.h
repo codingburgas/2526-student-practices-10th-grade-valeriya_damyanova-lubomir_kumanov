@@ -13,11 +13,11 @@ private:
 public:
     UserService(const std::string& dbPath = "movies.db");
 
-    // Operations matching UI requirements
     bool registerUser(const std::string& username, const std::string& email,
         const std::string& password, const std::string& name, std::string& outError);
 
     bool authenticateUser(const std::string& username, const std::string& password);
+    User getUserDetails(const std::string& usernameOrEmail);
 };
 
 #endif

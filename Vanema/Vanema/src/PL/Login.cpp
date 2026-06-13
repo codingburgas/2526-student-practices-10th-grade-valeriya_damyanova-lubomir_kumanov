@@ -20,6 +20,8 @@ void Login::Init()
     errorPopupTimer = 0.0f;
     completed = false;
 
+    loggedIn = false;
+    userDisplayName = "";
 }
 
 void Login::Unload()
@@ -60,14 +62,16 @@ void Login::Update()
                 return;
             }
 
-            // Verify against database securely
             if (userService.authenticateUser(username, password))
             {
-                // Optional: Update your session manager here to mark user as active/authenticated
+                User sessionUser = userService.getUserDetails(username);
+
+                loggedIn = true;
+                userDisplayName = sessionUser.getName();
 
                 if (currentScreen != nullptr)
                 {
-                    *currentScreen = 2; // 🔄 SUCCESS! Redirects back to Booking automatically.
+                    *currentScreen = 2;
                 }
             }
             else
@@ -317,7 +321,7 @@ void Login::Draw()
     DrawTextEx(
         bodyFont,
         "Sign up",
-        { signupLink.x , signupLink.y},
+        { signupLink.x , signupLink.y },
         30,
         2,
         hover ? DARKBLUE : BLUE
