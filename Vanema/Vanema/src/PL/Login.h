@@ -16,6 +16,7 @@ public:
     void Draw();
 
     bool IsLoggedIn() const { return loggedIn; }
+    bool IsAdmin() const { return m_isAdmin; }
     std::string GetUserDisplayName() const { return userDisplayName; }
 
 private:
@@ -33,6 +34,8 @@ private:
     bool showErrorPopup;
     float errorPopupTimer;
     bool completed;
+
+    bool m_isAdmin; 
 
     bool loggedIn = false;
     std::string userDisplayName = "";

@@ -52,6 +52,7 @@ Booking::Booking()
     mouseScrollAccumulator = 0;
     isLoggedIn = false;
     userName = "";
+    isAdmin = false;
 
     printf("Booking initialized successfully!\n");
 }
@@ -320,6 +321,40 @@ void Booking::DrawMoviePosters()
         DrawTextEx(customFont, "Suggested for You:", { navBarRect.x + 20, contentY }, 40, 1, BLACK);
     }
 
+    if (isLoggedIn && isAdmin)
+    {
+        float btnWidth = 90.0f;
+        float btnHeight = 40.0f;
+        float btnY = contentY;
+
+        Rectangle addBtn = { navBarRect.x + navWidth - 210, btnY, btnWidth, btnHeight };
+        Rectangle deleteBtn = { navBarRect.x + navWidth - 110, btnY, btnWidth, btnHeight };
+
+        Vector2 mousePos = GetMousePosition();
+        bool hoverAdd = CheckCollisionPointRec(mousePos, addBtn);
+        bool hoverDelete = CheckCollisionPointRec(mousePos, deleteBtn);
+
+        if (hoverAdd || hoverDelete)
+        {
+            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        }
+
+        if (hoverAdd && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            std::cout << "Admin triggered: ADD MOVIE\n";
+        }
+        if (hoverDelete && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            std::cout << "Admin triggered: DELETE MOVIE\n";
+        }
+
+        DrawRectangleRounded(addBtn, 0.3f, 6, hoverAdd ? Color{ 46, 204, 113, 255 } : Color{ 39, 174, 96, 255 });
+        DrawText("Add", addBtn.x + 28, addBtn.y + 10, 20, WHITE);
+
+        DrawRectangleRounded(deleteBtn, 0.3f, 6, hoverDelete ? Color{ 231, 76, 60, 255 } : Color{ 192, 41, 43, 255 });
+        DrawText("Delete", deleteBtn.x + 16, deleteBtn.y + 10, 20, WHITE);
+    }
+
     float posterWidth = 260;
     float posterHeight = 380;
     float spacingX = 45;
@@ -450,14 +485,15 @@ void Booking::Draw()
     DrawNavigationBar();
 }
 
-void Booking::SetUserData(bool loggedIn, const std::string& name) {
+void Booking::SetUserData(bool loggedIn, const std::string& name, bool admin) {
     this->isLoggedIn = loggedIn;
+    this->isAdmin = admin;
 
     size_t spacePos = name.find(' ');
     if (spacePos != std::string::npos) {
-        this->userName = name.substr(0, spacePos); 
+        this->userName = name.substr(0, spacePos);
     }
     else {
-        this->userName = name; 
+        this->userName = name;
     }
 }

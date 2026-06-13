@@ -1,9 +1,9 @@
 #pragma once
-
 #include "raylib.h"
 #include "BLL/MovieService.h"
 #include "BLL/Movie.h"
 #include <vector>
+#include <string>
 
 class Booking
 {
@@ -25,6 +25,7 @@ private:
     int mouseScrollAccumulator;
     bool isLoggedIn = false;
     std::string userName = "";
+    bool isAdmin = false;
 
 public:
     int* currentScreen;
@@ -37,7 +38,7 @@ public:
     void loadRandomSuggestions();
     void RefreshSuggestions();
     void SetScreenPointer(int* screen);
-    void SetUserData(bool loggedIn, const std::string& name);
+    void SetUserData(bool loggedIn, const std::string& name, bool admin);
     void Unload();
     void Update();
     void DrawNavigationBar();

@@ -50,7 +50,7 @@ public:
     void DrawGenreBar(float startY);
     void DrawMovieGrid(float startY);
     void SyncDisplayWithDatabase();
-    void SetUserData(bool loggedIn, const std::string& name);
+    void SetUserData(bool loggedIn, const std::string& name, bool admin);
 
 private:
     std::vector<GenreItem> genres;
@@ -63,6 +63,7 @@ private:
 
     bool isLoggedIn = false;
     std::string userName = "";
+    bool isAdmin;
 
     std::vector<DisplayMovie> displayedMovies;
 

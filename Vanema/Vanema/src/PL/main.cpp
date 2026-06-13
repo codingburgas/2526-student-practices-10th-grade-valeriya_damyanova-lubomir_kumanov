@@ -56,13 +56,6 @@ int main()
         else if (currentScreen == 1)
         {
             login.Update();
-
-            if (login.IsLoggedIn())
-            {
-                std::string currentRealName = login.GetUserDisplayName();
-                films.SetUserData(true, currentRealName);
-                booking.SetUserData(true, currentRealName);
-            }
         }
         else if (currentScreen == 2)
         {
@@ -75,6 +68,14 @@ int main()
         else if (currentScreen == 4)
         {
             films.Update();
+        }
+
+        if (login.IsLoggedIn())
+        {
+            std::string currentRealName = login.GetUserDisplayName();
+            bool isAdminUser = login.IsAdmin();
+            films.SetUserData(true, currentRealName, isAdminUser);
+            booking.SetUserData(true, currentRealName, isAdminUser);
         }
 
         BeginDrawing();

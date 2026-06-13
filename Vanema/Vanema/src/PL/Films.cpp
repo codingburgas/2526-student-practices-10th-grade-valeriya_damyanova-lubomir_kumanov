@@ -43,22 +43,23 @@ Films::Films() {
 
     isLoggedIn = false;
     userName = "";
+    isAdmin = false;
 }
 
 Films::~Films() {
     Unload();
 }
 
-void Films::SetUserData(bool loggedIn, const std::string& name) {
+void Films::SetUserData(bool loggedIn, const std::string& name, bool admin) {
     isLoggedIn = loggedIn;
+    isAdmin = admin;
 
-    // Look for the first space character to isolate the first name
     size_t spacePos = name.find(' ');
     if (spacePos != std::string::npos) {
-        userName = name.substr(0, spacePos); // Extract just the first name
+        userName = name.substr(0, spacePos);
     }
     else {
-        userName = name; // Fallback if there is no surname/space present
+        userName = name;
     }
 }
 
@@ -348,8 +349,8 @@ void Films::DrawNavigationBar() {
     if (isLoggedIn && !userName.empty()) {
         std::cout << "Films class rendering user: " << userName << "\n";
 
-        float fontSize = 20.0f;
-        Color nameColor = MAROON;
+        float fontSize = 22.0f;
+        Color nameColor = BLACK;
 
         if (customFont.texture.id != 0) {
             Vector2 textSize = MeasureTextEx(customFont, userName.c_str(), fontSize, 1);
@@ -448,6 +449,35 @@ void Films::Draw() {
             int textWidth = MeasureText(searchQuery, 20);
             DrawRectangle(searchBox.x + 15 + textWidth + 2, searchBox.y + 15, 2, 20, BLACK);
         }
+    }
+
+    if (isLoggedIn && isAdmin) {
+        float btnWidth = 90.0f;
+        float btnHeight = 40.0f;
+        float btnY = contentY + 20.0f;
+
+        Rectangle addBtn = { searchBox.x - 210, btnY, btnWidth, btnHeight };
+        Rectangle deleteBtn = { searchBox.x - 110, btnY, btnWidth, btnHeight };
+
+        Vector2 mousePos = GetMousePosition();
+        bool hoverAdd = CheckCollisionPointRec(mousePos, addBtn);
+        bool hoverDelete = CheckCollisionPointRec(mousePos, deleteBtn);
+        if (hoverAdd || hoverDelete) {
+            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        }
+
+        if (hoverAdd && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            std::cout << "Admin triggered: ADD MOVIE\n";
+        }
+        if (hoverDelete && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            std::cout << "Admin triggered: DELETE MOVIE\n";
+        }
+
+        DrawRectangleRounded(addBtn, 0.3f, 6, hoverAdd ? Color{ 46, 204, 113, 255 } : Color{ 39, 174, 96, 255 });
+        DrawText("Add", addBtn.x + 28, addBtn.y + 10, 20, BLACK);
+
+        DrawRectangleRounded(deleteBtn, 0.3f, 6, hoverDelete ? Color{ 231, 76, 60, 255 } : Color{ 192, 41, 43, 255 });
+        DrawText("Delete", deleteBtn.x + 16, deleteBtn.y + 10, 20, BLACK);
     }
 
     DrawGenreBar(contentY + 120.0f);

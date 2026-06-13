@@ -22,6 +22,7 @@ void Login::Init()
 
     loggedIn = false;
     userDisplayName = "";
+    m_isAdmin = false;
 }
 
 void Login::Unload()
@@ -68,6 +69,14 @@ void Login::Update()
 
                 loggedIn = true;
                 userDisplayName = sessionUser.getName();
+                if (username == "admin" || sessionUser.getRole() == UserRole::ADMIN)
+                {
+                    m_isAdmin = true;
+                }
+                else
+                {
+                    m_isAdmin = false;
+                }
 
                 if (currentScreen != nullptr)
                 {
