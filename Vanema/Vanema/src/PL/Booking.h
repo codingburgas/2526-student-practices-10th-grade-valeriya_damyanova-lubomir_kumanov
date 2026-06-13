@@ -16,9 +16,11 @@ private:
     Texture2D iconOffers;
     Texture2D iconProfile;
     Texture2D suggestedPhotos[4];
+    Texture2D topRatedPhotos[4]; 
     Font customFont;
 
     std::vector<Movie> currentSuggestedMovies;
+    std::vector<Movie> topRatedMovies; 
     float scrollOffset;
     float maxScroll;
     int activeIndex;

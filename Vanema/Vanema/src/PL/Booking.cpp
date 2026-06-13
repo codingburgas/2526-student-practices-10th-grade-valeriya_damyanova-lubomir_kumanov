@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <fstream>
 #include <iostream>
+#include <algorithm> 
 
 #ifdef _WIN32
 #include <direct.h>
@@ -40,13 +41,14 @@ Booking::Booking()
     for (int i = 0; i < 4; i++)
     {
         suggestedPhotos[i].id = 0;
+        topRatedPhotos[i].id = 0;
     }
 
     customFont = LoadFont("assets/fonts/PlayfairDisplay-Medium.ttf");
     if (customFont.texture.id == 0) printf("Failed to load font\n");
 
     scrollOffset = 0;
-    maxScroll = 500;
+    maxScroll = 450;
     activeIndex = 0;
     currentScreen = nullptr;
     mouseScrollAccumulator = 0;
@@ -69,7 +71,6 @@ void Booking::loadRandomSuggestions()
         printf("✗ Error: movieService pointer is NULL inside loadRandomSuggestions!\n");
         return;
     }
-
     currentSuggestedMovies = movieService->getRandomMovies(4);
 
     if (currentSuggestedMovies.empty())
@@ -77,8 +78,6 @@ void Booking::loadRandomSuggestions()
         printf("No movies loaded from service!\n");
         return;
     }
-
-    printf("Loading %zu movies...\n", currentSuggestedMovies.size());
 
     for (size_t i = 0; i < currentSuggestedMovies.size() && i < 4; i++)
     {
@@ -100,24 +99,49 @@ void Booking::loadRandomSuggestions()
         if (finalCheck.good())
         {
             suggestedPhotos[i] = LoadTexture(posterPath.c_str());
-            if (suggestedPhotos[i].id != 0)
-            {
-                printf("✓ Loaded: %s (Rating: %.1f) - %s [%dx%d]\n",
-                    currentSuggestedMovies[i].getTitle().c_str(),
-                    currentSuggestedMovies[i].getRating(),
-                    currentSuggestedMovies[i].getGenre().c_str(),
-                    suggestedPhotos[i].width,
-                    suggestedPhotos[i].height);
-            }
-            else
-            {
-                printf("✗ Failed to load texture: %s\n", posterPath.c_str());
-            }
         }
         else
         {
-            printf("✗ File not found anywhere: %s\n", rawPath.c_str());
             suggestedPhotos[i].id = 0;
+        }
+    }
+
+    std::vector<Movie> allMovies = movieService->getRandomMovies(100);
+
+    std::sort(allMovies.begin(), allMovies.end(), [](const Movie& a, const Movie& b) {
+        return a.getRating() > b.getRating();
+        });
+
+    topRatedMovies.clear();
+    for (size_t i = 0; i < allMovies.size() && i < 4; i++)
+    {
+        topRatedMovies.push_back(allMovies[i]);
+    }
+
+    for (size_t i = 0; i < topRatedMovies.size() && i < 4; i++)
+    {
+        std::string rawPath = topRatedMovies[i].getPosterPath();
+        std::string posterPath = rawPath;
+
+        std::ifstream fileCheck(posterPath);
+        if (!fileCheck.good())
+        {
+            posterPath = "Vanema/" + rawPath;
+            std::ifstream nestedCheck(posterPath);
+            if (!nestedCheck.good())
+            {
+                posterPath = "../" + rawPath;
+            }
+        }
+
+        std::ifstream finalCheck(posterPath);
+        if (finalCheck.good())
+        {
+            topRatedPhotos[i] = LoadTexture(posterPath.c_str());
+        }
+        else
+        {
+            topRatedPhotos[i].id = 0;
         }
     }
 }
@@ -130,6 +154,11 @@ void Booking::RefreshSuggestions()
         {
             UnloadTexture(suggestedPhotos[i]);
             suggestedPhotos[i].id = 0;
+        }
+        if (topRatedPhotos[i].id != 0)
+        {
+            UnloadTexture(topRatedPhotos[i]);
+            topRatedPhotos[i].id = 0;
         }
     }
 
@@ -153,10 +182,8 @@ void Booking::Unload()
 
     for (int i = 0; i < 4; i++)
     {
-        if (suggestedPhotos[i].id != 0)
-        {
-            UnloadTexture(suggestedPhotos[i]);
-        }
+        if (suggestedPhotos[i].id != 0) UnloadTexture(suggestedPhotos[i]);
+        if (topRatedPhotos[i].id != 0) UnloadTexture(topRatedPhotos[i]);
     }
 
     if (customFont.texture.id != 0)
@@ -429,6 +456,78 @@ void Booking::DrawMoviePosters()
                     return;
                 }
             }
+        }
+    }
+
+    float topRatedSectionY = startPosterY + posterHeight + 150;
+
+    Rectangle topRatedBg = {
+        navBarRect.x + 20,
+        topRatedSectionY,
+        navBarRect.width - 40,
+        450
+    };
+    DrawRectangleRounded(topRatedBg, 0.05f, 12, Fade(WHITE, 0.95f));
+    DrawRectangleRoundedLines(topRatedBg, 0.05f, 12, 1, Fade(LIGHTGRAY, 0.5f));
+
+    DrawRectangle(topRatedBg.x + 20, topRatedBg.y + 30, 6, 35, Color{ 41, 128, 185, 255 });
+
+    if (customFont.texture.id != 0)
+    {
+        DrawTextEx(customFont, "Top Rated Movies", { topRatedBg.x + 38, topRatedBg.y + 32 }, 32, 1, BLACK);
+    }
+
+    float colWidth = (topRatedBg.width - 80) / 2;
+    float rowHeight = 150;
+    float startGridX = topRatedBg.x + 30;
+    float startGridY = topRatedBg.y + 100;
+
+    for (size_t i = 0; i < topRatedMovies.size() && i < 4; i++)
+    {
+        int col = i % 2;
+        int row = i / 2;
+
+        float itemX = startGridX + col * (colWidth + 40);
+        float itemY = startGridY + row * (rowHeight + 20);
+
+        float imgW = 110;
+        float imgH = 150;
+        Rectangle imgRect = { itemX, itemY + (rowHeight - imgH) / 2, imgW, imgH };
+
+        if (topRatedPhotos[i].id != 0)
+        {
+            DrawTexturePro(
+                topRatedPhotos[i],
+                { 0, 0, (float)topRatedPhotos[i].width, (float)topRatedPhotos[i].height },
+                imgRect,
+                { 0, 0 },
+                0.0f,
+                WHITE
+            );
+        }
+        else
+        {
+            DrawRectangleRec(imgRect, DARKGRAY);
+        }
+
+        DrawRectangleRoundedLines(imgRect, 0.1f, 6, 1, Fade(GRAY, 0.4f));
+
+        float textStartX = imgRect.x + imgRect.width + 20;
+
+        if (customFont.texture.id != 0)
+        {
+            DrawTextEx(customFont, topRatedMovies[i].getTitle().c_str(), { textStartX, itemY + 12 }, 30, 1, BLACK);
+            DrawTextEx(customFont, topRatedMovies[i].getGenre().c_str(), { textStartX, itemY + 44 }, 26, 1, GRAY);
+
+            char ratingStr[16];
+            snprintf(ratingStr, sizeof(ratingStr), "%.1f", topRatedMovies[i].getRating());
+
+            Vector2 scoreSize = MeasureTextEx(customFont, ratingStr, 22, 1);
+            float scoreX = itemX + colWidth - scoreSize.x - 10;
+            float starX = scoreX - 24;
+
+            DrawTextEx(customFont, "*", { starX, itemY + 20 }, 45, 1, GOLD);
+            DrawTextEx(customFont, ratingStr, { scoreX, itemY + 23 }, 25, 1, DARKGRAY);
         }
     }
 
