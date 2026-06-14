@@ -6,18 +6,18 @@
 
 Spots::Spots() {
     logo = LoadTexture("assets/logo.png");
-    iconHome = LoadTexture("assets/icon_home.png");
-    iconMap = LoadTexture("assets/icon_map.png");
-    iconFilms = LoadTexture("assets/icon_films.png");
-    iconOffers = LoadTexture("assets/icon_offers.png");
-    iconProfile = LoadTexture("assets/icon_profile.png");
-    iconLocationMarker = LoadTexture("assets/icon_map.png");
-    iconHalls = LoadTexture("assets/icon_clapperboard.png");
-    icon3D = LoadTexture("assets/icon_3d.png");
-    iconAudio = LoadTexture("assets/icon_sound.png");
-    iconBeach = LoadTexture("assets/icon_car.png");
-    iconPool = LoadTexture("assets/icon_beach.png");
-    iconSofa = LoadTexture("assets/icon_sofa.png");
+    iconHome = LoadTexture("assets/icons/icon_home.png");
+    iconMap = LoadTexture("assets/icons/icon_map.png");
+    iconFilms = LoadTexture("assets/icons/icon_films.png");
+    iconOffers = LoadTexture("assets/icons/icon_offers.png");
+    iconProfile = LoadTexture("assets/icons/icon_profile.png");
+    iconLocationMarker = LoadTexture("assets/icons/icon_map.png");
+    iconHalls = LoadTexture("assets/icons/icon_clapperboard.png");
+    icon3D = LoadTexture("assets/icons/icon_3d.png");
+    iconAudio = LoadTexture("assets/icons/icon_sound.png");
+    iconBeach = LoadTexture("assets/icons/icon_car.png");
+    iconPool = LoadTexture("assets/icons/icon_beach.png");
+    iconSofa = LoadTexture("assets/icons/icon_sofa.png");
 
     uiFont = LoadFont("assets/fonts/Roboto-Medium.ttf");
 

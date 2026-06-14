@@ -6,11 +6,11 @@ Films::Films() {
     background = LoadTexture("assets/booking.png");
     logo = LoadTexture("assets/logo.png");
 
-    iconHome = LoadTexture("assets/icon_home.png");
-    iconMap = LoadTexture("assets/icon_map.png");
-    iconFilms = LoadTexture("assets/icon_films.png");
-    iconOffers = LoadTexture("assets/icon_offers.png");
-    iconProfile = LoadTexture("assets/icon_profile.png");
+    iconHome = LoadTexture("assets/icons/icon_home.png");
+    iconMap = LoadTexture("assets/icons/icon_map.png");
+    iconFilms = LoadTexture("assets/icons/icon_films.png");
+    iconOffers = LoadTexture("assets/icons/icon_offers.png");
+    iconProfile = LoadTexture("assets/icons/icon_profile.png");
 
     customFont = LoadFont("assets/fonts/Roboto-Medium.ttf");
 
@@ -29,7 +29,7 @@ Films::Films() {
 
     currentScreen = nullptr;
     scrollOffset = 0.0f;
-    maxScroll = 500.0f;
+    maxScroll = 800.0f;
     activeIndex = 2;
     searchActive = false;
     letterCount = 0;

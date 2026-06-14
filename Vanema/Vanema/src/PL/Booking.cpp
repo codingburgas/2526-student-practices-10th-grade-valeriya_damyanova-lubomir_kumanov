@@ -26,17 +26,17 @@ Booking::Booking()
     logo = LoadTexture("assets/logo.png");
     if (logo.id == 0) printf("Failed to load: assets/logo.png\n");
 
-    iconHome = LoadTexture("assets/icon_home.png");
-    iconMap = LoadTexture("assets/icon_map.png");
-    iconFilms = LoadTexture("assets/icon_films.png");
-    iconOffers = LoadTexture("assets/icon_offers.png");
-    iconProfile = LoadTexture("assets/icon_profile.png");
+    iconHome = LoadTexture("assets/icons/icon_home.png");
+    iconMap = LoadTexture("assets/icons/icon_map.png");
+    iconFilms = LoadTexture("assets/icons/icon_films.png");
+    iconOffers = LoadTexture("assets/icons/icon_offers.png");
+    iconProfile = LoadTexture("assets/icons/icon_profile.png");
 
-    if (iconHome.id == 0) printf("Failed to load: assets/icon_home.png\n");
-    if (iconMap.id == 0) printf("Failed to load: assets/icon_map.png\n");
-    if (iconFilms.id == 0) printf("Failed to load: assets/icon_films.png\n");
-    if (iconOffers.id == 0) printf("Failed to load: assets/icon_offers.png\n");
-    if (iconProfile.id == 0) printf("Failed to load: assets/icon_profile.png\n");
+    if (iconHome.id == 0) printf("Failed to load: assets/icons/icon_home.png\n");
+    if (iconMap.id == 0) printf("Failed to load: assets/icons/icon_map.png\n");
+    if (iconFilms.id == 0) printf("Failed to load: assets/icons/icon_films.png\n");
+    if (iconOffers.id == 0) printf("Failed to load: assets/icons/icon_offers.png\n");
+    if (iconProfile.id == 0) printf("Failed to load: assets/icons/icon_profile.png\n");
 
     for (int i = 0; i < 4; i++)
     {

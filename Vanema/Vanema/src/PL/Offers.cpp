@@ -5,22 +5,22 @@
 
 Offers::Offers() {
     logo = LoadTexture("assets/logo.png");
-    iconHome = LoadTexture("assets/icon_home.png");
-    iconMap = LoadTexture("assets/icon_map.png");
-    iconFilms = LoadTexture("assets/icon_films.png");
-    iconOffers = LoadTexture("assets/icon_offers.png");
-    iconProfile = LoadTexture("assets/icon_profile.png");
-    iconLocationMarker = LoadTexture("assets/icon_map.png");
+    iconHome = LoadTexture("assets/icons/icon_home.png");
+    iconMap = LoadTexture("assets/icons/icon_map.png");
+    iconFilms = LoadTexture("assets/icons/icon_films.png");
+    iconOffers = LoadTexture("assets/icons/icon_offers.png");
+    iconProfile = LoadTexture("assets/icons/icon_profile.png");
+    iconLocationMarker = LoadTexture("assets/icons/icon_map.png");
 
-    iconTicket = LoadTexture("assets/icon_ticket.png");       
-    iconGift = LoadTexture("assets/icon_gift.png");
-    iconStar = LoadTexture("assets/icon_star.png");
+    iconTicket = LoadTexture("assets/icons/icon_ticket.png");
+    iconGift = LoadTexture("assets/icons/icon_gift.png");
+    iconStar = LoadTexture("assets/icons/icon_star.png");
 
     uiFont = LoadFont("assets/fonts/Roboto-Medium.ttf");
 
     scrollOffset = 0.0f;
-    maxScroll = 800.0f;
-    activeIndex = 3; 
+    maxScroll = 600.0f;
+    activeIndex = 3; // Kept at 3 to highlight "Offers" on this screen natively
     activeCityIndex = 0;
 
     currentScreen = nullptr;
@@ -39,12 +39,12 @@ void Offers::InitializeData() {
     cities = { "All Locations", "Burgas", "Nessebar", "Pomorie", "Sozopol", "Primorsko", "Sunny Beach", "Aheloy", "Kableshkovo" };
 
     promoOffers = {
-        { "Combo Madness", "Get large popcorn, two soft drinks, and crispy nachos\nat a special package discount rate.", "COMBO30", "30% OFF", "Valid until June 30", true },
-        { "Student Special", "Show your valid Student ID card at any ticket desk\nand claim your discount ticket entry.", "STUDENT20", "20% OFF", "Every Mon - Thu", true },
-        { "Family Weekend Matinee", "Four tickets with matching medium snacks pack included\nfor morning animation features.", "FAMILYPACK", "Save 25 BGN", "Sat & Sun mornings", true },
-        { "Late Night Drive-In Perks", "Get complimentary hot drinks or milkshakes when booking\na premium vehicle space for double-features.", "LATEVANEMA", "Free Drinks", "After 22:00 Only", true },
-        { "VIP Private Zone Upgrade", "Book a private lounge for 10+ visitors and receive\ncomplimentary premium catering appetizers on us.", "VIPUPGRADE", "Free Catering", "Reservation required", true },
-        { "Early Bird Cinema", "Watch any standard IMAX digital screening before 13:00\nfor a flat-rate special price entry.", "EARLYBIRD", "Flat Rate", "Weekdays Only", true }
+        { "Combo Madness", "Get large popcorn, two soft drinks, and crispy nachos at a special package discount rate.", "COMBO30", "30% OFF", "Valid until June 30", true },
+        { "Student Special", "Show your valid Student ID card at any ticket desk and claim your discount ticket entry right away.", "STUDENT20", "20% OFF", "Every Mon - Thu", true },
+        { "Family Weekend Matinee", "Four tickets with matching medium snacks pack included for morning animation features.", "FAMILYPACK", "Save 25 BGN", "Sat & Sun mornings", true },
+        { "Late Night Drive-In Perks", "Get complimentary hot drinks or milkshakes when booking a premium vehicle space for double-features.", "LATEVANEMA", "Free Drinks", "After 22:00 Only", true },
+        { "VIP Private Zone Upgrade", "Book a private lounge for 10+ visitors and receive complimentary premium catering appetizers on us.", "VIPUPGRADE", "Free Catering", "Reservation required", true },
+        { "Early Bird Cinema", "Watch any standard IMAX digital screening before 13:00 for a flat-rate special price entry.", "EARLYBIRD", "Flat Rate", "Weekdays Only", true }
     };
 }
 
@@ -86,21 +86,35 @@ void Offers::DrawNavigationBar() {
     int screenWidth = GetScreenWidth();
     float navWidth = screenWidth * 0.9f;
     float navHeight = 100.0f;
-    Rectangle navBarRect = { (screenWidth - navWidth) / 2, 20, navWidth, navHeight };
+
+    Rectangle navBarRect = {
+        (screenWidth - navWidth) / 2,
+        20,
+        navWidth,
+        navHeight
+    };
 
     DrawRectangleRounded(navBarRect, 0.5f, 10, WHITE);
 
-    if (logo.id != 0) DrawTextureEx(logo, { navBarRect.x - 2, navBarRect.y - 20 }, 0.0f, 0.3f, WHITE);
-    if (uiFont.texture.id != 0) DrawTextEx(uiFont, "Vanema", { navBarRect.x + 130, navBarRect.y + 40 }, 34, 1, BLACK);
+    if (logo.id != 0) {
+        DrawTextureEx(logo, { navBarRect.x - 2, navBarRect.y - 20 }, 0.0f, 0.3f, WHITE);
+    }
+
+    if (uiFont.texture.id != 0) {
+        DrawTextEx(uiFont, "Vanema", { navBarRect.x + 130, navBarRect.y + 40 }, 34, 1, BLACK);
+    }
 
     const char* labels[] = { "Home", "Spots", "Films", "Offers" };
     Texture2D icons[] = { iconHome, iconMap, iconFilms, iconOffers };
+
     float spacing = 94.0f;
     float startX = navBarRect.x + 930;
+
     Vector2 mousePos = GetMousePosition();
 
     for (int i = 0; i < 4; i++) {
         float itemX = startX + (i * spacing);
+
         Rectangle btnRect = { itemX, navBarRect.y, 110, navHeight };
         bool isHovered = CheckCollisionPointRec(mousePos, btnRect);
         Color tint = (i == activeIndex) ? BLUE : DARKBLUE;
@@ -108,24 +122,63 @@ void Offers::DrawNavigationBar() {
         if (isHovered) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                activeIndex = i;
                 if (currentScreen != nullptr) {
-                    if (i == 0) *currentScreen = 2;
-                    if (i == 1) *currentScreen = 3; 
-                    if (i == 2) *currentScreen = 4; 
+                    if (i == 0)      *currentScreen = 0; // Synchronized to Booking's Home Index
+                    else if (i == 1) *currentScreen = 5; // Synchronized to Booking's Spots Index
+                    else if (i == 2) *currentScreen = 4; // Synchronized to Booking's Films Index
+                    else if (i == 3) *currentScreen = 6; // Synchronized to Booking's Offers Index
                 }
             }
         }
-        if (icons[i].id != 0) DrawTextureEx(icons[i], { itemX + 50, navBarRect.y + 5 }, 0.0f, 0.1f, tint);
-        if (uiFont.texture.id != 0) DrawTextEx(uiFont, labels[i], { itemX + 58, navBarRect.y + 70 }, 20, 1, BLACK);
+
+        if (icons[i].id != 0) {
+            DrawTextureEx(icons[i], { itemX + 50, navBarRect.y + 5 }, 0.0f, 0.1f, tint);
+        }
+
+        if (uiFont.texture.id != 0) {
+            DrawTextEx(uiFont, labels[i], { itemX + 58, navBarRect.y + 70 }, 20, 1, BLACK);
+        }
     }
 
     Rectangle profileRect = { navBarRect.x + navWidth - 70, navBarRect.y + 15, 50, 50 };
-    if (CheckCollisionPointRec(mousePos, profileRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr) {
-        *currentScreen = 1;
+    bool isProfileHovered = CheckCollisionPointRec(mousePos, profileRect);
+
+    if (isProfileHovered) {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr) {
+            *currentScreen = 1; // Login screen index
+        }
     }
-    if (iconProfile.id != 0) DrawTextureEx(iconProfile, { profileRect.x - 15, profileRect.y + (isLoggedIn ? -5.0f : 10.0f) }, 0.0f, 0.1f, DARKBLUE);
-    if (isLoggedIn && !userName.empty() && uiFont.texture.id != 0) {
-        DrawTextEx(uiFont, userName.c_str(), { profileRect.x, profileRect.y + profileRect.height + 5.0f }, 22, 1, BLACK);
+
+    if (iconProfile.id != 0) {
+        float iconYOffset = isLoggedIn ? -5.0f : 10.0f;
+
+        DrawTextureEx(
+            iconProfile,
+            { profileRect.x - 15, profileRect.y + iconYOffset },
+            0.0f,
+            0.1f,
+            isProfileHovered ? BLUE : DARKBLUE 
+        );
+    }
+
+    if (isLoggedIn && !userName.empty()) {
+        float fontSize = 22.0f;
+        Color nameColor = BLACK;
+
+        if (uiFont.texture.id != 0) {
+            Vector2 textSize = MeasureTextEx(uiFont, userName.c_str(), fontSize, 1);
+            float textX = profileRect.x + (profileRect.width / 2.0f) - (textSize.x / 1.5f); 
+            float textY = profileRect.y + profileRect.height + 5.0f;
+
+            DrawTextEx(uiFont, userName.c_str(), { textX, textY }, fontSize, 1, nameColor);
+        }
+        else {
+            int textWidth = MeasureText(userName.c_str(), 16);
+            int textX = profileRect.x + (profileRect.width / 2) - (textWidth / 2);
+            DrawText(userName.c_str(), textX, profileRect.y + profileRect.height + 5, 16, BLACK);
+        }
     }
 }
 
@@ -222,36 +275,103 @@ void Offers::DrawOfferCards(float& currentY, Vector2 mousePos) {
         }
 
         float textX = ox + 145;
+        float maxTextWidth = cardWidth - 170;
+
         if (uiFont.texture.id != 0) {
             DrawTextEx(uiFont, promoOffers[i].title.c_str(), { textX, oy + 26 }, 32, 1, Color{ 16, 25, 48, 255 });
 
             std::stringstream ss(promoOffers[i].description);
-            std::string line;
+            std::string word;
+            std::string currentLine = "";
             float lineYOffset = oy + 72;
-            float customLineHeight = 32.0f;
+            float customLineHeight = 28.0f;
 
-            while (std::getline(ss, line, '\n')) {
-                DrawTextEx(uiFont, line.c_str(), { textX, lineYOffset }, 25, 1, GRAY);
-                lineYOffset += customLineHeight;
+            while (ss >> word) {
+                std::string testLine = currentLine.empty() ? word : currentLine + " " + word;
+                Vector2 textSize = MeasureTextEx(uiFont, testLine.c_str(), 23, 1);
+
+                if (textSize.x > maxTextWidth) {
+                    DrawTextEx(uiFont, currentLine.c_str(), { textX, lineYOffset }, 23, 1, GRAY);
+                    lineYOffset += customLineHeight;
+                    currentLine = word;
+                }
+                else {
+                    currentLine = testLine;
+                }
+            }
+            if (!currentLine.empty()) {
+                DrawTextEx(uiFont, currentLine.c_str(), { textX, lineYOffset }, 23, 1, GRAY);
             }
         }
-        float tagY = oy + 182;
 
+        float tagY = oy + 182;
         float tw1 = uiFont.texture.id != 0 ? MeasureTextEx(uiFont, promoOffers[i].discountTag.c_str(), 24, 1).x : 80;
         Rectangle tagRect1 = { textX, tagY - 4, tw1 + 24, 38 };
         DrawRectangleRounded(tagRect1, 0.3f, 6, Color{ 16, 25, 48, 255 });
-        if (uiFont.texture.id != 0) DrawTextEx(uiFont, promoOffers[i].discountTag.c_str(), { textX + 12, tagY + 3 }, 20, 1, WHITE);
+        if (uiFont.texture.id != 0) DrawTextEx(uiFont, promoOffers[i].discountTag.c_str(), { textX + 12, tagY + 4 }, 20, 1, WHITE);
 
-        float startTag2X = textX + tw1 + 38;
+        float startTag2X = textX + tw1 + 46;
         float tw2 = uiFont.texture.id != 0 ? MeasureTextEx(uiFont, promoOffers[i].validity.c_str(), 24, 1).x : 100;
-        Rectangle tagRect2 = { startTag2X, tagY - 4, tw2 + 24, 38 };
+        Rectangle tagRect2 = { startTag2X, tagY - 4, tw2 + 46, 38 };
         DrawRectangleRounded(tagRect2, 0.3f, 6, Color{ 240, 244, 250, 255 });
         DrawRectangleRoundedLines(tagRect2, 0.3f, 6, 1.0f, LIGHTGRAY);
         if (uiFont.texture.id != 0) DrawTextEx(uiFont, promoOffers[i].validity.c_str(), { startTag2X + 12, tagY + 3 }, 20, 1, Color{ 16, 25, 48, 255 });
     }
 
-    int totalRows = (promoOffers.size() + cardsPerRow - 1) / cardsPerRow;
-    currentY += totalRows * (cardHeight + gap) + 40;
+    int totalGridRows = (promoOffers.size() + cardsPerRow - 1) / cardsPerRow;
+    currentY += totalGridRows * (cardHeight + gap) + 20;
+
+    if (isLoggedIn && isAdmin) {
+        float slotWidth = 340.0f;
+        float slotHeight = 80.0f;
+        float slotX = startX + (contentWidth - slotWidth) / 2.0f;
+        Rectangle slotRect = { slotX, currentY, slotWidth, slotHeight };
+
+        bool isSlotHovered = CheckCollisionPointRec(mousePos, slotRect);
+        Color slotBg = isSlotHovered ? Color{ 230, 240, 255, 255 } : WHITE;
+        Color borderCol = isSlotHovered ? Color{ 16, 25, 48, 255 } : DARKBLUE;
+
+        if (isSlotHovered) {
+            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                
+            }
+        }
+
+        DrawRectangleRounded(slotRect, 0.25f, 8, slotBg);
+        DrawRectangleRoundedLines(slotRect, 0.25f, 8, 2.0f, borderCol);
+
+        float midY = slotRect.y + (slotHeight / 2.0f);
+
+        Vector2 sizeTxt = { 0, 0 };
+        if (uiFont.texture.id != 0) {
+            sizeTxt = MeasureTextEx(uiFont, "Add New Offer", 24, 1);
+        }
+        else {
+            sizeTxt = Vector2{ 150.0f, 24.0f };
+        }
+
+        float spacing = 15.0f;
+        float iconRadius = 16.0f;
+        float totalGroupWidth = (iconRadius * 2.0f) + spacing + sizeTxt.x;
+        float groupStartX = slotRect.x + (slotWidth - totalGroupWidth) / 2.0f;
+
+        float circleCenterX = groupStartX + iconRadius;
+        DrawCircleV({ circleCenterX, midY }, iconRadius, Color{ 16, 25, 48, 255 });
+
+        DrawLineEx({ circleCenterX - 7, midY }, { circleCenterX + 7, midY }, 3.0f, WHITE);
+        DrawLineEx({ circleCenterX, midY - 7 }, { circleCenterX, midY + 7 }, 3.0f, WHITE);
+
+        float textStartX = circleCenterX + iconRadius + spacing;
+        if (uiFont.texture.id != 0) {
+            DrawTextEx(uiFont, "Add New Offer", { textStartX, midY - (sizeTxt.y / 2.0f) }, 24, 1, Color{ 16, 25, 48, 255 });
+        }
+
+        currentY += slotHeight + 60;
+    }
+    else {
+        currentY += 40;
+    }
 }
 
 void Offers::DrawScrollbar() {
