@@ -1,6 +1,8 @@
 #include "Spots.h"
 #include <stdio.h>
 #include <string.h>
+#include <sstream>
+#include <vector>
 
 Spots::Spots() {
     logo = LoadTexture("assets/logo.png");
@@ -10,14 +12,14 @@ Spots::Spots() {
     iconOffers = LoadTexture("assets/icon_offers.png");
     iconProfile = LoadTexture("assets/icon_profile.png");
     iconLocationMarker = LoadTexture("assets/icon_map.png");
-    iconHalls = LoadTexture("assets/icon_halls.png");
+    iconHalls = LoadTexture("assets/icon_clapperboard.png");
     icon3D = LoadTexture("assets/icon_3d.png");
-    iconAudio = LoadTexture("assets/icon_audio.png");
-    iconBeach = LoadTexture("assets/icon_beach.png"); // Note: You can change this asset path to a car icon later if you wish!
-    iconPool = LoadTexture("assets/icon_pool.png");
+    iconAudio = LoadTexture("assets/icon_sound.png");
+    iconBeach = LoadTexture("assets/icon_car.png");
+    iconPool = LoadTexture("assets/icon_beach.png");
     iconSofa = LoadTexture("assets/icon_sofa.png");
 
-    customFont = LoadFont("assets/fonts/PlayfairDisplay-Medium.ttf");
+    uiFont = LoadFont("assets/fonts/Roboto-Medium.ttf");
 
     scrollOffset = 0.0f;
     maxScroll = 1200.0f;
@@ -29,7 +31,7 @@ Spots::Spots() {
 
     currentScreen = nullptr;
     isLoggedIn = false;
-    isAdmin = false;  // Initialized to false
+    isAdmin = false;
     userName = "";
 
     InitializeData();
@@ -85,7 +87,7 @@ void Spots::Unload() {
     if (iconBeach.id != 0) UnloadTexture(iconBeach);
     if (iconPool.id != 0) UnloadTexture(iconPool);
     if (iconSofa.id != 0) UnloadTexture(iconSofa);
-    if (customFont.texture.id != 0) UnloadFont(customFont);
+    if (uiFont.texture.id != 0) UnloadFont(uiFont);
 }
 
 void Spots::Update() {
@@ -106,7 +108,7 @@ void Spots::DrawNavigationBar() {
     DrawRectangleRounded(navBarRect, 0.5f, 10, WHITE);
 
     if (logo.id != 0) DrawTextureEx(logo, { navBarRect.x - 2, navBarRect.y - 20 }, 0.0f, 0.3f, WHITE);
-    if (customFont.texture.id != 0) DrawTextEx(customFont, "Vanema", { navBarRect.x + 130, navBarRect.y + 40 }, 34, 1, BLACK);
+    if (uiFont.texture.id != 0) DrawTextEx(uiFont, "Vanema", { navBarRect.x + 130, navBarRect.y + 40 }, 34, 1, BLACK);
 
     const char* labels[] = { "Home", "Spots", "Films", "Offers" };
     Texture2D icons[] = { iconHome, iconMap, iconFilms, iconOffers };
@@ -131,7 +133,7 @@ void Spots::DrawNavigationBar() {
             }
         }
         if (icons[i].id != 0) DrawTextureEx(icons[i], { itemX + 50, navBarRect.y + 5 }, 0.0f, 0.1f, tint);
-        if (customFont.texture.id != 0) DrawTextEx(customFont, labels[i], { itemX + 58, navBarRect.y + 70 }, 20, 1, BLACK);
+        if (uiFont.texture.id != 0) DrawTextEx(uiFont, labels[i], { itemX + 58, navBarRect.y + 70 }, 20, 1, BLACK);
     }
 
     Rectangle profileRect = { navBarRect.x + navWidth - 70, navBarRect.y + 15, 50, 50 };
@@ -139,8 +141,8 @@ void Spots::DrawNavigationBar() {
         *currentScreen = 1;
     }
     if (iconProfile.id != 0) DrawTextureEx(iconProfile, { profileRect.x - 15, profileRect.y + (isLoggedIn ? -5.0f : 10.0f) }, 0.0f, 0.1f, DARKBLUE);
-    if (isLoggedIn && !userName.empty() && customFont.texture.id != 0) {
-        DrawTextEx(customFont, userName.c_str(), { profileRect.x, profileRect.y + profileRect.height + 5.0f }, 22, 1, BLACK);
+    if (isLoggedIn && !userName.empty() && uiFont.texture.id != 0) {
+        DrawTextEx(uiFont, userName.c_str(), { profileRect.x, profileRect.y + profileRect.height + 5.0f }, 22, 1, BLACK);
     }
 }
 
@@ -148,44 +150,46 @@ void Spots::DrawSearchBarAndFilters() {
     int screenWidth = GetScreenWidth();
     float contentWidth = screenWidth * 0.9f;
     float startX = (screenWidth - contentWidth) / 2;
-    Vector2 mousePos = GetMousePosition();
 
     float titleY = 150 - scrollOffset;
 
-    if (customFont.texture.id != 0) {
-        DrawTextEx(customFont, "Locations", { startX + 20, titleY }, 42, 1, Color{ 16, 25, 48, 255 });
-        DrawTextEx(customFont, "Find a Vanema cinema near you in Burgas region.", { startX + 20, titleY + 50 }, 20, 1, GRAY);
+    if (uiFont.texture.id != 0) {
+        DrawTextEx(uiFont, "Locations", { startX + 20, titleY }, 52, 1, Color{ 16, 25, 48, 255 });
+        DrawTextEx(uiFont, "Find a Vanema cinema near you in Burgas region.", { startX + 20, titleY + 65 }, 24, 1, GRAY);
     }
 
-    float chipY = titleY + 110;
+    float chipY = titleY + 135;
     float currentChipX = startX + 20;
 
-    for (size_t i = 0; i < cities.size(); i++) {
-        float textWidth = customFont.texture.id != 0 ? MeasureTextEx(customFont, cities[i].c_str(), 19, 1).x : 80;
-        float chipWidth = textWidth + 40;
-        Rectangle chipRect = { currentChipX, chipY, chipWidth, 42 };
+    float chipFontSize = 22.0f;
+    float chipGap = 8.0f;
 
-        bool hoverChip = CheckCollisionPointRec(mousePos, chipRect);
-        if (hoverChip) {
-            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) activeCityIndex = i;
-        }
+    for (size_t i = 0; i < cities.size(); i++) {
+        float textWidth = uiFont.texture.id != 0 ? MeasureTextEx(uiFont, cities[i].c_str(), chipFontSize, 1).x : 85;
+
+        float chipWidth = textWidth + (i > 0 ? 56 : 30);
+        Rectangle chipRect = { currentChipX, chipY, chipWidth, 50 };
 
         Color bgCol = (i == activeCityIndex) ? Color{ 16, 25, 48, 255 } : WHITE;
         Color textCol = (i == activeCityIndex) ? WHITE : Color{ 16, 25, 48, 255 };
 
-        DrawRectangleRounded(chipRect, 0.3f, 8, bgCol);
-        DrawRectangleRoundedLines(chipRect, 0.3f, 8, 1, LIGHTGRAY);
+        DrawRectangleRounded(chipRect, 0.25f, 8, bgCol);
+        DrawRectangleRoundedLines(chipRect, 0.25f, 8, 1.5f, Fade(LIGHTGRAY, 0.8f));
+
+        float textYOffset = chipRect.y + (chipRect.height - chipFontSize) / 2.0f;
 
         if (iconLocationMarker.id != 0 && i > 0) {
-            DrawTextureEx(iconLocationMarker, { chipRect.x + 12, chipRect.y + 11 }, 0.0f, 0.04f, textCol);
-            if (customFont.texture.id != 0) DrawTextEx(customFont, cities[i].c_str(), { chipRect.x + 35, chipRect.y + 11 }, 19, 1, textCol);
+            float iconHeight = iconLocationMarker.height * 0.050f;
+            float iconYOffset = chipRect.y + (chipRect.height - iconHeight) / 2.0f;
+
+            DrawTextureEx(iconLocationMarker, { chipRect.x + 10, iconYOffset }, 0.0f, 0.050f, textCol);
+            if (uiFont.texture.id != 0) DrawTextEx(uiFont, cities[i].c_str(), { chipRect.x + 44, textYOffset }, chipFontSize, 1, textCol);
         }
         else {
-            if (customFont.texture.id != 0) DrawTextEx(customFont, cities[i].c_str(), { chipRect.x + 20, chipRect.y + 11 }, 19, 1, textCol);
+            if (uiFont.texture.id != 0) DrawTextEx(uiFont, cities[i].c_str(), { chipRect.x + 15, textYOffset }, chipFontSize, 1, textCol);
         }
 
-        currentChipX += chipWidth + 15;
+        currentChipX += chipWidth + chipGap;
     }
 }
 
@@ -194,16 +198,16 @@ void Spots::DrawCinemaCards(float& currentY, Vector2 mousePos) {
     float contentWidth = screenWidth * 0.9f;
     float startX = (screenWidth - contentWidth) / 2;
 
-    currentY += 190;
-    if (customFont.texture.id != 0) DrawTextEx(customFont, "Vanema Cinemas", { startX + 20, currentY }, 26, 1, Color{ 16, 25, 48, 255 });
+    currentY += 240;
+    if (uiFont.texture.id != 0) DrawTextEx(uiFont, "Vanema Cinemas", { startX + 20, currentY }, 32, 1, Color{ 16, 25, 48, 255 });
 
-    currentY += 40;
+    currentY += 50;
 
     const int cardsPerRow = 3;
     float cardGap = 20.0f;
 
     float cardWidth = (contentWidth - (cardsPerRow - 1) * cardGap) / cardsPerRow;
-    float cardHeight = 260;
+    float cardHeight = 220;
 
     for (size_t i = 0; i < locations.size(); i++) {
         int row = i / cardsPerRow;
@@ -214,67 +218,64 @@ void Spots::DrawCinemaCards(float& currentY, Vector2 mousePos) {
 
         Rectangle cardRect = { cx, cy, cardWidth, cardHeight };
         DrawRectangleRounded(cardRect, 0.08f, 10, WHITE);
-        DrawRectangleRoundedLines(cardRect, 0.08f, 10, 1, Fade(LIGHTGRAY, 0.6f));
+        DrawRectangleRoundedLines(cardRect, 0.08f, 10, 1.5f, Fade(LIGHTGRAY, 0.8f));
 
-        if (iconLocationMarker.id != 0) DrawTextureEx(iconLocationMarker, { cx + 20, cy + 20 }, 0.0f, 0.07f, Color{ 16, 25, 48, 255 });
-
-        if (customFont.texture.id != 0) {
-            DrawTextEx(customFont, "Vanema", { cx + 65, cy + 18 }, 20, 1, GRAY);
-            DrawTextEx(customFont, locations[i].name.c_str(), { cx + 65, cy + 42 }, 30, 1, Color{ 16, 25, 48, 255 });
-            DrawTextEx(customFont, locations[i].address.c_str(), { cx + 22, cy + 90 }, 21, 1, GRAY);
+        if (iconLocationMarker.id != 0) {
+            DrawTextureEx(iconLocationMarker, { cx + 15, cy + 24 }, 0.0f, 0.085f, Color{ 16, 25, 48, 255 });
         }
 
-        float itemY = cy + 135;
-        if (iconHalls.id != 0) DrawTextureEx(iconHalls, { cx + 22, itemY }, 0.0f, 0.04f, Color{ 16, 25, 48, 255 });
+        if (uiFont.texture.id != 0) {
+            DrawTextEx(uiFont, "Vanema", { cx + 76, cy + 22 }, 22, 1, GRAY);
+            DrawTextEx(uiFont, locations[i].name.c_str(), { cx + 76, cy + 48 }, 32, 1, Color{ 16, 25, 48, 255 });
+            DrawTextEx(uiFont, locations[i].address.c_str(), { cx + 24, cy + 105 }, 23, 1, GRAY);
+        }
+
+        float itemY = cy + 160;
+        float itemTextSize = 24.0f;
+
+        if (iconHalls.id != 0) {
+            float hIconH = iconHalls.height * 0.055f;
+            float hIconY = itemY + (itemTextSize - hIconH) / 2.0f;
+            DrawTextureEx(iconHalls, { cx + 24, hIconY }, 0.0f, 0.055f, Color{ 16, 25, 48, 255 });
+        }
         char hallsStr[16]; sprintf(hallsStr, "%d Halls", locations[i].halls);
-        if (customFont.texture.id != 0) DrawTextEx(customFont, hallsStr, { cx + 48, itemY + 3 }, 20, 1, Color{ 16, 25, 48, 255 });
+        if (uiFont.texture.id != 0) DrawTextEx(uiFont, hallsStr, { cx + 64, itemY }, itemTextSize, 1, Color{ 16, 25, 48, 255 });
 
-        if (icon3D.id != 0) DrawTextureEx(icon3D, { cx + 125, itemY }, 0.0f, 0.04f, Color{ 16, 25, 48, 255 });
-        if (customFont.texture.id != 0) DrawTextEx(customFont, "3D", { cx + 152, itemY + 3 }, 20, 1, Color{ 16, 25, 48, 255 });
-
-        if (iconAudio.id != 0) DrawTextureEx(iconAudio, { cx + 200, itemY }, 0.0f, 0.04f, Color{ 16, 25, 48, 255 });
-        if (customFont.texture.id != 0)     DrawTextEx(customFont, "Dolby Atmos", { cx + 225, itemY + 3 }, 18, 1, Color{ 16, 25, 48, 255 });
-
-        Rectangle btnRect = { cx + 20, cy + 195, cardWidth - 40, 45 };
-        bool hoverBtn = CheckCollisionPointRec(mousePos, btnRect);
-
-        DrawRectangleRounded(btnRect, 0.2f, 6, WHITE);
-        DrawRectangleRoundedLines(btnRect, 0.2f, 6, 1.5f, Color{ 16, 25, 48, 255 });
-        if (customFont.texture.id != 0) {
-            DrawTextEx(customFont,
-                "View Details",
-                { btnRect.x + (btnRect.width / 2) - 60, btnRect.y + 11 },
-                22, 1,
-                Color{ 16, 25, 48, 255 });
+        if (icon3D.id != 0) {
+            float icon3DH = icon3D.height * 0.055f;
+            float icon3DY = itemY + (itemTextSize - icon3DH) / 2.0f;
+            DrawTextureEx(icon3D, { cx + 160, icon3DY }, 0.0f, 0.055f, Color{ 16, 25, 48, 255 });
         }
+        if (uiFont.texture.id != 0) DrawTextEx(uiFont, "2D,3D,IMAX", { cx + 160, itemY }, itemTextSize, 1, Color{ 16, 25, 48, 255 });
 
-        if (hoverBtn) {
-            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-            DrawRectangleRounded(btnRect, 0.2f, 6, Fade(LIGHTGRAY, 0.2f));
+        if (iconAudio.id != 0) {
+            float audIconH = iconAudio.height * 0.055f;
+            float audIconY = itemY + (itemTextSize - audIconH) / 2.0f;
+            DrawTextureEx(iconAudio, { cx + 298, audIconY }, 0.0f, 0.055f, Color{ 16, 25, 48, 255 });
         }
+        if (uiFont.texture.id != 0) DrawTextEx(uiFont, "Dolby", { cx + 346, itemY }, itemTextSize, 1, Color{ 16, 25, 48, 255 });
     }
 
     int rows = (locations.size() + cardsPerRow - 1) / cardsPerRow;
-    currentY += rows * (cardHeight + cardGap) + 10;
+    currentY += rows * (cardHeight + cardGap) + 20;
 }
 
 void Spots::DrawExperiences(float& currentY) {
+    Vector2 mousePos = GetMousePosition();
     int screenWidth = GetScreenWidth();
     float contentWidth = screenWidth * 0.9f;
     float startX = (screenWidth - contentWidth) / 2;
-    Vector2 mousePos = GetMousePosition();
 
-    if (customFont.texture.id != 0) DrawTextEx(customFont, "Vanema Experiences", { startX + 20, currentY }, 26, 1, Color{ 16, 25, 48, 255 });
-    currentY += 40;
+    if (uiFont.texture.id != 0) DrawTextEx(uiFont, "Vanema Experiences", { startX + 20, currentY }, 32, 1, Color{ 16, 25, 48, 255 });
+    currentY += 50;
 
-    // Modified layout: 2 items per row, larger size boxes
     const int cardsPerRow = 2;
     float gap = 24.0f;
     float expWidth = (contentWidth - (cardsPerRow - 1) * gap) / cardsPerRow;
-    float expHeight = 180; // Expanded box dimensions
+
+    float expHeight = 240;
     Texture2D expIcons[] = { iconBeach, iconPool, iconSofa };
 
-    // Draw the 3 explicit existing experiences
     for (size_t i = 0; i < experiences.size(); i++) {
         int row = i / cardsPerRow;
         int col = i % cardsPerRow;
@@ -284,30 +285,38 @@ void Spots::DrawExperiences(float& currentY) {
         Rectangle expRect = { ex, ey, expWidth, expHeight };
 
         DrawRectangleRounded(expRect, 0.06f, 10, WHITE);
-        DrawRectangleRoundedLines(expRect, 0.06f, 10, 1, Fade(LIGHTGRAY, 0.6f));
+        DrawRectangleRoundedLines(expRect, 0.06f, 10, 1.5f, Fade(LIGHTGRAY, 0.8f));
 
-        if (expIcons[i].id != 0) DrawTextureEx(expIcons[i], { ex + 30, ey + 45 }, 0.0f, 0.09f, Color{ 16, 25, 48, 255 });
+        if (expIcons[i].id != 0) DrawTextureEx(expIcons[i], { ex + 30, ey + 62 }, 0.0f, 0.11f, Color{ 16, 25, 48, 255 });
 
-        float textX = ex + 110;
-        if (customFont.texture.id != 0) {
-            DrawTextEx(customFont, experiences[i].title.c_str(), { textX, ey + 30 }, 24, 1, Color{ 16, 25, 48, 255 });
-            DrawTextEx(customFont, experiences[i].description.c_str(), { textX, ey + 65 }, 18, 1, GRAY);
+        float textX = ex + 145;
+        if (uiFont.texture.id != 0) {
+            DrawTextEx(uiFont, experiences[i].title.c_str(), { textX, ey + 26 }, 32, 1, Color{ 16, 25, 48, 255 });
+
+            std::stringstream ss(experiences[i].description);
+            std::string line;
+            float lineYOffset = ey + 72;
+            float customLineHeight = 32.0f;
+
+            while (std::getline(ss, line, '\n')) {
+                DrawTextEx(uiFont, line.c_str(), { textX, lineYOffset }, 25, 1, GRAY);
+                lineYOffset += customLineHeight;
+            }
         }
 
-        float tagY = ey + 130;
+        float tagY = ey + 182;
         float currentTagX = textX;
         const char* tags[] = { experiences[i].tag1.c_str(), experiences[i].tag2.c_str(), experiences[i].tag3.c_str() };
 
         for (int j = 0; j < 3; j++) {
             if (strlen(tags[j]) == 0) continue;
-            float tw = customFont.texture.id != 0 ? MeasureTextEx(customFont, tags[j], 15, 1).x : 50;
+            float tw = uiFont.texture.id != 0 ? MeasureTextEx(uiFont, tags[j], 28, 1).x : 60;
 
-            if (customFont.texture.id != 0) DrawTextEx(customFont, tags[j], { currentTagX + 15, tagY + 2 }, 15, 1, Color{ 16, 25, 48, 255 });
+            if (uiFont.texture.id != 0) DrawTextEx(uiFont, tags[j], { currentTagX + 15, tagY }, 24, 1, Color{ 16, 25, 48, 255 });
             currentTagX += tw + 30;
         }
     }
 
-    // Dynamic Slot Assignment (Index 3 -> Row 1, Col 1)
     int dynamicRow = 3 / cardsPerRow;
     int dynamicCol = 3 % cardsPerRow;
     float slotX = startX + dynamicCol * (expWidth + gap);
@@ -315,48 +324,43 @@ void Spots::DrawExperiences(float& currentY) {
     Rectangle slotRect = { slotX, slotY, expWidth, expHeight };
 
     if (isLoggedIn && isAdmin) {
-        // Administrator View: Interactive Create Field Box
-        bool hoverSlot = CheckCollisionPointRec(mousePos, slotRect);
-        if (hoverSlot) {
-            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-            DrawRectangleRounded(slotRect, 0.06f, 10, Color{ 230, 240, 255, 255 });
-        }
-        else {
-            DrawRectangleRounded(slotRect, 0.06f, 10, WHITE);
-        }
-        DrawRectangleRoundedLines(slotRect, 0.06f, 10, 2.0f, Color{ 16, 25, 48, 150 });
+        bool isSlotHovered = CheckCollisionPointRec(mousePos, slotRect);
+        Color slotBg = isSlotHovered ? Color{ 240, 244, 252, 255 } : WHITE;
 
-        // Centered Plus Symbol and Text Field
+        if (isSlotHovered) {
+            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        }
+
+        DrawRectangleRounded(slotRect, 0.06f, 10, slotBg);
+        DrawRectangleRoundedLines(slotRect, 0.06f, 10, 1.5f, Fade(LIGHTGRAY, 0.8f));
+
         float midX = slotX + (expWidth / 2.0f);
         float midY = slotY + (expHeight / 2.0f);
 
-        DrawCircleV({ midX, midY - 20 }, 24, Color{ 16, 25, 48, 255 });
-        DrawLineEx({ midX - 10, midY - 20 }, { midX + 10, midY - 20 }, 3.5f, WHITE);
-        DrawLineEx({ midX, midY - 30 }, { midX, midY - 10 }, 3.5f, WHITE);
+        DrawCircleV({ midX, midY - 25 }, 26, Color{ 16, 25, 48, 255 });
+        DrawLineEx({ midX - 11, midY - 25 }, { midX + 11, midY - 25 }, 4.0f, WHITE);
+        DrawLineEx({ midX, midY - 36 }, { midX, midY - 14 }, 4.0f, WHITE);
 
-        if (customFont.texture.id != 0) {
-            Vector2 sizeTxt = MeasureTextEx(customFont, "Add Experience", 22, 1);
-            DrawTextEx(customFont, "Add Experience", { midX - (sizeTxt.x / 2.0f), midY + 15 }, 22, 1, Color{ 16, 25, 48, 255 });
+        if (uiFont.texture.id != 0) {
+            Vector2 sizeTxt = MeasureTextEx(uiFont, "Add Experience", 26, 1);
+            DrawTextEx(uiFont, "Add Experience", { midX - (sizeTxt.x / 2.0f), midY + 18 }, 26, 1, Color{ 16, 25, 48, 255 });
         }
     }
     else {
-        // Standard Account / Guest View: Teaser Coming Soon Card
         DrawRectangleRounded(slotRect, 0.06f, 10, Color{ 245, 247, 250, 255 });
-        DrawRectangleRoundedLines(slotRect, 0.06f, 10, 1, Fade(LIGHTGRAY, 0.5f));
+        DrawRectangleRoundedLines(slotRect, 0.06f, 10, 1.5f, Fade(LIGHTGRAY, 0.6f));
 
         float midX = slotX + (expWidth / 2.0f);
         float midY = slotY + (expHeight / 2.0f);
 
-        if (customFont.texture.id != 0) {
-            Vector2 sizeTitle = MeasureTextEx(customFont, "Coming Soon", 26, 1);
-            Vector2 sizeDesc = MeasureTextEx(customFont, "We are designing new custom ways to watch cinema.", 16, 1);
+        if (uiFont.texture.id != 0) {
+            Vector2 sizeTitle = MeasureTextEx(uiFont, "Coming Soon", 34, 1);
+            Vector2 sizeDesc = MeasureTextEx(uiFont, "We are designing new custom ways to watch cinema.", 22, 1);
 
-            DrawTextEx(customFont, "Coming Soon", { midX - (sizeTitle.x / 2.0f), midY - 25 }, 26, 1, GRAY);
-            DrawTextEx(customFont, "We are designing new custom ways to watch cinema.", { midX - (sizeDesc.x / 2.0f), midY + 15 }, 16, 1, MAGENTA);
+            DrawTextEx(uiFont, "Coming Soon", { midX - (sizeTitle.x / 2.0f), midY - 25 }, 34, 1, Color{ 16, 25, 48, 255 });
+            DrawTextEx(uiFont, "We are designing new custom ways to watch cinema.", { midX - (sizeDesc.x / 2.0f), midY + 20 }, 22, 1, BLACK);
         }
     }
-
-    // 2 Rows calculated manually for final tracking layout shift
     currentY += (2 * expHeight) + gap + 40;
 }
 
@@ -383,7 +387,8 @@ void Spots::Draw() {
     float contentWidth = screenWidth * 0.9f;
     float startX = (screenWidth - contentWidth) / 2;
 
-    BeginScissorMode((int)startX, 130, (int)contentWidth, GetScreenHeight() - 130);
+    SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+    BeginScissorMode((int)startX - 4, 130, (int)contentWidth + 8, GetScreenHeight() - 130);
 
     float trackingY = 150 - scrollOffset;
     DrawSearchBarAndFilters();

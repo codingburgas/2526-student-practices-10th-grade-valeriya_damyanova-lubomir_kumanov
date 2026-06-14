@@ -27,7 +27,7 @@ private:
     Texture2D iconSearch, iconFilter;
     Texture2D iconHalls, icon3D, iconAudio;
     Texture2D iconBeach, iconPool, iconSofa;
-    Font customFont;
+    Font uiFont;
 
     float scrollOffset;
     float maxScroll;
