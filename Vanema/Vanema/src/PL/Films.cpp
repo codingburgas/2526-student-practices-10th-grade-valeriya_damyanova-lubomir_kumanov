@@ -12,7 +12,7 @@ Films::Films() {
     iconOffers = LoadTexture("assets/icon_offers.png");
     iconProfile = LoadTexture("assets/icon_profile.png");
 
-    customFont = LoadFont("assets/fonts/PlayfairDisplay-Medium.ttf");
+    customFont = LoadFont("assets/fonts/Roboto-Medium.ttf");
 
     genres = {
         {"All"},

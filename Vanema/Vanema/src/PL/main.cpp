@@ -6,6 +6,7 @@
 #include "SignUp.h"
 #include "Films.h"
 #include "Spots.h"
+#include "Offers.h"
 #include "DAL/MovieRepository.h"
 #include "DAL/DataSeeder.h"
 #include "BLL/MovieService.h"
@@ -26,6 +27,7 @@ int main()
     SignUp signup;
     Films films;
     Spots spots;
+    Offers offers;
 
     booking.movieService = &movieService;
     films.movieService = &movieService;
@@ -40,6 +42,7 @@ int main()
     booking.currentScreen = &currentScreen;
     films.currentScreen = &currentScreen;
     spots.currentScreen = &currentScreen;
+    offers.currentScreen = &currentScreen;
 
     login.Init();
     signup.Init();
@@ -76,6 +79,10 @@ int main()
         {
             spots.Update(); 
         }
+        else if (currentScreen == 6)
+        {
+            offers.Update();
+        }
         if (login.IsLoggedIn())
         {
             std::string currentRealName = login.GetUserDisplayName();
@@ -83,6 +90,7 @@ int main()
             films.SetUserData(true, currentRealName, isAdminUser);
             booking.SetUserData(true, currentRealName, isAdminUser);
             spots.SetUserData(true, currentRealName, isAdminUser);
+            offers.SetUserData(true, currentRealName, isAdminUser); 
         }
         BeginDrawing();
         ClearBackground(WHITE);
@@ -110,6 +118,10 @@ int main()
         else if (currentScreen == 5)
         {
             spots.Draw(); 
+        }
+        else if (currentScreen == 6)
+        {
+            offers.Draw();
         }
 
         EndDrawing();

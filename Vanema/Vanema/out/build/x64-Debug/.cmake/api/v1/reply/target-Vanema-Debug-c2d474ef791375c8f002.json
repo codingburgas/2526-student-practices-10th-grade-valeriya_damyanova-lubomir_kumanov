@@ -173,7 +173,8 @@
 				19,
 				21,
 				23,
-				24
+				24,
+				26
 			]
 		}
 	],
@@ -262,7 +263,8 @@
 				19,
 				21,
 				23,
-				24
+				24,
+				26
 			]
 		},
 		{
@@ -278,7 +280,8 @@
 				18,
 				20,
 				22,
-				25
+				25,
+				27
 			]
 		}
 	],
@@ -428,6 +431,17 @@
 		{
 			"backtrace" : 2,
 			"path" : "src/PL/Spots.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/PL/Offers.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/PL/Offers.h",
 			"sourceGroupIndex" : 1
 		}
 	],

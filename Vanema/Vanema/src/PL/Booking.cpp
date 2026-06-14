@@ -44,7 +44,7 @@ Booking::Booking()
         topRatedPhotos[i].id = 0;
     }
 
-    customFont = LoadFont("assets/fonts/PlayfairDisplay-Medium.ttf");
+    customFont = LoadFont("assets/fonts/Roboto-Medium.ttf");
     if (customFont.texture.id == 0) printf("Failed to load font\n");
 
     scrollOffset = 0;
@@ -267,6 +267,10 @@ void Booking::DrawNavigationBar()
                     else if (i == 2)
                     {
                         *currentScreen = 4; 
+                    }
+                    else if (i == 3)
+                    {
+                        *currentScreen = 6;
                     }
                 }
             }

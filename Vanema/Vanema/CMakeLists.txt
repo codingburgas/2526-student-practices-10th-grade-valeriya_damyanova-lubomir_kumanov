@@ -41,7 +41,7 @@ add_executable(Vanema
     src/DAL/UserSeeder.cpp
     src/DAL/bcrypt.h          # <-- Added new bcrypt header
     src/DAL/bcrypt.cpp        # <-- Added new bcrypt implementation source
- "src/PL/Spots.cpp" "src/PL/Spots.h")
+ "src/PL/Spots.cpp" "src/PL/Spots.h" "src/PL/Offers.cpp" "src/PL/Offers.h")
 
 target_link_libraries(Vanema PRIVATE
     raylib

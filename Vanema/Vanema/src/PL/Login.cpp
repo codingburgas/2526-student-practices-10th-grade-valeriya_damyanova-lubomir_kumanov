@@ -7,8 +7,8 @@ void Login::Init()
 {
     background = LoadTexture("assets/login.png");
     logo = LoadTexture("assets/logo.png");
-    headerFont = LoadFontEx("assets/fonts/PlayfairDisplay-Bold.ttf", 60, 0, 0);
-    bodyFont = LoadFontEx("assets/fonts/PlayfairDisplay-Medium.ttf", 32, 0, 0);
+    headerFont = LoadFontEx("assets/fonts/Roboto-Bold.ttf", 60, 0, 0);
+    bodyFont = LoadFontEx("assets/fonts/Roboto-Medium.ttf", 32, 0, 0);
 
     username.clear();
     password.clear();
