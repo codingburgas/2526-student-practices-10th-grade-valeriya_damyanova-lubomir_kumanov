@@ -21,7 +21,6 @@ struct CinemaExperience {
 
 class Spots {
 private:
-    // Layout and UI Textures
     Texture2D logo;
     Texture2D iconHome, iconMap, iconFilms, iconOffers, iconProfile;
     Texture2D iconLocationMarker;
@@ -30,15 +29,15 @@ private:
     Texture2D iconBeach, iconPool, iconSofa;
     Font customFont;
 
-    // State Variables
     float scrollOffset;
     float maxScroll;
-    int activeIndex; // Nav bar selector
-    int activeCityIndex; // City filter chip selector
+    int activeIndex; 
+    int activeCityIndex;
     char searchBuffer[64];
     int searchLetterCount;
 
     bool isLoggedIn;
+    bool isAdmin;
     std::string userName;
 
     std::vector<std::string> cities;
@@ -53,7 +52,7 @@ public:
 
     void InitializeData();
     void SetScreenPointer(int* screen);
-    void SetUserData(bool loggedIn, const std::string& name);
+    void SetUserData(bool loggedIn, const std::string& name, bool isAdmin);
     void Unload();
     void Update();
     void DrawNavigationBar();

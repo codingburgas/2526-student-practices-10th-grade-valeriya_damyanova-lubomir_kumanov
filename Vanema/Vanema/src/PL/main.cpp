@@ -82,7 +82,7 @@ int main()
             bool isAdminUser = login.IsAdmin();
             films.SetUserData(true, currentRealName, isAdminUser);
             booking.SetUserData(true, currentRealName, isAdminUser);
-            spots.SetUserData(true, currentRealName); 
+            spots.SetUserData(true, currentRealName, isAdminUser);
         }
         BeginDrawing();
         ClearBackground(WHITE);
