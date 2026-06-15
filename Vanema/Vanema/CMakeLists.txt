@@ -4,6 +4,10 @@ project(Vanema)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(NOT CMAKE_TOOLCHAIN_FILE AND EXISTS "C:/Users/TP14s/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    set(CMAKE_TOOLCHAIN_FILE "C:/Users/TP14s/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "" FORCE)
+endif()
+
 find_package(raylib CONFIG REQUIRED)
 find_package(SQLiteCpp CONFIG REQUIRED)
 
@@ -12,36 +16,50 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin/Debug)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin/Release)
 
 add_executable(Vanema
-    # --- Presentation Layer (PL) ---
+    
+    
+
     src/PL/main.cpp
-    src/PL/Login.cpp
-    src/PL/Menu.cpp
     src/PL/Booking.cpp
-    src/PL/SignUp.cpp
+    src/PL/Booking.h
     src/PL/Films.cpp
     src/PL/Films.h
+    src/PL/Login.cpp
+    src/PL/Login.h
+    src/PL/Menu.cpp
+    src/PL/Menu.h
+    src/PL/Offers.cpp
+    src/PL/Offers.h
+    src/PL/SignUp.cpp
+    src/PL/SignUp.h
+    src/PL/Spots.cpp
+    src/PL/Spots.h
 
-    # --- Business Logic Layer (BLL) ---
+    src/BLL/BLL.cpp
+    src/BLL/BLL.h
     src/BLL/Movie.cpp
+    src/BLL/Movie.h
     src/BLL/MovieService.cpp
     src/BLL/MovieService.h
+    src/BLL/User.cpp
     src/BLL/User.h
-    src/BLL/User.cpp          # <-- Fixed! Was missing from your CMake source list
-    src/BLL/UserService.h
     src/BLL/UserService.cpp
+    src/BLL/UserService.h
 
-    # --- Data Access Layer (DAL) ---
-    src/DAL/MovieRepository.h
-    src/DAL/MovieRepository.cpp
-    src/DAL/DataSeeder.h
+    src/DAL/bcrypt.cpp
+    src/DAL/bcrypt.h
+    src/DAL/DAL.cpp
+    src/DAL/DAL.h
     src/DAL/DataSeeder.cpp
-    src/DAL/UserRepository.h
+    src/DAL/DataSeeder.h
+    src/DAL/framework.h
+    src/DAL/MovieRepository.cpp
+    src/DAL/MovieRepository.h
     src/DAL/UserRepository.cpp
-    src/DAL/UserSeeder.h
+    src/DAL/UserRepository.h
     src/DAL/UserSeeder.cpp
-    src/DAL/bcrypt.h          # <-- Added new bcrypt header
-    src/DAL/bcrypt.cpp        # <-- Added new bcrypt implementation source
- "src/PL/Spots.cpp" "src/PL/Spots.h" "src/PL/Offers.cpp" "src/PL/Offers.h")
+    src/DAL/UserSeeder.h
+ )
 
 target_link_libraries(Vanema PRIVATE
     raylib
@@ -49,11 +67,17 @@ target_link_libraries(Vanema PRIVATE
 )
 
 target_include_directories(Vanema PRIVATE
-    ${CMAKE_SOURCE_DIR}/src
-    ${CMAKE_SOURCE_DIR}/src/PL
-    ${CMAKE_SOURCE_DIR}/src/BLL
-    ${CMAKE_SOURCE_DIR}/src/DAL   # <-- Fixed! Ensures files can find "bcrypt.h" easily
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PL
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/BLL
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/DAL
 )
+if(MSVC)
+    target_compile_options(Vanema PRIVATE "/FI${CMAKE_CURRENT_SOURCE_DIR}/Vanema.h")
+else()
+    target_compile_options(Vanema PRIVATE "-include" "${CMAKE_CURRENT_SOURCE_DIR}/Vanema.h")
+endif()
 
 set_target_properties(Vanema PROPERTIES
     VS_SETTINGS "LocalDebuggerWorkingDirectory=${CMAKE_CURRENT_SOURCE_DIR}"

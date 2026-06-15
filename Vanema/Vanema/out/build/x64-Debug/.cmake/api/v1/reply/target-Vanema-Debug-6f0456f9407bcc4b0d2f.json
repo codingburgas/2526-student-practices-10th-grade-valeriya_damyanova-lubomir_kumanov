@@ -20,6 +20,7 @@
 			"_find_package",
 			"find_package",
 			"add_custom_command",
+			"target_compile_options",
 			"target_include_directories"
 		],
 		"files" : 
@@ -36,7 +37,7 @@
 			{
 				"command" : 1,
 				"file" : 1,
-				"line" : 14,
+				"line" : 18,
 				"parent" : 0
 			},
 			{
@@ -48,13 +49,13 @@
 			{
 				"command" : 2,
 				"file" : 1,
-				"line" : 46,
+				"line" : 64,
 				"parent" : 0
 			},
 			{
 				"command" : 5,
 				"file" : 1,
-				"line" : 7,
+				"line" : 11,
 				"parent" : 0
 			},
 			{
@@ -82,7 +83,13 @@
 			{
 				"command" : 7,
 				"file" : 1,
-				"line" : 51,
+				"line" : 77,
+				"parent" : 0
+			},
+			{
+				"command" : 8,
+				"file" : 1,
+				"line" : 69,
 				"parent" : 0
 			}
 		]
@@ -90,7 +97,7 @@
 	"codemodelVersion" : 
 	{
 		"major" : 2,
-		"minor" : 9
+		"minor" : 10
 	},
 	"compileDependencies" : 
 	[
@@ -110,6 +117,10 @@
 			[
 				{
 					"fragment" : "/DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd"
+				},
+				{
+					"backtrace" : 9,
+					"fragment" : "/FIC:/Users/TP14s/2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov/Vanema/Vanema/Vanema.h"
 				}
 			],
 			"defines" : 
@@ -126,19 +137,23 @@
 			"includes" : 
 			[
 				{
-					"backtrace" : 9,
+					"backtrace" : 10,
+					"path" : "C:/Users/TP14s/2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov/Vanema/Vanema"
+				},
+				{
+					"backtrace" : 10,
 					"path" : "C:/Users/TP14s/2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov/Vanema/Vanema/src"
 				},
 				{
-					"backtrace" : 9,
+					"backtrace" : 10,
 					"path" : "C:/Users/TP14s/2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov/Vanema/Vanema/src/PL"
 				},
 				{
-					"backtrace" : 9,
+					"backtrace" : 10,
 					"path" : "C:/Users/TP14s/2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov/Vanema/Vanema/src/BLL"
 				},
 				{
-					"backtrace" : 9,
+					"backtrace" : 10,
 					"path" : "C:/Users/TP14s/2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov/Vanema/Vanema/src/DAL"
 				},
 				{
@@ -160,12 +175,10 @@
 			[
 				0,
 				1,
-				2,
 				3,
-				4,
 				5,
 				7,
-				8,
+				9,
 				11,
 				13,
 				15,
@@ -173,8 +186,12 @@
 				19,
 				21,
 				23,
-				24,
-				26
+				25,
+				27,
+				29,
+				32,
+				34,
+				36
 			]
 		}
 	],
@@ -250,12 +267,10 @@
 			[
 				0,
 				1,
-				2,
 				3,
-				4,
 				5,
 				7,
-				8,
+				9,
 				11,
 				13,
 				15,
@@ -263,16 +278,22 @@
 				19,
 				21,
 				23,
-				24,
-				26
+				25,
+				27,
+				29,
+				32,
+				34,
+				36
 			]
 		},
 		{
 			"name" : "Header Files",
 			"sourceIndexes" : 
 			[
+				2,
+				4,
 				6,
-				9,
+				8,
 				10,
 				12,
 				14,
@@ -280,8 +301,14 @@
 				18,
 				20,
 				22,
-				25,
-				27
+				24,
+				26,
+				28,
+				30,
+				31,
+				33,
+				35,
+				37
 			]
 		}
 	],
@@ -296,26 +323,13 @@
 		{
 			"backtrace" : 2,
 			"compileGroupIndex" : 0,
-			"path" : "src/PL/Login.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 2,
-			"compileGroupIndex" : 0,
-			"path" : "src/PL/Menu.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 2,
-			"compileGroupIndex" : 0,
 			"path" : "src/PL/Booking.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 2,
-			"compileGroupIndex" : 0,
-			"path" : "src/PL/SignUp.cpp",
-			"sourceGroupIndex" : 0
+			"path" : "src/PL/Booking.h",
+			"sourceGroupIndex" : 1
 		},
 		{
 			"backtrace" : 2,
@@ -331,96 +345,46 @@
 		{
 			"backtrace" : 2,
 			"compileGroupIndex" : 0,
-			"path" : "src/BLL/Movie.cpp",
+			"path" : "src/PL/Login.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 2,
-			"compileGroupIndex" : 0,
-			"path" : "src/BLL/MovieService.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 2,
-			"path" : "src/BLL/MovieService.h",
-			"sourceGroupIndex" : 1
-		},
-		{
-			"backtrace" : 2,
-			"path" : "src/BLL/User.h",
+			"path" : "src/PL/Login.h",
 			"sourceGroupIndex" : 1
 		},
 		{
 			"backtrace" : 2,
 			"compileGroupIndex" : 0,
-			"path" : "src/BLL/User.cpp",
+			"path" : "src/PL/Menu.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 2,
-			"path" : "src/BLL/UserService.h",
+			"path" : "src/PL/Menu.h",
 			"sourceGroupIndex" : 1
 		},
 		{
 			"backtrace" : 2,
 			"compileGroupIndex" : 0,
-			"path" : "src/BLL/UserService.cpp",
+			"path" : "src/PL/Offers.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 2,
-			"path" : "src/DAL/MovieRepository.h",
+			"path" : "src/PL/Offers.h",
 			"sourceGroupIndex" : 1
 		},
 		{
 			"backtrace" : 2,
 			"compileGroupIndex" : 0,
-			"path" : "src/DAL/MovieRepository.cpp",
+			"path" : "src/PL/SignUp.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 2,
-			"path" : "src/DAL/DataSeeder.h",
+			"path" : "src/PL/SignUp.h",
 			"sourceGroupIndex" : 1
-		},
-		{
-			"backtrace" : 2,
-			"compileGroupIndex" : 0,
-			"path" : "src/DAL/DataSeeder.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 2,
-			"path" : "src/DAL/UserRepository.h",
-			"sourceGroupIndex" : 1
-		},
-		{
-			"backtrace" : 2,
-			"compileGroupIndex" : 0,
-			"path" : "src/DAL/UserRepository.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 2,
-			"path" : "src/DAL/UserSeeder.h",
-			"sourceGroupIndex" : 1
-		},
-		{
-			"backtrace" : 2,
-			"compileGroupIndex" : 0,
-			"path" : "src/DAL/UserSeeder.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 2,
-			"path" : "src/DAL/bcrypt.h",
-			"sourceGroupIndex" : 1
-		},
-		{
-			"backtrace" : 2,
-			"compileGroupIndex" : 0,
-			"path" : "src/DAL/bcrypt.cpp",
-			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 2,
@@ -436,12 +400,127 @@
 		{
 			"backtrace" : 2,
 			"compileGroupIndex" : 0,
-			"path" : "src/PL/Offers.cpp",
+			"path" : "src/BLL/BLL.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 2,
-			"path" : "src/PL/Offers.h",
+			"path" : "src/BLL/BLL.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/BLL/Movie.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/BLL/Movie.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/BLL/MovieService.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/BLL/MovieService.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/BLL/User.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/BLL/User.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/BLL/UserService.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/BLL/UserService.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/DAL/bcrypt.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/DAL/bcrypt.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/DAL/DAL.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/DAL/DAL.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/DAL/DataSeeder.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/DAL/DataSeeder.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/DAL/framework.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/DAL/MovieRepository.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/DAL/MovieRepository.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/DAL/UserRepository.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/DAL/UserRepository.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/DAL/UserSeeder.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "src/DAL/UserSeeder.h",
 			"sourceGroupIndex" : 1
 		}
 	],

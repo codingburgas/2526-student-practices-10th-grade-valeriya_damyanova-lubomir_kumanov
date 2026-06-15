@@ -35,7 +35,7 @@
 			{
 				"command" : 4,
 				"file" : 3,
-				"line" : 8,
+				"line" : 12,
 				"parent" : 0
 			},
 			{
@@ -75,7 +75,7 @@
 	"codemodelVersion" : 
 	{
 		"major" : 2,
-		"minor" : 9
+		"minor" : 10
 	},
 	"id" : "SQLiteCpp::@6890427a1f51a3e7e1df",
 	"imported" : true,

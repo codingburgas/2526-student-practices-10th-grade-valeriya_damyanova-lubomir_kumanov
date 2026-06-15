@@ -27,7 +27,7 @@
 			"C:/Users/TP14s/vcpkg/scripts/buildsystems/vcpkg.cmake",
 			"C:/Users/TP14s/vcpkg/installed/x64-windows/share/unofficial-sqlite3/unofficial-sqlite3-targets.cmake",
 			"C:/Users/TP14s/vcpkg/installed/x64-windows/share/unofficial-sqlite3/unofficial-sqlite3-config.cmake",
-			"C:/Program Files/Microsoft Visual Studio/18/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-4.2/Modules/CMakeFindDependencyMacro.cmake",
+			"C:/Program Files/Microsoft Visual Studio/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-4.3/Modules/CMakeFindDependencyMacro.cmake",
 			"C:/Users/TP14s/vcpkg/installed/x64-windows/share/SQLiteCpp/SQLiteCppConfig.cmake",
 			"CMakeLists.txt"
 		],
@@ -39,7 +39,7 @@
 			{
 				"command" : 4,
 				"file" : 5,
-				"line" : 8,
+				"line" : 12,
 				"parent" : 0
 			},
 			{
@@ -107,7 +107,7 @@
 	"codemodelVersion" : 
 	{
 		"major" : 2,
-		"minor" : 9
+		"minor" : 10
 	},
 	"id" : "unofficial::sqlite3::sqlite3::@6890427a1f51a3e7e1df",
 	"imported" : true,
