@@ -18,6 +18,7 @@ public:
     std::vector<Movie> getRandomMixForAll(); 
 
     std::vector<Movie> getRandomMovies(int count);
+    Movie getMovieById(int id);
 };
 
 #endif

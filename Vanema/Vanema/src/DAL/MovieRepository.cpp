@@ -2,8 +2,7 @@
 #include <iostream>
 
 MovieRepository::MovieRepository(const std::string& dbPath)
-    : db(dbPath, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE)
-{
+    : db(dbPath, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE) {
     createTable();
 }
 
@@ -14,7 +13,9 @@ void MovieRepository::createTable() {
             "title TEXT NOT NULL, "
             "poster_path TEXT, "
             "genre TEXT, "
-            "rating REAL);");
+            "rating REAL, "
+            "description TEXT, "
+            "duration INTEGER);");
     }
     catch (std::exception& e) {
         std::cerr << "SQL error creating table: " << e.what() << std::endl;
@@ -24,14 +25,16 @@ void MovieRepository::createTable() {
 std::vector<Movie> MovieRepository::getAllMovies() {
     std::vector<Movie> movies;
     try {
-        SQLite::Statement query(db, "SELECT id, title, poster_path, genre, rating FROM movies;");
+        SQLite::Statement query(db, "SELECT id, title, poster_path, genre, rating, description, duration FROM movies;");
         while (query.executeStep()) {
             movies.emplace_back(
                 query.getColumn(0).getInt(),
                 query.getColumn(1).getText(),
                 query.getColumn(2).getText(),
                 query.getColumn(3).getText(),
-                static_cast<float>(query.getColumn(4).getDouble())
+                static_cast<float>(query.getColumn(4).getDouble()),
+                query.getColumn(5).getText(),
+                query.getColumn(6).getInt()
             );
         }
     }
@@ -43,7 +46,7 @@ std::vector<Movie> MovieRepository::getAllMovies() {
 
 Movie MovieRepository::getMovieById(int id) {
     try {
-        SQLite::Statement query(db, "SELECT id, title, poster_path, genre, rating FROM movies WHERE id = ?;");
+        SQLite::Statement query(db, "SELECT id, title, poster_path, genre, rating, description, duration FROM movies WHERE id = ?;");
         query.bind(1, id);
         if (query.executeStep()) {
             return Movie(
@@ -51,7 +54,9 @@ Movie MovieRepository::getMovieById(int id) {
                 query.getColumn(1).getText(),
                 query.getColumn(2).getText(),
                 query.getColumn(3).getText(),
-                static_cast<float>(query.getColumn(4).getDouble())
+                static_cast<float>(query.getColumn(4).getDouble()),
+                query.getColumn(5).getText(),
+                query.getColumn(6).getInt()
             );
         }
     }
@@ -63,24 +68,14 @@ Movie MovieRepository::getMovieById(int id) {
 
 bool MovieRepository::addMovie(const Movie& movie) {
     try {
-        SQLite::Statement query(db, "INSERT INTO movies (title, poster_path, genre, rating) VALUES (?, ?, ?, ?);");
+        SQLite::Statement query(db, "INSERT INTO movies (title, poster_path, genre, rating, description, duration) VALUES (?, ?, ?, ?, ?, ?);");
         query.bind(1, movie.getTitle());
         query.bind(2, movie.getPosterPath());
         query.bind(3, movie.getGenre());
         query.bind(4, movie.getRating());
+        query.bind(5, movie.getDescription());
+        query.bind(6, movie.getDuration());
 
-        return (query.exec() > 0);
-    }
-    catch (std::exception& e) {
-        std::cerr << "Database error: " << e.what() << std::endl;
-        return false;
-    }
-}
-
-bool MovieRepository::removeMovie(int id) {
-    try {
-        SQLite::Statement query(db, "DELETE FROM movies WHERE id = ?;");
-        query.bind(1, id);
         return (query.exec() > 0);
     }
     catch (std::exception& e) {
@@ -92,7 +87,7 @@ bool MovieRepository::removeMovie(int id) {
 std::vector<Movie> MovieRepository::getMoviesByGenre(const std::string& genre) {
     std::vector<Movie> movies;
     try {
-        SQLite::Statement query(db, "SELECT id, title, poster_path, genre, rating FROM movies WHERE genre = ?;");
+        SQLite::Statement query(db, "SELECT id, title, poster_path, genre, rating, description, duration FROM movies WHERE genre = ?;");
         query.bind(1, genre);
         while (query.executeStep()) {
             movies.emplace_back(
@@ -100,7 +95,9 @@ std::vector<Movie> MovieRepository::getMoviesByGenre(const std::string& genre) {
                 query.getColumn(1).getText(),
                 query.getColumn(2).getText(),
                 query.getColumn(3).getText(),
-                static_cast<float>(query.getColumn(4).getDouble())
+                static_cast<float>(query.getColumn(4).getDouble()),
+                query.getColumn(5).getText(),   
+                query.getColumn(6).getInt()     
             );
         }
     }
@@ -113,14 +110,16 @@ std::vector<Movie> MovieRepository::getMoviesByGenre(const std::string& genre) {
 std::vector<Movie> MovieRepository::getTopRatedMovies() {
     std::vector<Movie> movies;
     try {
-        SQLite::Statement query(db, "SELECT id, title, poster_path, genre, rating FROM movies ORDER BY rating DESC;");
+        SQLite::Statement query(db, "SELECT id, title, poster_path, genre, rating, description, duration FROM movies ORDER BY rating DESC;");
         while (query.executeStep()) {
             movies.emplace_back(
                 query.getColumn(0).getInt(),
                 query.getColumn(1).getText(),
                 query.getColumn(2).getText(),
                 query.getColumn(3).getText(),
-                static_cast<float>(query.getColumn(4).getDouble())
+                static_cast<float>(query.getColumn(4).getDouble()),
+                query.getColumn(5).getText(),   
+                query.getColumn(6).getInt()    
             );
         }
     }
@@ -133,7 +132,7 @@ std::vector<Movie> MovieRepository::getTopRatedMovies() {
 std::vector<Movie> MovieRepository::searchMovies(const std::string& queryStr) {
     std::vector<Movie> movies;
     try {
-        SQLite::Statement query(db, "SELECT id, title, poster_path, genre, rating FROM movies WHERE title LIKE ?;");
+        SQLite::Statement query(db, "SELECT id, title, poster_path, genre, rating, description, duration FROM movies WHERE title LIKE ?;");
         std::string wildQuery = "%" + queryStr + "%";
         query.bind(1, wildQuery);
 
@@ -143,7 +142,9 @@ std::vector<Movie> MovieRepository::searchMovies(const std::string& queryStr) {
                 query.getColumn(1).getText(),
                 query.getColumn(2).getText(),
                 query.getColumn(3).getText(),
-                static_cast<float>(query.getColumn(4).getDouble())
+                static_cast<float>(query.getColumn(4).getDouble()),
+                query.getColumn(5).getText(),   
+                query.getColumn(6).getInt()     
             );
         }
     }
@@ -157,8 +158,8 @@ std::vector<Movie> MovieRepository::getRandomMoviePerGenre() {
     std::vector<Movie> movies;
     try {
         SQLite::Statement query(db,
-            "SELECT id, title, poster_path, genre, rating FROM ("
-            "SELECT id, title, poster_path, genre, rating FROM movies ORDER BY RANDOM()"
+            "SELECT id, title, poster_path, genre, rating, description, duration FROM ("
+            "SELECT id, title, poster_path, genre, rating, description, duration FROM movies ORDER BY RANDOM()"
             ") GROUP BY genre;");
 
         while (query.executeStep()) {
@@ -167,7 +168,9 @@ std::vector<Movie> MovieRepository::getRandomMoviePerGenre() {
                 query.getColumn(1).getText(),
                 query.getColumn(2).getText(),
                 query.getColumn(3).getText(),
-                static_cast<float>(query.getColumn(4).getDouble())
+                static_cast<float>(query.getColumn(4).getDouble()),
+                query.getColumn(5).getText(),   
+                query.getColumn(6).getInt()    
             );
         }
     }

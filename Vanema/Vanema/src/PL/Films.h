@@ -1,5 +1,4 @@
 #pragma once
-
 #include "raylib.h"
 #include <vector>
 #include <string>
@@ -40,6 +39,9 @@ public:
 
     MovieService* movieService = nullptr;
 
+    Movie lastClickedMovie;
+    bool hasSelectedMovieChanged = false;
+
     Films();
     ~Films();
 
@@ -51,6 +53,11 @@ public:
     void DrawMovieGrid(float startY);
     void SyncDisplayWithDatabase();
     void SetUserData(bool loggedIn, const std::string& name, bool admin);
+
+    Movie GetLastClickedMovie() {
+        hasSelectedMovieChanged = false;
+        return lastClickedMovie;
+    }
 
 private:
     std::vector<GenreItem> genres;
@@ -66,6 +73,7 @@ private:
     bool isAdmin;
 
     std::vector<DisplayMovie> displayedMovies;
+    std::vector<Movie> underlyingMovies; 
 
     void DrawNavigationBar();
     void DrawScrollbar();

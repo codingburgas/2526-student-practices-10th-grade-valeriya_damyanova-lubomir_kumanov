@@ -402,6 +402,7 @@ void Booking::DrawMoviePosters()
 
     Vector2 mousePos = GetMousePosition();
 
+    // --- 1. SUGGESTED MOVIES CLICK LOGIC ---
     for (size_t i = 0; i < currentSuggestedMovies.size() && i < 4; i++)
     {
         float x = startPosterX + i * (posterWidth + spacingX);
@@ -453,24 +454,23 @@ void Booking::DrawMoviePosters()
             hovered ? BLUE : WHITE
         );
 
-        if (hovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        if (hovered)
         {
-            printf("Selected movie: %s\n", currentSuggestedMovies[i].getTitle().c_str());
-
-            if (!isLoggedIn)
+            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr)
             {
-                printf("Redirecting to login.\n");
-                if (currentScreen != nullptr)
-                {
-                    *currentScreen = 1;
-                    EndScissorMode(); 
-                    return;
-                }
+                // Cache selected movie data and route window context to state 7 (MovieDetails)
+                lastClickedMovie = currentSuggestedMovies[i];
+                hasSelectedMovieChanged = true;
+                *currentScreen = 7;
+                EndScissorMode();
+                return;
             }
         }
     }
     EndScissorMode();
 
+    // --- 2. TOP RATED MOVIES CLICK LOGIC ---
     float topRatedSectionY = startPosterY + posterHeight + 150;
 
     Rectangle topRatedBg = {
@@ -506,6 +506,10 @@ void Booking::DrawMoviePosters()
         float imgH = 150;
         Rectangle imgRect = { itemX, itemY + (rowHeight - imgH) / 2, imgW, imgH };
 
+        // Dynamic clickable bounds bounding box enveloping the grid card layout area
+        Rectangle totalRowRect = { itemX, itemY, colWidth, rowHeight };
+        bool gridHovered = CheckCollisionPointRec(mousePos, totalRowRect);
+
         if (topRatedPhotos[i].id != 0)
         {
             DrawTexturePro(
@@ -514,7 +518,7 @@ void Booking::DrawMoviePosters()
                 imgRect,
                 { 0, 0 },
                 0.0f,
-                WHITE
+                gridHovered ? LIGHTGRAY : WHITE
             );
         }
         else
@@ -522,7 +526,7 @@ void Booking::DrawMoviePosters()
             DrawRectangleRec(imgRect, DARKGRAY);
         }
 
-        DrawRectangleRoundedLines(imgRect, 0.1f, 6, 1, Fade(GRAY, 0.4f));
+        DrawRectangleRoundedLines(imgRect, 0.1f, 6, 1, gridHovered ? BLUE : Fade(GRAY, 0.4f));
 
         float textStartX = imgRect.x + imgRect.width + 20;
 
@@ -540,6 +544,18 @@ void Booking::DrawMoviePosters()
 
             DrawTextEx(customFont, "*", { starX, itemY + 20 }, 45, 1, GOLD);
             DrawTextEx(customFont, ratingStr, { scoreX, itemY + 23 }, 25, 1, DARKGRAY);
+        }
+
+        if (gridHovered)
+        {
+            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr)
+            {
+                lastClickedMovie = topRatedMovies[i];
+                hasSelectedMovieChanged = true;
+                *currentScreen = 7;
+                return;
+            }
         }
     }
 }

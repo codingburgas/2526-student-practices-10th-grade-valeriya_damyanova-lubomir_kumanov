@@ -59,7 +59,7 @@ add_executable(Vanema
     src/DAL/UserRepository.h
     src/DAL/UserSeeder.cpp
     src/DAL/UserSeeder.h
- )
+  "src/PL/MovieDetails.cpp" "src/PL/MovieDetails.h")
 
 target_link_libraries(Vanema PRIVATE
     raylib

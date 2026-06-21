@@ -54,3 +54,6 @@ std::vector<Movie> MovieService::getRandomMovies(int count) {
 
     return randomSelection;
 }
+Movie MovieService::getMovieById(int id) {
+    return repo.getMovieById(id);
+}

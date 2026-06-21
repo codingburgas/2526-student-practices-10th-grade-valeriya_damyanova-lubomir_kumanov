@@ -34,6 +34,9 @@ public:
 
     MovieService* movieService = nullptr;
 
+    Movie lastClickedMovie;
+    bool hasSelectedMovieChanged = false;
+
     Booking();
     ~Booking();
 
@@ -47,4 +50,9 @@ public:
     void DrawMoviePosters();
     void DrawScrollbar();
     void Draw();
+
+    Movie GetLastClickedMovie() {
+        hasSelectedMovieChanged = false; 
+        return lastClickedMovie;
+    }
 };

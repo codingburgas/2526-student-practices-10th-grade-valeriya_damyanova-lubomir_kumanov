@@ -7,6 +7,7 @@
 #include "Films.h"
 #include "Spots.h"
 #include "Offers.h"
+#include "MovieDetails.h" // <--- 1. INCLUDE MOVIE DETAILS
 #include "DAL/MovieRepository.h"
 #include "DAL/DataSeeder.h"
 #include "BLL/MovieService.h"
@@ -28,6 +29,7 @@ int main()
     Films films;
     Spots spots;
     Offers offers;
+    MovieDetails movieDetails; // <--- 2. INSTANTIATE THE STATE INSTANCE
 
     booking.movieService = &movieService;
     films.movieService = &movieService;
@@ -43,18 +45,30 @@ int main()
     films.currentScreen = &currentScreen;
     spots.currentScreen = &currentScreen;
     offers.currentScreen = &currentScreen;
+    movieDetails.currentScreen = &currentScreen; 
 
     login.Init();
     signup.Init();
 
     while (!WindowShouldClose())
     {
+        // --- 4. CHECK IF A MOVIE WAS CLICKED FROM THE GRID LISTS ---
+        if (booking.hasSelectedMovieChanged)
+        {
+            movieDetails.LoadMovie(booking.GetLastClickedMovie());
+        }
+        else if (films.hasSelectedMovieChanged)
+        {
+            movieDetails.LoadMovie(films.GetLastClickedMovie());
+        }
+
+        // --- SCREEN STATE UPDATES ---
         if (currentScreen == 0)
         {
             menu.Update();
 
             if (menu.IsStartPressed())
-                currentScreen = 2; 
+                currentScreen = 2;
 
             if (menu.IsExitPressed())
                 break;
@@ -77,12 +91,17 @@ int main()
         }
         else if (currentScreen == 5)
         {
-            spots.Update(); 
+            spots.Update();
         }
         else if (currentScreen == 6)
         {
             offers.Update();
         }
+        else if (currentScreen == 7) // <--- 5. UPDATE STATE FOR DETAILED VIEW
+        {
+            movieDetails.Update();
+        }
+
         if (login.IsLoggedIn())
         {
             std::string currentRealName = login.GetUserDisplayName();
@@ -90,8 +109,10 @@ int main()
             films.SetUserData(true, currentRealName, isAdminUser);
             booking.SetUserData(true, currentRealName, isAdminUser);
             spots.SetUserData(true, currentRealName, isAdminUser);
-            offers.SetUserData(true, currentRealName, isAdminUser); 
+            offers.SetUserData(true, currentRealName, isAdminUser);
         }
+
+        // --- DRAWING PIPELINE ---
         BeginDrawing();
         ClearBackground(WHITE);
 
@@ -117,11 +138,15 @@ int main()
         }
         else if (currentScreen == 5)
         {
-            spots.Draw(); 
+            spots.Draw();
         }
         else if (currentScreen == 6)
         {
             offers.Draw();
+        }
+        else if (currentScreen == 7) 
+        {
+            movieDetails.Draw();
         }
 
         EndDrawing();

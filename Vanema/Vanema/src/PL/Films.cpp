@@ -93,6 +93,7 @@ void Films::SyncDisplayWithDatabase() {
         }
     }
     displayedMovies.clear();
+    underlyingMovies.clear(); // Clear the underlying model store
 
     std::string contextGenre = genres[selectedGenreIndex].name;
     std::vector<Movie> rawDbMovies;
@@ -103,6 +104,9 @@ void Films::SyncDisplayWithDatabase() {
     else {
         rawDbMovies = movieService->getMoviesByGenre(contextGenre);
     }
+
+    // Keep an internal track of the true models
+    underlyingMovies = rawDbMovies;
 
     for (const auto& item : rawDbMovies) {
         DisplayMovie uiCard;
