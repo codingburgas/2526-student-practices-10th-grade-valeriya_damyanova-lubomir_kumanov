@@ -15,10 +15,11 @@ public:
     ~MovieService() = default;
 
     std::vector<Movie> getMoviesByGenre(const std::string& genre);
-    std::vector<Movie> getRandomMixForAll(); 
+    std::vector<Movie> getRandomMixForAll();
 
     std::vector<Movie> getRandomMovies(int count);
     Movie getMovieById(int id);
+    void deleteMovie(const std::string& title);
 };
 
 #endif

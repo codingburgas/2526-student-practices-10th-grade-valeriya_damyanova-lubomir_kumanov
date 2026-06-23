@@ -54,6 +54,11 @@ std::vector<Movie> MovieService::getRandomMovies(int count) {
 
     return randomSelection;
 }
+
 Movie MovieService::getMovieById(int id) {
     return repo.getMovieById(id);
+}
+
+void MovieService::deleteMovie(const std::string& title) {
+    std::cout << "Successfully intercepted deletion request for: " << title << std::endl;
 }

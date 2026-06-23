@@ -56,6 +56,9 @@ Booking::Booking()
     userName = "";
     isAdmin = false;
 
+    isDeleteMode = false;
+    showDeleteConfirmation = false;
+
     printf("Booking initialized successfully!\n");
 }
 
@@ -196,6 +199,43 @@ void Booking::Unload()
 
 void Booking::Update()
 {
+    Vector2 mousePos = GetMousePosition();
+
+    if (showDeleteConfirmation)
+    {
+        float mWidth = 420.0f;
+        float mHeight = 200.0f;
+        Rectangle modalContainer = {
+            ((float)GetScreenWidth() - mWidth) / 2.0f,
+            ((float)GetScreenHeight() - mHeight) / 2.0f,
+            mWidth,
+            mHeight
+        };
+
+        Rectangle yesBtn = { modalContainer.x + 50, modalContainer.y + 130, 120, 40 };
+        Rectangle noBtn = { modalContainer.x + 250, modalContainer.y + 130, 120, 40 };
+
+        if (CheckCollisionPointRec(mousePos, yesBtn) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            if (movieService != nullptr)
+            {
+                movieService->deleteMovie(movieToDelete.getTitle());
+            }
+            RefreshSuggestions();
+            showDeleteConfirmation = false;
+        }
+        else if ((CheckCollisionPointRec(mousePos, noBtn) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) || IsKeyPressed(KEY_ESCAPE))
+        {
+            showDeleteConfirmation = false;
+        }
+        return;
+    }
+
+    if (isDeleteMode && IsKeyPressed(KEY_ESCAPE))
+    {
+        isDeleteMode = false;
+    }
+
     float wheelMove = GetMouseWheelMove();
     if (wheelMove != 0)
     {
@@ -248,7 +288,7 @@ void Booking::DrawNavigationBar()
         bool isHovered = CheckCollisionPointRec(mousePos, btnRect);
         Color tint = (i == activeIndex) ? BLUE : DARKBLUE;
 
-        if (isHovered)
+        if (isHovered && !showDeleteConfirmation)
         {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -258,15 +298,15 @@ void Booking::DrawNavigationBar()
                 {
                     if (i == 0)
                     {
-                        *currentScreen = 0; 
+                        *currentScreen = 0;
                     }
                     else if (i == 1)
                     {
-                        *currentScreen = 5; 
+                        *currentScreen = 5;
                     }
                     else if (i == 2)
                     {
-                        *currentScreen = 4; 
+                        *currentScreen = 4;
                     }
                     else if (i == 3)
                     {
@@ -290,7 +330,7 @@ void Booking::DrawNavigationBar()
     Rectangle profileRect = { navBarRect.x + navWidth - 70, navBarRect.y + 15, 50, 50 };
     bool isProfileHovered = CheckCollisionPointRec(mousePos, profileRect);
 
-    if (isProfileHovered)
+    if (isProfileHovered && !showDeleteConfirmation)
     {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr)
@@ -372,24 +412,25 @@ void Booking::DrawMoviePosters()
         bool hoverAdd = CheckCollisionPointRec(mousePos, addBtn);
         bool hoverDelete = CheckCollisionPointRec(mousePos, deleteBtn);
 
-        if (hoverAdd || hoverDelete)
+        if ((hoverAdd || hoverDelete) && !showDeleteConfirmation)
         {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         }
 
-        if (hoverAdd && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        if (hoverAdd && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !showDeleteConfirmation)
         {
             std::cout << "Admin triggered: ADD MOVIE\n";
         }
-        if (hoverDelete && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        if (hoverDelete && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !showDeleteConfirmation)
         {
             std::cout << "Admin triggered: DELETE MOVIE\n";
+            isDeleteMode = !isDeleteMode;
         }
 
         DrawRectangleRounded(addBtn, 0.3f, 6, hoverAdd ? Color{ 46, 204, 113, 255 } : Color{ 39, 174, 96, 255 });
         DrawText("Add", addBtn.x + 28, addBtn.y + 10, 20, WHITE);
 
-        DrawRectangleRounded(deleteBtn, 0.3f, 6, hoverDelete ? Color{ 231, 76, 60, 255 } : Color{ 192, 41, 43, 255 });
+        DrawRectangleRounded(deleteBtn, 0.3f, 6, isDeleteMode ? Color{ 142, 40, 42, 255 } : (hoverDelete ? Color{ 231, 76, 60, 255 } : Color{ 192, 41, 43, 255 }));
         DrawText("Delete", deleteBtn.x + 16, deleteBtn.y + 10, 20, WHITE);
     }
 
@@ -402,7 +443,6 @@ void Booking::DrawMoviePosters()
 
     Vector2 mousePos = GetMousePosition();
 
-    // --- 1. SUGGESTED MOVIES CLICK LOGIC ---
     for (size_t i = 0; i < currentSuggestedMovies.size() && i < 4; i++)
     {
         float x = startPosterX + i * (posterWidth + spacingX);
@@ -451,26 +491,35 @@ void Booking::DrawMoviePosters()
             0.08f,
             8,
             4,
-            hovered ? BLUE : WHITE
+            hovered ? (isDeleteMode ? RED : BLUE) : (isDeleteMode ? ORANGE : WHITE)
         );
 
-        if (hovered)
+        if (hovered && !showDeleteConfirmation)
         {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr)
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
-                // Cache selected movie data and route window context to state 7 (MovieDetails)
-                lastClickedMovie = currentSuggestedMovies[i];
-                hasSelectedMovieChanged = true;
-                *currentScreen = 7;
-                EndScissorMode();
-                return;
+                if (isDeleteMode)
+                {
+                    movieToDelete = currentSuggestedMovies[i];
+                    isDeleteMode = false;
+                    showDeleteConfirmation = true;
+                    EndScissorMode();
+                    return;
+                }
+                else if (currentScreen != nullptr)
+                {
+                    lastClickedMovie = currentSuggestedMovies[i];
+                    hasSelectedMovieChanged = true;
+                    *currentScreen = 7;
+                    EndScissorMode();
+                    return;
+                }
             }
         }
     }
     EndScissorMode();
 
-    // --- 2. TOP RATED MOVIES CLICK LOGIC ---
     float topRatedSectionY = startPosterY + posterHeight + 150;
 
     Rectangle topRatedBg = {
@@ -506,7 +555,6 @@ void Booking::DrawMoviePosters()
         float imgH = 150;
         Rectangle imgRect = { itemX, itemY + (rowHeight - imgH) / 2, imgW, imgH };
 
-        // Dynamic clickable bounds bounding box enveloping the grid card layout area
         Rectangle totalRowRect = { itemX, itemY, colWidth, rowHeight };
         bool gridHovered = CheckCollisionPointRec(mousePos, totalRowRect);
 
@@ -526,7 +574,7 @@ void Booking::DrawMoviePosters()
             DrawRectangleRec(imgRect, DARKGRAY);
         }
 
-        DrawRectangleRoundedLines(imgRect, 0.1f, 6, 1, gridHovered ? BLUE : Fade(GRAY, 0.4f));
+        DrawRectangleRoundedLines(imgRect, 0.1f, 6, 1, gridHovered ? (isDeleteMode ? RED : BLUE) : (isDeleteMode ? ORANGE : Fade(GRAY, 0.4f)));
 
         float textStartX = imgRect.x + imgRect.width + 20;
 
@@ -546,15 +594,25 @@ void Booking::DrawMoviePosters()
             DrawTextEx(customFont, ratingStr, { scoreX, itemY + 23 }, 25, 1, DARKGRAY);
         }
 
-        if (gridHovered)
+        if (gridHovered && !showDeleteConfirmation)
         {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr)
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
-                lastClickedMovie = topRatedMovies[i];
-                hasSelectedMovieChanged = true;
-                *currentScreen = 7;
-                return;
+                if (isDeleteMode)
+                {
+                    movieToDelete = topRatedMovies[i];
+                    isDeleteMode = false;
+                    showDeleteConfirmation = true;
+                    return;
+                }
+                else if (currentScreen != nullptr)
+                {
+                    lastClickedMovie = topRatedMovies[i];
+                    hasSelectedMovieChanged = true;
+                    *currentScreen = 7;
+                    return;
+                }
             }
         }
     }
@@ -608,6 +666,67 @@ void Booking::Draw()
     DrawMoviePosters();
     DrawScrollbar();
     DrawNavigationBar();
+
+    if (isDeleteMode)
+    {
+        DrawRectangle(0, 130, GetScreenWidth(), 40, Fade(ORANGE, 0.85f));
+        if (customFont.texture.id != 0)
+        {
+            DrawTextEx(customFont, "SELECTION MODE: Click on any poster above to process deletion. (ESC to Cancel)", { 40, 138 }, 20, 1, WHITE);
+        }
+        else
+        {
+            DrawText("SELECTION MODE: Click on any poster above to process deletion. (ESC to Cancel)", 40, 140, 20, WHITE);
+        }
+    }
+
+    if (showDeleteConfirmation)
+    {
+        DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.5f));
+
+        float mWidth = 420.0f;
+        float mHeight = 200.0f;
+        Rectangle modalContainer = {
+            ((float)GetScreenWidth() - mWidth) / 2.0f,
+            ((float)GetScreenHeight() - mHeight) / 2.0f,
+            mWidth,
+            mHeight
+        };
+
+        DrawRectangleRec(modalContainer, WHITE);
+        DrawRectangleLinesEx(modalContainer, 2, MAROON);
+
+        std::string line1 = "Confirm Deletion Status";
+        std::string line2 = "Are you sure you want to remove \"" + movieToDelete.getTitle() + "\"?";
+
+        if (customFont.texture.id != 0)
+        {
+            DrawTextEx(customFont, line1.c_str(), { modalContainer.x + 30, modalContainer.y + 30 }, 22, 1, MAROON);
+            DrawTextEx(customFont, line2.c_str(), { modalContainer.x + 30, modalContainer.y + 75 }, 16, 1, DARKGRAY);
+        }
+        else
+        {
+            DrawText(line1.c_str(), (int)modalContainer.x + 30, (int)modalContainer.y + 30, 20, MAROON);
+            DrawText(line2.c_str(), (int)modalContainer.x + 30, (int)modalContainer.y + 75, 16, DARKGRAY);
+        }
+
+        Rectangle yesBtn = { modalContainer.x + 50, modalContainer.y + 130, 120, 40 };
+        Rectangle noBtn = { modalContainer.x + 250, modalContainer.y + 130, 120, 40 };
+
+        DrawRectangleRec(yesBtn, MAROON);
+        DrawRectangleRec(noBtn, GRAY);
+
+        if (customFont.texture.id != 0)
+        {
+            DrawTextEx(customFont, "CONFIRM", { yesBtn.x + 24, yesBtn.y + 11 }, 16, 1, WHITE);
+            DrawTextEx(customFont, "CANCEL", { noBtn.x + 32, noBtn.y + 11 }, 16, 1, WHITE);
+        }
+        else
+        {
+            DrawText("CONFIRM", (int)yesBtn.x + 28, (int)yesBtn.y + 13, 14, WHITE);
+            DrawText("CANCEL", (int)noBtn.x + 35, (int)noBtn.y + 13, 14, WHITE);
+        }
+    }
 }
 
 void Booking::SetUserData(bool loggedIn, const std::string& name, bool admin) {

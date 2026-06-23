@@ -163,7 +163,7 @@ void MovieDetails::Draw() {
     Vector2 mousePos = GetMousePosition();
 
     Color navIconBlue = Color{ 24, 119, 242, 255 };
-    Color darkNavy = Color{ 14, 21, 61, 255 };     
+    Color darkNavy = Color{ 14, 21, 61, 255 };
 
     Rectangle backLinkRect = { navBarX + 20, 195, 130, 48 };
     bool backHovered = CheckCollisionPointRec(mousePos, backLinkRect);
