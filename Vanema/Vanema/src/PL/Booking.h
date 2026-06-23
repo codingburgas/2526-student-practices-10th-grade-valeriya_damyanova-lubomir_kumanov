@@ -38,6 +38,9 @@ private:
     bool showDeleteConfirmation = false;
     Movie movieToDelete;
 
+    // --- Private Methods ---
+    void ProcessMoviePosterClicks(Vector2 mousePos);
+
 public:
     int* currentScreen;
     MovieService* movieService = nullptr;

@@ -29,3 +29,14 @@
 180	5050	8039441910802628	CMakeFiles/Vanema.dir/src/PL/Films.cpp.obj	db89bd11d9996c6d
 58	1470	8039443908629742	CMakeFiles/Vanema.dir/src/BLL/MovieService.cpp.obj	15d93805b887d42d
 1471	7456	8039443922781425	bin/Debug/Vanema.exe	e6628706fe416ac
+70	741	8039448877504175	CMakeFiles/Vanema.dir/src/PL/Booking.cpp.obj	4e370491b3b8a13e
+742	6801	8039448884220635	bin/Debug/Vanema.exe	e6628706fe416ac
+49	1459	8039452711484542	CMakeFiles/Vanema.dir/src/PL/Booking.cpp.obj	4e370491b3b8a13e
+1461	8992	8039452725596840	bin/Debug/Vanema.exe	e6628706fe416ac
+7	767	8039457506212272	CMakeFiles/Vanema.dir/src/PL/Booking.cpp.obj	4e370491b3b8a13e
+768	4062	8039457513821727	bin/Debug/Vanema.exe	e6628706fe416ac
+7	721	8039460324707227	CMakeFiles/Vanema.dir/src/PL/Booking.cpp.obj	4e370491b3b8a13e
+723	4859	8039460331859091	bin/Debug/Vanema.exe	e6628706fe416ac
+37	730	8039464772442721	CMakeFiles/Vanema.dir/src/PL/main.cpp.obj	3e6a01a604d87fbb
+43	795	8039464772517482	CMakeFiles/Vanema.dir/src/PL/Booking.cpp.obj	4e370491b3b8a13e
+795	4075	8039464780025136	bin/Debug/Vanema.exe	e6628706fe416ac
