@@ -1,6 +1,10 @@
 #include "Films.h"
 #include <iostream>
 #include <fstream>
+#include <algorithm>
+
+// Global or local static flag to prevent click bleed-through between frames
+static bool skipGridClickThisFrame = false;
 
 Films::Films() {
     background = LoadTexture("assets/booking.png");
@@ -29,7 +33,7 @@ Films::Films() {
 
     currentScreen = nullptr;
     scrollOffset = 0.0f;
-    maxScroll = 800.0f;
+    maxScroll = 1200.0f;
     activeIndex = 2;
     searchActive = false;
     letterCount = 0;
@@ -44,6 +48,9 @@ Films::Films() {
     isLoggedIn = false;
     userName = "";
     isAdmin = false;
+
+    isDeleteMode = false;
+    showDeleteConfirmation = false;
 }
 
 Films::~Films() {
@@ -78,6 +85,7 @@ void Films::Unload() {
         }
     }
     displayedMovies.clear();
+    underlyingMovies.clear();
 
     if (customFont.texture.id != 0) {
         UnloadFont(customFont);
@@ -93,7 +101,7 @@ void Films::SyncDisplayWithDatabase() {
         }
     }
     displayedMovies.clear();
-    underlyingMovies.clear(); // Clear the underlying model store
+    underlyingMovies.clear();
 
     std::string contextGenre = genres[selectedGenreIndex].name;
     std::vector<Movie> rawDbMovies;
@@ -105,7 +113,6 @@ void Films::SyncDisplayWithDatabase() {
         rawDbMovies = movieService->getMoviesByGenre(contextGenre);
     }
 
-    // Keep an internal track of the true models
     underlyingMovies = rawDbMovies;
 
     for (const auto& item : rawDbMovies) {
@@ -130,20 +137,101 @@ void Films::SyncDisplayWithDatabase() {
     }
 
     int layoutRows = ((int)displayedMovies.size() + 3) / 4;
-    maxScroll = 320.0f + (layoutRows * 500.0f) - GetScreenHeight();
-    if (maxScroll < 400.0f) maxScroll = 400.0f;
+    maxScroll = 550.0f + (layoutRows * 520.0f) - GetScreenHeight();
+    if (maxScroll < 600.0f) maxScroll = 600.0f;
 }
 
 void Films::Update() {
+    Vector2 mousePos = GetMousePosition();
+
+    // Reset the frame skip flag at the start of a clean frame
+    if (!showDeleteConfirmation) {
+        skipGridClickThisFrame = false;
+    }
+
+    if (IsKeyPressed(KEY_ESCAPE)) {
+        if (showDeleteConfirmation) {
+            showDeleteConfirmation = false;
+            skipGridClickThisFrame = true;
+        }
+        else if (isDeleteMode) {
+            isDeleteMode = false;
+        }
+    }
+
+    if (showDeleteConfirmation) {
+        float mWidth = 650.0f;
+        float mHeight = 220.0f;
+        Rectangle modalContainer = {
+            ((float)GetScreenWidth() - mWidth) / 2.0f,
+            ((float)GetScreenHeight() - mHeight) / 2.0f,
+            mWidth,
+            mHeight
+        };
+
+        Rectangle yesBtn = { modalContainer.x + 60, modalContainer.y + 140, 150, 45 };
+        Rectangle noBtn = { modalContainer.x + 440, modalContainer.y + 140, 150, 45 };
+
+        if (CheckCollisionPointRec(mousePos, yesBtn)) {
+            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                if (movieService != nullptr) {
+                    std::string movieTitle = movieToDelete.getTitle();
+                    movieService->deleteMovie(movieTitle);
+
+                    auto it = std::find_if(underlyingMovies.begin(), underlyingMovies.end(),
+                        [&movieTitle](const Movie& m) { return m.getTitle() == movieTitle; });
+                    if (it != underlyingMovies.end()) {
+                        size_t dist = std::distance(underlyingMovies.begin(), it);
+                        if (dist < displayedMovies.size()) {
+                            if (displayedMovies[dist].posterTexture.id != 0) {
+                                UnloadTexture(displayedMovies[dist].posterTexture);
+                            }
+                            displayedMovies.erase(displayedMovies.begin() + dist);
+                        }
+                        underlyingMovies.erase(it);
+                    }
+
+                    int layoutRows = ((int)displayedMovies.size() + 3) / 4;
+                    maxScroll = 550.0f + (layoutRows * 520.0f) - GetScreenHeight();
+                    if (maxScroll < 600.0f) maxScroll = 600.0f;
+                }
+                showDeleteConfirmation = false;
+                isDeleteMode = false;
+                movieToDelete = Movie();
+                skipGridClickThisFrame = true; // Block click handling for the remainder of this frame loop
+            }
+        }
+        else if (CheckCollisionPointRec(mousePos, noBtn)) {
+            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                showDeleteConfirmation = false;
+                skipGridClickThisFrame = true; // Block click handling for the remainder of this frame loop
+            }
+        }
+        return;
+    }
+
     float wheelMove = GetMouseWheelMove();
     if (wheelMove != 0) {
-        scrollOffset -= wheelMove * 40;
+        scrollOffset -= wheelMove * 45;
         if (scrollOffset < 0) scrollOffset = 0;
         if (scrollOffset > maxScroll) scrollOffset = maxScroll;
     }
 
-    Vector2 mousePos = GetMousePosition();
-    Rectangle searchBox = { 1150, 205 - scrollOffset, 260, 50 };
+    int screenWidth = GetScreenWidth();
+    float navWidth = screenWidth * 0.9f;
+    float navHeight = 100.0f;
+    float navBarX = (screenWidth - navWidth) / 2;
+
+    float checkY = 20.0f + navHeight + 20.0f - scrollOffset;
+    if (isDeleteMode && !showDeleteConfirmation) {
+        checkY += 60.0f;
+    }
+    else {
+        checkY += 15.0f;
+    }
+    Rectangle searchBox = { navBarX + navWidth - 280, checkY + 15, 260, 50 };
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         if (CheckCollisionPointRec(mousePos, searchBox)) {
@@ -212,7 +300,7 @@ void Films::DrawMovieGrid(float startY) {
         float y = startPosterY + targetRow * (posterHeight + 110.0f);
         Rectangle posterRect = { x, y, posterWidth, posterHeight };
 
-        bool hovered = CheckCollisionPointRec(mousePos, posterRect);
+        bool hovered = !showDeleteConfirmation && CheckCollisionPointRec(mousePos, posterRect);
 
         if (displayedMovies[i].posterTexture.id != 0) {
             DrawTexturePro(
@@ -247,14 +335,31 @@ void Films::DrawMovieGrid(float startY) {
             0.08f,
             8,
             4,
-            hovered ? BLUE : WHITE
+            hovered ? (isDeleteMode ? RED : BLUE) : (isDeleteMode ? ORANGE : WHITE)
         );
 
-        if (hovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            std::cout << "Selected movie: " << displayedMovies[i].title << "\n";
-            if (!isLoggedIn) {
-                if (currentScreen != nullptr) {
-                    *currentScreen = 1;
+        // FIX: Added '&& !skipGridClickThisFrame' to completely stop any click from bleeding through
+        if (hovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !skipGridClickThisFrame) {
+            if (isDeleteMode) {
+                if (i < underlyingMovies.size()) {
+                    movieToDelete = underlyingMovies[i];
+                    showDeleteConfirmation = true;
+                    return;
+                }
+            }
+            else {
+                std::cout << "Selected movie: " << displayedMovies[i].title << "\n";
+                if (!isLoggedIn) {
+                    if (currentScreen != nullptr) {
+                        *currentScreen = 1;
+                        EndScissorMode();
+                        return;
+                    }
+                }
+                else if (currentScreen != nullptr && i < underlyingMovies.size()) {
+                    lastClickedMovie = underlyingMovies[i];
+                    hasSelectedMovieChanged = true;
+                    *currentScreen = 7;
                     EndScissorMode();
                     return;
                 }
@@ -297,17 +402,17 @@ void Films::DrawNavigationBar() {
     for (int i = 0; i < 4; i++) {
         float itemX = startX + (i * spacing);
         Rectangle btnRect = { itemX, navBarRect.y, 110, navHeight };
-        bool isHovered = CheckCollisionPointRec(mousePos, btnRect);
+        bool isHovered = !showDeleteConfirmation && CheckCollisionPointRec(mousePos, btnRect);
         Color tint = (i == activeIndex) ? BLUE : DARKBLUE;
 
-        if (isHovered) {
+        if (isHovered && !skipGridClickThisFrame) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 activeIndex = i;
                 if (currentScreen != nullptr) {
                     if (i == 0) {
                         searchActive = false;
-                        *currentScreen = 2;
+                        *currentScreen = 0;
                         return;
                     }
                     else if (i == 2) {
@@ -327,9 +432,9 @@ void Films::DrawNavigationBar() {
     }
 
     Rectangle profileRect = { navBarRect.x + navWidth - 70, navBarRect.y + 15, 50, 50 };
-    bool isProfileHovered = CheckCollisionPointRec(mousePos, profileRect);
+    bool isProfileHovered = !showDeleteConfirmation && CheckCollisionPointRec(mousePos, profileRect);
 
-    if (isProfileHovered) {
+    if (isProfileHovered && !skipGridClickThisFrame) {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr) {
             searchActive = false;
@@ -351,8 +456,6 @@ void Films::DrawNavigationBar() {
     }
 
     if (isLoggedIn && !userName.empty()) {
-        std::cout << "Films class rendering user: " << userName << "\n";
-
         float fontSize = 22.0f;
         Color nameColor = BLACK;
 
@@ -363,27 +466,22 @@ void Films::DrawNavigationBar() {
 
             DrawTextEx(customFont, userName.c_str(), { textX, textY }, fontSize, 1, nameColor);
         }
-        else {
-            int textWidth = MeasureText(userName.c_str(), 16);
-            int textX = profileRect.x + (profileRect.width / 2) - (textWidth / 2);
-            DrawText(userName.c_str(), textX, profileRect.y + profileRect.height + 5, 16, BLACK);
-        }
     }
 }
 
 void Films::DrawScrollbar() {
     int screenWidth = GetScreenWidth();
-    float scrollbarHeight = 350;
-    float scrollbarWidth = 10;
+    float scrollbarHeight = 450;
+    float scrollbarWidth = 12;
     float scrollbarX = screenWidth - 25;
-    float scrollbarY = 150;
+    float scrollbarY = 180;
 
     DrawRectangleRounded(
         { scrollbarX, scrollbarY, scrollbarWidth, scrollbarHeight },
         0.5f, 8, Fade(LIGHTGRAY, 0.4f)
     );
 
-    float thumbHeight = 80;
+    float thumbHeight = 110;
     float thumbY = scrollbarY;
 
     if (maxScroll > 0) {
@@ -430,14 +528,28 @@ void Films::Draw() {
         GetScreenHeight() - (int)(navBarRect.y + navBarRect.height)
     );
 
-    float contentY = navBarRect.y + navBarRect.height + 40 - scrollOffset;
+    float currentY = navBarRect.y + navBarRect.height + 20.0f - scrollOffset;
 
-    if (customFont.texture.id != 0) {
-        DrawTextEx(customFont, "Films", { navBarRect.x + 20, contentY }, 45, 1, BLACK);
-        DrawTextEx(customFont, "Discover by genre, trending and more", { navBarRect.x + 20, contentY + 50 }, 30, 1, BLACK);
+    // 1. ORANGE WARNING SELECTION RIBBON (Directly below navbar)
+    if (isDeleteMode && !showDeleteConfirmation) {
+        DrawRectangle(navBarRect.x, currentY, navBarRect.width, 40, Fade(ORANGE, 0.9f));
+        if (customFont.texture.id != 0) {
+            DrawTextEx(customFont, "SELECTION MODE: Click on any poster below to process deletion. (ESC to Cancel)", { navBarRect.x + 20, currentY + 8.0f }, 20, 1, WHITE);
+        }
+        currentY += 60.0f;
+    }
+    else {
+        currentY += 15.0f;
     }
 
-    Rectangle searchBox = { navBarRect.x + navWidth - 280, contentY + 15, 260, 50 };
+    // 2. MAIN HEADER TITLES
+    if (customFont.texture.id != 0) {
+        DrawTextEx(customFont, "Films", { navBarRect.x + 20, currentY }, 45, 1, BLACK);
+        DrawTextEx(customFont, "Discover by genre, trending and more", { navBarRect.x + 20, currentY + 55 }, 30, 1, BLACK);
+    }
+
+    // 3. SEARCH INPUT BOX AND ADMIN BUTTON CONTROLS
+    Rectangle searchBox = { navBarRect.x + navWidth - 280, currentY + 15, 260, 50 };
     DrawRectangleRounded(searchBox, 0.3f, 6, searchActive ? WHITE : Fade(WHITE, 0.7f));
     DrawRectangleRoundedLines(searchBox, 0.3f, 6, 2, searchActive ? BLUE : WHITE);
 
@@ -458,38 +570,79 @@ void Films::Draw() {
     if (isLoggedIn && isAdmin) {
         float btnWidth = 90.0f;
         float btnHeight = 40.0f;
-        float btnY = contentY + 20.0f;
+        float btnY = currentY + 20.0f;
 
         Rectangle addBtn = { searchBox.x - 210, btnY, btnWidth, btnHeight };
         Rectangle deleteBtn = { searchBox.x - 110, btnY, btnWidth, btnHeight };
 
         Vector2 mousePos = GetMousePosition();
-        bool hoverAdd = CheckCollisionPointRec(mousePos, addBtn);
-        bool hoverDelete = CheckCollisionPointRec(mousePos, deleteBtn);
-        if (hoverAdd || hoverDelete) {
+        bool hoverAdd = !showDeleteConfirmation && CheckCollisionPointRec(mousePos, addBtn);
+        bool hoverDelete = !showDeleteConfirmation && CheckCollisionPointRec(mousePos, deleteBtn);
+        if ((hoverAdd || hoverDelete) && !skipGridClickThisFrame) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         }
 
-        if (hoverAdd && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        if (hoverAdd && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !skipGridClickThisFrame) {
             std::cout << "Admin triggered: ADD MOVIE\n";
         }
-        if (hoverDelete && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        if (hoverDelete && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !skipGridClickThisFrame) {
             std::cout << "Admin triggered: DELETE MOVIE\n";
+            isDeleteMode = !isDeleteMode;
         }
 
         DrawRectangleRounded(addBtn, 0.3f, 6, hoverAdd ? Color{ 46, 204, 113, 255 } : Color{ 39, 174, 96, 255 });
         DrawText("Add", addBtn.x + 28, addBtn.y + 10, 20, BLACK);
 
-        DrawRectangleRounded(deleteBtn, 0.3f, 6, hoverDelete ? Color{ 231, 76, 60, 255 } : Color{ 192, 41, 43, 255 });
+        DrawRectangleRounded(deleteBtn, 0.3f, 6, isDeleteMode ? Color{ 142, 40, 42, 255 } : (hoverDelete ? Color{ 231, 76, 60, 255 } : Color{ 192, 41, 43, 255 }));
         DrawText("Delete", deleteBtn.x + 16, deleteBtn.y + 10, 20, BLACK);
     }
 
-    DrawGenreBar(contentY + 120.0f);
-    DrawMovieGrid(contentY + 230.0f);
+    // 4. LOWERED GENRE SELECTION & GRID LAYOUT CONTAINER
+    DrawGenreBar(currentY + 145.0f);
+    DrawMovieGrid(currentY + 275.0f);
 
     EndScissorMode();
     DrawScrollbar();
     DrawNavigationBar();
+
+    if (showDeleteConfirmation) {
+        DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.5f));
+
+        float mWidth = 650.0f;
+        float mHeight = 220.0f;
+        Rectangle modalContainer = {
+            ((float)GetScreenWidth() - mWidth) / 2.0f,
+            ((float)GetScreenHeight() - mHeight) / 2.0f,
+            mWidth,
+            mHeight
+        };
+
+        DrawRectangleRec(modalContainer, WHITE);
+        DrawRectangleLinesEx(modalContainer, 2, MAROON);
+
+        std::string line1 = "Confirm Deletion Status";
+        std::string line2 = "Are you sure you want to remove \"" + movieToDelete.getTitle() + "\"?";
+
+        if (customFont.texture.id != 0) {
+            DrawTextEx(customFont, line1.c_str(), { modalContainer.x + 40, modalContainer.y + 35 }, 24, 1, MAROON);
+            DrawTextEx(customFont, line2.c_str(), { modalContainer.x + 40, modalContainer.y + 85 }, 18, 1, DARKGRAY);
+        }
+
+        Rectangle yesBtn = { modalContainer.x + 60, modalContainer.y + 140, 150, 45 };
+        Rectangle noBtn = { modalContainer.x + 440, modalContainer.y + 140, 150, 45 };
+
+        Vector2 mousePos = GetMousePosition();
+        bool hoverYes = CheckCollisionPointRec(mousePos, yesBtn);
+        bool hoverNo = CheckCollisionPointRec(mousePos, noBtn);
+
+        DrawRectangleRec(yesBtn, hoverYes ? Color{ 170, 30, 35, 255 } : MAROON);
+        DrawRectangleRec(noBtn, hoverNo ? Color{ 110, 110, 110, 255 } : GRAY);
+
+        if (customFont.texture.id != 0) {
+            DrawTextEx(customFont, "CONFIRM", { yesBtn.x + 38, yesBtn.y + 13 }, 16, 1, WHITE);
+            DrawTextEx(customFont, "CANCEL", { noBtn.x + 44, noBtn.y + 13 }, 16, 1, WHITE);
+        }
+    }
 }
 
 void Films::DrawGenreBar(float startY) {
@@ -517,9 +670,9 @@ void Films::DrawGenreBar(float startY) {
     for (size_t i = 0; i < genres.size(); i++) {
         Rectangle pillRect = { currentX, buttonsY, buttonWidth, buttonHeight };
         bool isVisible = (pillRect.x >= baseStartX - 5.0f) && (pillRect.x + pillRect.width <= viewRightBoundary + 5.0f);
-        bool isHovered = isVisible && CheckCollisionPointRec(mousePos, pillRect);
+        bool isHovered = !showDeleteConfirmation && isVisible && CheckCollisionPointRec(mousePos, pillRect);
 
-        if (isHovered) {
+        if (isHovered && !skipGridClickThisFrame) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 selectedGenreIndex = (int)i;
@@ -556,13 +709,13 @@ void Films::DrawGenreBar(float startY) {
 
     if (targetGenreScrollX < 0) {
         Rectangle leftBtn = { baseStartX - 65, buttonsY, arrowButtonSize, buttonHeight };
-        bool leftHover = CheckCollisionPointRec(mousePos, leftBtn);
+        bool leftHover = !showDeleteConfirmation && CheckCollisionPointRec(mousePos, leftBtn);
 
         DrawRectangleRounded(leftBtn, 0.45f, 8, leftHover ? LIGHTGRAY : Color{ 240, 244, 248, 255 });
         DrawRectangleRoundedLines(leftBtn, 0.45f, 8, 1, Color{ 220, 226, 235, 255 });
         DrawText("<", leftBtn.x + 18, leftBtn.y + 13, 24, BLACK);
 
-        if (leftHover) {
+        if (leftHover && !skipGridClickThisFrame) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 targetGenreScrollX += stepSlideAmount;
@@ -573,13 +726,13 @@ void Films::DrawGenreBar(float startY) {
 
     if (maxGenreScrollWidth > visibleWidthBoundary && targetGenreScrollX > -maxScrollAllowed) {
         Rectangle rightBtn = { viewRightBoundary + 15, buttonsY, arrowButtonSize, buttonHeight };
-        bool rightHover = CheckCollisionPointRec(mousePos, rightBtn);
+        bool rightHover = !showDeleteConfirmation && CheckCollisionPointRec(mousePos, rightBtn);
 
         DrawRectangleRounded(rightBtn, 0.45f, 8, rightHover ? LIGHTGRAY : Color{ 240, 244, 248, 255 });
         DrawRectangleRoundedLines(rightBtn, 0.45f, 8, 1, Color{ 220, 226, 235, 255 });
         DrawText(">", rightBtn.x + 20, rightBtn.y + 13, 24, BLACK);
 
-        if (rightHover) {
+        if (rightHover && !skipGridClickThisFrame) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 targetGenreScrollX -= stepSlideAmount;

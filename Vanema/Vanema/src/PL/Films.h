@@ -75,15 +75,9 @@ private:
     std::vector<DisplayMovie> displayedMovies;
     std::vector<Movie> underlyingMovies;
 
-    // --- ADMIN REMOVAL STATE MANAGEMENT ---
-    enum DeleteState {
-        STATE_NONE,
-        STATE_SELECTING,
-        STATE_CONFIRM
-    };
-    DeleteState deleteState;
-    int targetedIndex;
-    // --------------------------------------
+    bool isDeleteMode;
+    bool showDeleteConfirmation;
+    Movie movieToDelete;
 
     void DrawNavigationBar();
     void DrawScrollbar();

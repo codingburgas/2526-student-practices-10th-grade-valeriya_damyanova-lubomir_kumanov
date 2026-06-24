@@ -12,6 +12,9 @@
 #include <unistd.h>
 #endif
 
+// Global or local static flag to prevent click bleed-through between frames
+static bool skipGridClickThisFrame = false;
+
 Booking::Booking()
 {
     char cwd[1024];
@@ -203,6 +206,9 @@ void Booking::Unload()
 
 void Booking::ProcessMoviePosterClicks(Vector2 mousePos)
 {
+    // FIX: Completely bypass click checking if we just closed a modal window this frame
+    if (skipGridClickThisFrame) return;
+
     int screenWidth = GetScreenWidth();
     float navWidth = screenWidth * 0.9f;
     float navHeight = 100.0f;
@@ -293,17 +299,22 @@ void Booking::Update()
 {
     Vector2 mousePos = GetMousePosition();
 
+    // Reset the frame skip flag at the start of a clean frame
+    if (!showDeleteConfirmation)
+    {
+        skipGridClickThisFrame = false;
+    }
+
     // Handle ESC key to cancel delete operations
     if (IsKeyPressed(KEY_ESCAPE))
     {
         if (showDeleteConfirmation)
         {
-            // Cancel the delete confirmation modal
             showDeleteConfirmation = false;
+            skipGridClickThisFrame = true;
         }
         else if (isDeleteMode)
         {
-            // Exit delete mode without deleting
             isDeleteMode = false;
         }
     }
@@ -357,6 +368,7 @@ void Booking::Update()
                 showDeleteConfirmation = false;
                 isDeleteMode = false;
                 movieToDelete = Movie(); // Reset the movie object
+                skipGridClickThisFrame = true; // Block click handling for the remainder of this frame loop
             }
         }
         else if (CheckCollisionPointRec(mousePos, noBtn))
@@ -366,6 +378,7 @@ void Booking::Update()
             {
                 // Cancel deletion - just close modal but keep delete mode active
                 showDeleteConfirmation = false;
+                skipGridClickThisFrame = true; // Block click handling for the remainder of this frame loop
             }
         }
 
@@ -431,7 +444,7 @@ void Booking::DrawNavigationBar()
         bool isHovered = CheckCollisionPointRec(mousePos, btnRect);
         Color tint = (i == activeIndex) ? BLUE : DARKBLUE;
 
-        if (isHovered && !showDeleteConfirmation)
+        if (isHovered && !showDeleteConfirmation && !skipGridClickThisFrame)
         {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -461,7 +474,7 @@ void Booking::DrawNavigationBar()
     Rectangle profileRect = { navBarRect.x + navWidth - 70, navBarRect.y + 15, 50, 50 };
     bool isProfileHovered = CheckCollisionPointRec(mousePos, profileRect);
 
-    if (isProfileHovered && !showDeleteConfirmation)
+    if (isProfileHovered && !showDeleteConfirmation && !skipGridClickThisFrame)
     {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr)
@@ -537,16 +550,16 @@ void Booking::DrawMoviePosters()
         bool hoverAdd = CheckCollisionPointRec(mousePos, addBtn);
         bool hoverDelete = CheckCollisionPointRec(mousePos, deleteBtn);
 
-        if ((hoverAdd || hoverDelete) && !showDeleteConfirmation)
+        if ((hoverAdd || hoverDelete) && !showDeleteConfirmation && !skipGridClickThisFrame)
         {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         }
 
-        if (hoverAdd && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !showDeleteConfirmation)
+        if (hoverAdd && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !showDeleteConfirmation && !skipGridClickThisFrame)
         {
             std::cout << "Admin triggered: ADD MOVIE\n";
         }
-        if (hoverDelete && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !showDeleteConfirmation)
+        if (hoverDelete && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !showDeleteConfirmation && !skipGridClickThisFrame)
         {
             std::cout << "Admin triggered: DELETE MOVIE\n";
             isDeleteMode = !isDeleteMode;
@@ -608,7 +621,7 @@ void Booking::DrawMoviePosters()
 
         DrawRectangleRoundedLines(posterRect, 0.08f, 8, 4, hovered ? (isDeleteMode ? RED : BLUE) : (isDeleteMode ? ORANGE : WHITE));
 
-        if (hovered && !showDeleteConfirmation)
+        if (hovered && !showDeleteConfirmation && !skipGridClickThisFrame)
         {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         }
@@ -690,7 +703,7 @@ void Booking::DrawMoviePosters()
             DrawTextEx(customFont, ratingStr, { scoreX, itemY + 23 }, 25, 1, DARKGRAY);
         }
 
-        if (gridHovered && !showDeleteConfirmation)
+        if (gridHovered && !showDeleteConfirmation && !skipGridClickThisFrame)
         {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         }
