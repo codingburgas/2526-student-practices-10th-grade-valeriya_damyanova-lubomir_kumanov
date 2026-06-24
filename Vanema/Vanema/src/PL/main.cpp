@@ -7,7 +7,8 @@
 #include "Films.h"
 #include "Spots.h"
 #include "Offers.h"
-#include "MovieDetails.h" // <--- 1. INCLUDE MOVIE DETAILS
+#include "MovieDetails.h" 
+#include "AddMovie.h"
 #include "DAL/MovieRepository.h"
 #include "DAL/DataSeeder.h"
 #include "BLL/MovieService.h"
@@ -29,10 +30,12 @@ int main()
     Films films;
     Spots spots;
     Offers offers;
-    MovieDetails movieDetails; // <--- 2. INSTANTIATE THE STATE INSTANCE
+    MovieDetails movieDetails;
+    AddMovie addMovie;
 
     booking.movieService = &movieService;
     films.movieService = &movieService;
+    addMovie.movieService = &movieService; 
 
     booking.loadRandomSuggestions();
     films.SyncDisplayWithDatabase();
@@ -45,14 +48,14 @@ int main()
     films.currentScreen = &currentScreen;
     spots.currentScreen = &currentScreen;
     offers.currentScreen = &currentScreen;
-    movieDetails.currentScreen = &currentScreen; 
+    movieDetails.currentScreen = &currentScreen;
+    addMovie.currentScreen = &currentScreen; 
 
     login.Init();
     signup.Init();
 
     while (!WindowShouldClose())
     {
-        // --- 4. CHECK IF A MOVIE WAS CLICKED FROM THE GRID LISTS ---
         if (booking.hasSelectedMovieChanged)
         {
             movieDetails.LoadMovie(booking.GetLastClickedMovie());
@@ -62,7 +65,6 @@ int main()
             movieDetails.LoadMovie(films.GetLastClickedMovie());
         }
 
-        // --- SCREEN STATE UPDATES ---
         if (currentScreen == 0)
         {
             menu.Update();
@@ -97,9 +99,13 @@ int main()
         {
             offers.Update();
         }
-        else if (currentScreen == 7) // <--- 5. UPDATE STATE FOR DETAILED VIEW
+        else if (currentScreen == 7)
         {
             movieDetails.Update();
+        }
+        else if (currentScreen == 8) 
+        {
+            addMovie.Update();
         }
 
         if (login.IsLoggedIn())
@@ -110,9 +116,9 @@ int main()
             booking.SetUserData(true, currentRealName, isAdminUser);
             spots.SetUserData(true, currentRealName, isAdminUser);
             offers.SetUserData(true, currentRealName, isAdminUser);
+            addMovie.SetUserData(true, currentRealName, isAdminUser);
         }
 
-        // --- DRAWING PIPELINE ---
         BeginDrawing();
         ClearBackground(WHITE);
 
@@ -144,9 +150,13 @@ int main()
         {
             offers.Draw();
         }
-        else if (currentScreen == 7) 
+        else if (currentScreen == 7)
         {
             movieDetails.Draw();
+        }
+        else if (currentScreen == 8) 
+        {
+            addMovie.Draw();
         }
 
         EndDrawing();

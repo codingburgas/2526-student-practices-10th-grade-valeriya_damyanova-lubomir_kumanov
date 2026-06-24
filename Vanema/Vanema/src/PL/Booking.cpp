@@ -206,7 +206,6 @@ void Booking::Unload()
 
 void Booking::ProcessMoviePosterClicks(Vector2 mousePos)
 {
-    // FIX: Completely bypass click checking if we just closed a modal window this frame
     if (skipGridClickThisFrame) return;
 
     int screenWidth = GetScreenWidth();
@@ -299,13 +298,11 @@ void Booking::Update()
 {
     Vector2 mousePos = GetMousePosition();
 
-    // Reset the frame skip flag at the start of a clean frame
     if (!showDeleteConfirmation)
     {
         skipGridClickThisFrame = false;
     }
 
-    // Handle ESC key to cancel delete operations
     if (IsKeyPressed(KEY_ESCAPE))
     {
         if (showDeleteConfirmation)
@@ -319,7 +316,6 @@ void Booking::Update()
         }
     }
 
-    // Handle confirmation modal buttons FIRST
     if (showDeleteConfirmation)
     {
         float mWidth = 650.0f;
@@ -341,13 +337,9 @@ void Booking::Update()
             {
                 if (movieService != nullptr)
                 {
-                    // Get the movie title before deleting
                     std::string movieTitle = movieToDelete.getTitle();
-
-                    // Delete from database
                     movieService->deleteMovie(movieTitle);
 
-                    // Remove from UI vectors
                     auto it = std::find_if(currentSuggestedMovies.begin(), currentSuggestedMovies.end(),
                         [&movieTitle](const Movie& m) { return m.getTitle() == movieTitle; });
                     if (it != currentSuggestedMovies.end()) {
@@ -360,15 +352,13 @@ void Booking::Update()
                         topRatedMovies.erase(it2);
                     }
 
-                    // Refresh the UI to update display
                     RefreshSuggestions();
                 }
 
-                // Reset delete mode state
                 showDeleteConfirmation = false;
                 isDeleteMode = false;
-                movieToDelete = Movie(); // Reset the movie object
-                skipGridClickThisFrame = true; // Block click handling for the remainder of this frame loop
+                movieToDelete = Movie();
+                skipGridClickThisFrame = true;
             }
         }
         else if (CheckCollisionPointRec(mousePos, noBtn))
@@ -376,17 +366,13 @@ void Booking::Update()
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
-                // Cancel deletion - just close modal but keep delete mode active
                 showDeleteConfirmation = false;
-                skipGridClickThisFrame = true; // Block click handling for the remainder of this frame loop
+                skipGridClickThisFrame = true;
             }
         }
-
-        // IMPORTANT: Don't process any other clicks while confirmation is showing
         return;
     }
 
-    // Process movie poster clicks in Update() instead of Draw()
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !showDeleteConfirmation)
     {
         ProcessMoviePosterClicks(mousePos);
@@ -396,7 +382,6 @@ void Booking::Update()
     if (wheelMove != 0)
     {
         scrollOffset -= wheelMove * 40;
-
         if (scrollOffset < 0) scrollOffset = 0;
         if (scrollOffset > maxScroll) scrollOffset = maxScroll;
     }
@@ -416,6 +401,7 @@ void Booking::DrawNavigationBar()
         navHeight
     };
 
+    // FIXED: Removed the artificial blue bar. The application background image will now seamlessly bleed right through here.
     DrawRectangleRounded(navBarRect, 0.5f, 10, WHITE);
 
     if (logo.id != 0)
@@ -523,11 +509,13 @@ void Booking::DrawMoviePosters()
         navWidth,
         navHeight
     };
+
+    // FIXED: Corrected scissor constraints so elements drop perfectly under the Navbar line while honoring full-screen backdrop assets
     BeginScissorMode(
-        (int)navBarRect.x,
-        (int)(navBarRect.y + navBarRect.height),
-        (int)navBarRect.width,
-        GetScreenHeight() - (int)(navBarRect.y + navBarRect.height)
+        0,
+        (int)(navBarRect.y + navBarRect.height + 30),
+        GetScreenWidth(),
+        GetScreenHeight() - (int)(navBarRect.y + navBarRect.height + 30)
     );
 
     float contentY = navBarRect.y + navBarRect.height + 40 - scrollOffset;
@@ -554,10 +542,13 @@ void Booking::DrawMoviePosters()
         {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         }
-
         if (hoverAdd && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !showDeleteConfirmation && !skipGridClickThisFrame)
         {
             std::cout << "Admin triggered: ADD MOVIE\n";
+            if (currentScreen != nullptr)
+            {
+                *currentScreen = 8;
+            }
         }
         if (hoverDelete && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !showDeleteConfirmation && !skipGridClickThisFrame)
         {
@@ -584,9 +575,7 @@ void Booking::DrawMoviePosters()
     for (size_t i = 0; i < currentSuggestedMovies.size() && i < 4; i++)
     {
         float x = startPosterX + i * (posterWidth + spacingX);
-
         Rectangle posterRect = { x, startPosterY, posterWidth, posterHeight };
-
         bool hovered = !showDeleteConfirmation && CheckCollisionPointRec(mousePos, posterRect);
 
         if (suggestedPhotos[i].id != 0)
@@ -626,7 +615,6 @@ void Booking::DrawMoviePosters()
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         }
     }
-    EndScissorMode();
 
     float topRatedSectionY = startPosterY + posterHeight + 150;
 
@@ -638,7 +626,6 @@ void Booking::DrawMoviePosters()
     };
     DrawRectangleRounded(topRatedBg, 0.05f, 12, Fade(WHITE, 0.95f));
     DrawRectangleRoundedLines(topRatedBg, 0.05f, 12, 1, Fade(LIGHTGRAY, 0.5f));
-
     DrawRectangle(topRatedBg.x + 20, topRatedBg.y + 30, 6, 35, Color{ 41, 128, 185, 255 });
 
     if (customFont.texture.id != 0)
@@ -662,7 +649,6 @@ void Booking::DrawMoviePosters()
         float imgW = 110;
         float imgH = 150;
         Rectangle imgRect = { itemX, itemY + (rowHeight - imgH) / 2, imgW, imgH };
-
         Rectangle totalRowRect = { itemX, itemY, colWidth, rowHeight };
 
         bool gridHovered = !showDeleteConfirmation && CheckCollisionPointRec(mousePos, totalRowRect);
@@ -708,6 +694,7 @@ void Booking::DrawMoviePosters()
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         }
     }
+    EndScissorMode();
 }
 
 void Booking::DrawScrollbar()
@@ -733,6 +720,7 @@ void Booking::DrawScrollbar()
 
 void Booking::Draw()
 {
+    // FIRST LAYER: Immediately paste the asset image across the whole window size outside constraints
     if (background.id != 0)
     {
         DrawTexturePro(
@@ -749,16 +737,17 @@ void Booking::Draw()
         ClearBackground(RAYWHITE);
     }
 
+    // Process sub-components cleanly over the background asset canvas
     DrawMoviePosters();
     DrawScrollbar();
     DrawNavigationBar();
 
     if (isDeleteMode && !showDeleteConfirmation)
     {
-        DrawRectangle(0, 130, GetScreenWidth(), 40, Fade(ORANGE, 0.85f));
+        DrawRectangle(0, 150, GetScreenWidth(), 40, Fade(ORANGE, 0.85f));
         if (customFont.texture.id != 0)
         {
-            DrawTextEx(customFont, "SELECTION MODE: Click on any poster above to process deletion. (ESC to Cancel)", { 40, 138 }, 20, 1, WHITE);
+            DrawTextEx(customFont, "SELECTION MODE: Click on any poster above to process deletion. (ESC to Cancel)", { 40, 158 }, 20, 1, WHITE);
         }
     }
 

@@ -1,7 +1,7 @@
 ﻿// CinemaBookingSystem.cpp : Defines the entry point for the application.
 //
 
-#include "CinemaBookingSystem.h"
+#include "Vanema.h"
 
 using namespace std;
 

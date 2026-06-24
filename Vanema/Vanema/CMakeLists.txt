@@ -4,7 +4,7 @@ project(Vanema)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(NOT CMAKE_TOOLCHAIN_FILE AND EXISTS "C:/Users/TP14s/vcpkg/scripts/buildsystems/vcpkg.cmake")
+if(NOT CMAKE_TOOLCHAIN_FILE AND EXISTS "C:/Users/TP14s/vcpkg/scripts/buildsystems/vcpkg.cmake")    
     set(CMAKE_TOOLCHAIN_FILE "C:/Users/TP14s/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "" FORCE)
 endif()
 
@@ -16,10 +16,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin/Debug)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin/Release)
 
 add_executable(Vanema
-    
-    
+    # Excluded Vanema.cpp here to resolve the duplicate main entry points linker issue
+    Vanema.h
 
     src/PL/main.cpp
+    # Excluded src/PL/main_old.cpp here to prevent any older main loops from conflicting
     src/PL/Booking.cpp
     src/PL/Booking.h
     src/PL/Films.cpp
@@ -28,6 +29,8 @@ add_executable(Vanema
     src/PL/Login.h
     src/PL/Menu.cpp
     src/PL/Menu.h
+    src/PL/MovieDetails.cpp
+    src/PL/MovieDetails.h
     src/PL/Offers.cpp
     src/PL/Offers.h
     src/PL/SignUp.cpp
@@ -35,8 +38,6 @@ add_executable(Vanema
     src/PL/Spots.cpp
     src/PL/Spots.h
 
-    src/BLL/BLL.cpp
-    src/BLL/BLL.h
     src/BLL/Movie.cpp
     src/BLL/Movie.h
     src/BLL/MovieService.cpp
@@ -59,13 +60,14 @@ add_executable(Vanema
     src/DAL/UserRepository.h
     src/DAL/UserSeeder.cpp
     src/DAL/UserSeeder.h
-  "src/PL/MovieDetails.cpp" "src/PL/MovieDetails.h")
+ "src/PL/AddMovie.cpp" "src/PL/AddMovie.h")
 
 target_link_libraries(Vanema PRIVATE
     raylib
     SQLiteCpp
 )
 
+# This block allows all nested versions of your includes to work seamlessly
 target_include_directories(Vanema PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -73,9 +75,10 @@ target_include_directories(Vanema PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/BLL
     ${CMAKE_CURRENT_SOURCE_DIR}/src/DAL
 )
-if(MSVC)
+
+if(MSVC)    
     target_compile_options(Vanema PRIVATE "/FI${CMAKE_CURRENT_SOURCE_DIR}/Vanema.h")
-else()
+else()    
     target_compile_options(Vanema PRIVATE "-include" "${CMAKE_CURRENT_SOURCE_DIR}/Vanema.h")
 endif()
 

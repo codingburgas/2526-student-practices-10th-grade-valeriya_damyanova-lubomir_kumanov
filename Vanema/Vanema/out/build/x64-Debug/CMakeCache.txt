@@ -133,6 +133,21 @@ CMAKE_PROJECT_NAME:STATIC=Vanema
 //Value Computed by CMake
 CMAKE_PROJECT_SPDX_LICENSE:STATIC=
 
+//Value Computed by CMake
+CMAKE_PROJECT_VERSION:STATIC=1.0
+
+//Value Computed by CMake
+CMAKE_PROJECT_VERSION_MAJOR:STATIC=1
+
+//Value Computed by CMake
+CMAKE_PROJECT_VERSION_MINOR:STATIC=0
+
+//Value Computed by CMake
+CMAKE_PROJECT_VERSION_PATCH:STATIC=
+
+//Value Computed by CMake
+CMAKE_PROJECT_VERSION_TWEAK:STATIC=
+
 //RC compiler
 CMAKE_RC_COMPILER:FILEPATH=C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/rc.exe
 
@@ -212,6 +227,12 @@ PKG_CONFIG_ARGN:STRING=
 
 //pkg-config executable
 PKG_CONFIG_EXECUTABLE:FILEPATH=PKG_CONFIG_EXECUTABLE-NOTFOUND
+
+//Path to a file.
+SQLite3_INCLUDE_DIR:PATH=C:/Users/TP14s/vcpkg/installed/x64-windows/include
+
+//Path to a library.
+SQLite3_LIBRARY:FILEPATH=C:/Users/TP14s/vcpkg/installed/x64-windows/debug/lib/sqlite3.lib
 
 //The directory containing a CMake configuration file for SQLiteCpp.
 SQLiteCpp_DIR:PATH=C:/Users/TP14s/vcpkg/installed/x64-windows/share/SQLiteCpp
@@ -432,6 +453,8 @@ CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 CMAKE_TOOLCHAIN_FILE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
+//Details about finding SQLite3
+FIND_PACKAGE_MESSAGE_DETAILS_SQLite3:INTERNAL=[C:/Users/TP14s/vcpkg/installed/x64-windows/debug/lib/sqlite3.lib][C:/Users/TP14s/vcpkg/installed/x64-windows/include][v3.47.0()]
 //Details about finding raylib
 FIND_PACKAGE_MESSAGE_DETAILS_raylib:INTERNAL=[C:/Users/TP14s/vcpkg/installed/x64-windows/debug/lib/raylib.lib][C:/Users/TP14s/vcpkg/installed/x64-windows/include][v()]
 PC_RAYLIB_CFLAGS:INTERNAL=
@@ -459,6 +482,10 @@ PC_RAYLIB_VERSION:INTERNAL=
 PKG_CONFIG_ARGN-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: PKG_CONFIG_EXECUTABLE
 PKG_CONFIG_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: SQLite3_INCLUDE_DIR
+SQLite3_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: SQLite3_LIBRARY
+SQLite3_LIBRARY-ADVANCED:INTERNAL=1
 //Install the dependencies listed in your manifest:
 //\n    If this is off, you will have to manually install your dependencies.
 //\n    See https://github.com/microsoft/vcpkg/tree/master/docs/specifications/manifests.md

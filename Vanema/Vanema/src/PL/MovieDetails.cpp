@@ -1,4 +1,5 @@
 #include "MovieDetails.h"
+#include "BLL/Movie.h"
 #include <sstream>
 #include <cstring>
 #include <iostream>

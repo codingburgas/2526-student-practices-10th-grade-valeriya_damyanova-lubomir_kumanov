@@ -1,9 +1,12 @@
-#pragma once
+#ifndef FILMS_H
+#define FILMS_H
+
 #include "raylib.h"
-#include <vector>
 #include <string>
-#include "../BLL/MovieService.h" 
-#include "../BLL/Movie.h"
+#include <vector>
+#include <memory>
+#include "BLL/Movie.h"
+#include "BLL/MovieService.h"
 
 struct GenreItem {
     std::string name;
@@ -18,7 +21,29 @@ struct DisplayMovie {
 
 class Films {
 public:
+    Films();
+    ~Films();
+
+    void Update();
+    void Draw();
+    void Unload();
+
+    void SetUserData(bool loggedIn, const std::string& name, bool admin);
+    void SyncDisplayWithDatabase();
+
+    Movie GetLastClickedMovie() const { return lastClickedMovie; }
+
     int* currentScreen;
+    MovieService* movieService;
+
+public:
+    bool hasSelectedMovieChanged;
+
+private:
+    void DrawNavigationBar();
+    void DrawMovieGrid(float startY);
+    void DrawGenreBar(float startY);
+    void DrawScrollbar();
 
     Texture2D background;
     Texture2D logo;
@@ -29,38 +54,17 @@ public:
     Texture2D iconProfile;
     Font customFont;
 
+    std::vector<GenreItem> genres;
+    std::vector<DisplayMovie> displayedMovies;
+    std::vector<Movie> underlyingMovies;
+
     float scrollOffset;
     float maxScroll;
     int activeIndex;
+    bool searchActive;
+    int letterCount;
+    char searchQuery[64];
 
-    char searchQuery[64] = "\0";
-    int letterCount = 0;
-    bool searchActive = false;
-
-    MovieService* movieService = nullptr;
-
-    Movie lastClickedMovie;
-    bool hasSelectedMovieChanged = false;
-
-    Films();
-    ~Films();
-
-    void Init();
-    void Update();
-    void Draw();
-    void Unload();
-    void DrawGenreBar(float startY);
-    void DrawMovieGrid(float startY);
-    void SyncDisplayWithDatabase();
-    void SetUserData(bool loggedIn, const std::string& name, bool admin);
-
-    Movie GetLastClickedMovie() {
-        hasSelectedMovieChanged = false;
-        return lastClickedMovie;
-    }
-
-private:
-    std::vector<GenreItem> genres;
     int selectedGenreIndex;
     int lastSelectedGenreIndex;
 
@@ -68,17 +72,14 @@ private:
     float targetGenreScrollX;
     float maxGenreScrollWidth;
 
-    bool isLoggedIn = false;
-    std::string userName = "";
+    bool isLoggedIn;
+    std::string userName;
     bool isAdmin;
-
-    std::vector<DisplayMovie> displayedMovies;
-    std::vector<Movie> underlyingMovies;
 
     bool isDeleteMode;
     bool showDeleteConfirmation;
     Movie movieToDelete;
-
-    void DrawNavigationBar();
-    void DrawScrollbar();
+    Movie lastClickedMovie;
 };
+
+#endif
