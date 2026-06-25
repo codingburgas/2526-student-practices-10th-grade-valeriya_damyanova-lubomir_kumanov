@@ -5,11 +5,15 @@
 #include <string>
 #include "BLL/MovieService.h"
 
+// Forward declaration for Films class
+class Films;
+
 class AddMovie {
 public:
     // Public members
     int* currentScreen;
     MovieService* movieService;
+    Films* filmsScreen;  // Added this
 
     // Constructor & Destructor
     AddMovie();

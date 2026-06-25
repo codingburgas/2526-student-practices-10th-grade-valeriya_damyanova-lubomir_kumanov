@@ -43,7 +43,7 @@ int main()
 
     int currentScreen = 0;
 
-    // Assign screen pointer directly via member fields
+    // Assign screen pointer variables safely
     login.currentScreen = &currentScreen;
     signup.currentScreen = &currentScreen;
     booking.currentScreen = &currentScreen;
@@ -58,6 +58,14 @@ int main()
 
     while (!WindowShouldClose())
     {
+        // Global Synchronization Watch: Check if any screen explicitly requested a database refresh
+        if (addMovie.ShouldRefreshMovies())
+        {
+            films.SyncDisplayWithDatabase();
+            booking.loadRandomSuggestions(); // Keeps recommendations matching the DB
+            addMovie.SetRefreshMovies(false); // Reset the trigger flag
+        }
+
         if (currentScreen == 0)
         {
             menu.Update();

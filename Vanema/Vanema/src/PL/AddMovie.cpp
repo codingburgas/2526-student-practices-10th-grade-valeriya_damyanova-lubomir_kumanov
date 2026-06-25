@@ -1,11 +1,11 @@
 #include "AddMovie.h"
 #include "BLL/MovieService.h"
 #include "BLL/Movie.h"
+#include <filesystem> // Added for forcing and locking the Working Directory
+#include <algorithm>   // Added for std::replace
 
-// Forward declaration telling the compiler that this function is implemented in FilePicker.cpp
 std::string OpenPosterFileDialog();
 
-// Helper function to safely draw text wrapped within bounds character-by-character
 void DrawTextWrapped(Font font, const char* text, Rectangle rec, float fontSize, float spacing, Color color) {
     std::string textStr = text;
     std::string line = "";
@@ -15,19 +15,18 @@ void DrawTextWrapped(Font font, const char* text, Rectangle rec, float fontSize,
         line += textStr[i];
         Vector2 size = MeasureTextEx(font, line.c_str(), fontSize, spacing);
 
-        // If text line hits the boundary or contains a manual newline
         if (size.x >= rec.width || textStr[i] == '\n') {
             if (textStr[i] != '\n') {
-                line.pop_back(); // Pull back the overflowing character
+                line.pop_back();
                 DrawTextEx(font, line.c_str(), { rec.x, cursorY }, fontSize, spacing, color);
-                line = textStr[i]; // Start next row with the pulled character
+                line = textStr[i];
             }
             else {
                 DrawTextEx(font, line.c_str(), { rec.x, cursorY }, fontSize, spacing, color);
                 line = "";
             }
-            cursorY += fontSize + 6; // Shift down to the next row
-            if (cursorY + fontSize > rec.y + rec.height) return; // Prevent vertical box overflow
+            cursorY += fontSize + 6;
+            if (cursorY + fontSize > rec.y + rec.height) return;
         }
     }
     if (!line.empty()) {
@@ -57,7 +56,6 @@ AddMovie::AddMovie() {
     scrollYOffset = 0.0f;
     maxScrollY = 550.0f;
 
-    // Initialize transition flags
     isTransitioning = false;
     transitionFrames = 0;
     shouldRefreshMovies = false;
@@ -105,29 +103,23 @@ void AddMovie::ResetForm() {
     scrollYOffset = 0.0f;
     isTransitioning = false;
     transitionFrames = 0;
-    // Don't reset shouldRefreshMovies here - it should persist until handled
 }
 
-void AddMovie::ConsumeMouseClicks() {
-    // This function is now empty - it was causing the freeze
-    // We keep it to maintain compatibility with the header
-}
+void AddMovie::ConsumeMouseClicks() {}
 
 void AddMovie::Update() {
-    // Handle screen transition
     if (isTransitioning) {
         transitionFrames++;
-        if (transitionFrames > 3) { // Wait 3 frames
+        if (transitionFrames > 3) {
             isTransitioning = false;
             transitionFrames = 0;
             if (currentScreen != nullptr) {
-                // Set flag to refresh movies before navigating back
                 shouldRefreshMovies = true;
                 *currentScreen = 4;
                 ResetForm();
             }
         }
-        return; // Skip all other updates during transition
+        return;
     }
 
     Vector2 mousePos = GetMousePosition();
@@ -162,7 +154,7 @@ void AddMovie::Update() {
 
     Rectangle fields[7] = {
         { contentStartX,     baseContentY + 90.0f,  1140, 60 },
-        { contentStartX,     baseContentY + 230.0f, 1140, 180 }, // Plot Field Box
+        { contentStartX,     baseContentY + 230.0f, 1140, 180 },
         { formFieldsStartX,  baseContentY + 490.0f, 360,  60 },
         { subColSplitX,      baseContentY + 490.0f, 360,  60 },
         { formFieldsStartX,  baseContentY + 620.0f, 360,  60 },
@@ -195,7 +187,7 @@ void AddMovie::Update() {
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         if (hoverBack || hoverCancel) {
             if (currentScreen != nullptr) {
-                shouldRefreshMovies = true; // Always refresh when leaving
+                shouldRefreshMovies = true;
                 *currentScreen = 4;
             }
             ResetForm();
@@ -203,8 +195,17 @@ void AddMovie::Update() {
         }
 
         if (hoverChooseFile) {
+            // Save current working directory before Windows file dialog alters it
+            std::filesystem::path originalCwd = std::filesystem::current_path();
+
             std::string pathResult = OpenPosterFileDialog();
+
+            // Explicitly force the app directory context back to your project root
+            std::filesystem::current_path(originalCwd);
+
             if (!pathResult.empty()) {
+                // Normalize windows backslashes to forward slashes instantly
+                std::replace(pathResult.begin(), pathResult.end(), '\\', '/');
                 posterPathInput = pathResult;
             }
         }
@@ -224,22 +225,14 @@ void AddMovie::Update() {
                 newMovie.setTitle(titleInput);
                 newMovie.setDescription(plotInput);
                 newMovie.setGenre(genreInput);
-                newMovie.setPosterPath(posterPathInput);
 
-                // Parse year if provided - store as string or int if your Movie class supports it
-                // If your Movie class doesn't have setYear, store year in description or skip
-                // You might need to add a setYear method to Movie class
-
-                // For now, if your Movie class has a setYear method, uncomment this:
-                // if (!yearInput.empty()) {
-                //     try {
-                //         int parsedYear = std::stoi(yearInput);
-                //         newMovie.setYear(parsedYear);
-                //     }
-                //     catch (...) {
-                //         // Handle error
-                //     }
-                // }
+                // Path Sanitization Strategy
+                std::string sanitizedPath = posterPathInput;
+                size_t assetsPos = sanitizedPath.find("assets/");
+                if (assetsPos != std::string::npos) {
+                    sanitizedPath = sanitizedPath.substr(assetsPos);
+                }
+                newMovie.setPosterPath(sanitizedPath);
 
                 try {
                     int parsedDuration = durationInput.empty() ? 0 : std::stoi(durationInput);
@@ -253,13 +246,9 @@ void AddMovie::Update() {
                     newMovie.setRating(0.0f);
                 }
 
-                // Add the movie to the service (addMovie returns void, not bool)
                 movieService->addMovie(newMovie);
 
-                // Set flag to refresh movies
                 shouldRefreshMovies = true;
-
-                // Start transition to go back to films list
                 isTransitioning = true;
                 transitionFrames = 0;
 
@@ -357,7 +346,7 @@ void AddMovie::Draw() {
 
     Rectangle fields[7] = {
         { contentStartX,     baseContentY + 90.0f,  1140, 60 },
-        { contentStartX,     baseContentY + 230.0f, 1140, 180 }, // Plot Field
+        { contentStartX,     baseContentY + 230.0f, 1140, 180 },
         { formFieldsStartX,  baseContentY + 490.0f, 360,  60 },
         { subColSplitX,      baseContentY + 490.0f, 360,  60 },
         { formFieldsStartX,  baseContentY + 620.0f, 360,  60 },
@@ -374,8 +363,6 @@ void AddMovie::Draw() {
         DrawRectangleRoundedLines(fields[i], i == 1 ? 0.02f : 0.15f, 6, 1, (activeField == i) ? linkBlue : Color{ 215, 222, 235, 255 });
 
         if (i == 1) {
-            // FIX FOR TEXT OVERFLOW BUG:
-            // Use character-by-character text wrapping bounded inside the Plot box constraints
             Rectangle textInnerBounds = { fields[i].x + 15, fields[i].y + 15, fields[i].width - 30, fields[i].height - 30 };
             DrawTextWrapped(customFont, contents[i].c_str(), textInnerBounds, 26, 1, BLACK);
         }
@@ -438,7 +425,6 @@ void AddMovie::DrawNavigationBar() {
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 activeIndex = i;
                 if (currentScreen != nullptr) {
-                    // Set refresh flag when navigating to films
                     if (i == 2) {
                         shouldRefreshMovies = true;
                     }
@@ -485,12 +471,10 @@ void AddMovie::DrawNavigationBar() {
     }
 }
 
-// Getter for refresh flag
 bool AddMovie::ShouldRefreshMovies() const {
     return shouldRefreshMovies;
 }
 
-// Setter for refresh flag
 void AddMovie::SetRefreshMovies(bool refresh) {
     shouldRefreshMovies = refresh;
 }

@@ -1,4 +1,5 @@
 #include "Films.h"
+#include "AddMovie.h"
 #include "raylib.h"
 #include <iostream>
 #include <fstream>
@@ -26,6 +27,8 @@ Films::Films() {
     };
 
     currentScreen = nullptr;
+    movieService = nullptr;
+    addMovieScreen = nullptr;
     scrollOffset = 0.0f;
     maxScroll = 1200.0f;
     activeIndex = 2;
@@ -47,10 +50,10 @@ Films::Films() {
     showDeleteConfirmation = false;
     hasSelectedMovieChanged = false;
 
-    // Initialize click prevention
     justActivated = false;
     activationFrames = 0;
     wasActive = false;
+    pendingRefresh = false;
 }
 
 Films::~Films() {
@@ -58,20 +61,9 @@ Films::~Films() {
 }
 
 void Films::ConsumeMouseClicks() {
-    // Clear any pending mouse button presses
-    while (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        // Read and discard the event
-    }
-
-    // Clear input buffers
-    while (GetCharPressed() != 0) {
-        // Discard all pending characters
-    }
-    while (GetKeyPressed() != 0) {
-        // Discard all pending keys
-    }
-
-    // Clear gesture detection
+    while (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {}
+    while (GetCharPressed() != 0) {}
+    while (GetKeyPressed() != 0) {}
     GetGestureDetected();
 }
 
@@ -113,7 +105,7 @@ void Films::Unload() {
 void Films::SyncDisplayWithDatabase() {
     if (movieService == nullptr) return;
 
-    // Unload old textures
+    // Unload old textures from memory
     for (size_t i = 0; i < displayedMovies.size(); i++) {
         if (displayedMovies[i].posterTexture.id != 0) {
             UnloadTexture(displayedMovies[i].posterTexture);
@@ -122,7 +114,6 @@ void Films::SyncDisplayWithDatabase() {
     displayedMovies.clear();
     underlyingMovies.clear();
 
-    // Force reload from file to get latest data
     movieService->reloadMovies();
 
     std::string contextGenre = genres[selectedGenreIndex].name;
@@ -144,17 +135,52 @@ void Films::SyncDisplayWithDatabase() {
         uiCard.rating = TextFormat("Rating: %.1f", item.getRating());
 
         std::string rawPath = item.getPosterPath();
-        std::string verifiedPath = rawPath;
-        std::ifstream fileCheck(verifiedPath);
-        if (!fileCheck.good()) {
-            verifiedPath = "Vanema/" + rawPath;
-            std::ifstream nestedCheck(verifiedPath);
-            if (!nestedCheck.good()) {
-                verifiedPath = "../" + rawPath;
+
+        // Normalize backslashes to forward slashes just in case Windows paths were saved
+        std::replace(rawPath.begin(), rawPath.end(), '\\', '/');
+
+        std::string verifiedPath = "";
+
+        // Checking path variants
+        std::vector<std::string> pathVariants = {
+            rawPath,
+            "assets/" + rawPath,
+            "../assets/" + rawPath,
+            "Vanema/" + rawPath,
+            "Vanema/assets/" + rawPath,
+            "../" + rawPath
+        };
+
+        for (const auto& variant : pathVariants) {
+            if (FileExists(variant.c_str())) {
+                verifiedPath = variant;
+                break;
             }
         }
 
-        uiCard.posterTexture = LoadTexture(verifiedPath.c_str());
+        if (!verifiedPath.empty()) {
+            uiCard.posterTexture = LoadTexture(verifiedPath.c_str());
+            if (uiCard.posterTexture.id == 0) {
+                std::cout << "[ERROR] Raylib failed to load verified file into VRAM: " << verifiedPath << std::endl;
+            }
+            else {
+                std::cout << "[SUCCESS] Loaded poster for " << uiCard.title << " from: " << verifiedPath << std::endl;
+            }
+        }
+        else {
+            std::cout << "[WARNING] File completely missing across all check variations for: " << uiCard.title << " (Raw path: " << rawPath << ")" << std::endl;
+            // Attempt generic placeholder fallback asset 
+            if (FileExists("assets/placeholder.png")) {
+                uiCard.posterTexture = LoadTexture("assets/placeholder.png");
+            }
+            else if (FileExists("../assets/placeholder.png")) {
+                uiCard.posterTexture = LoadTexture("../assets/placeholder.png");
+            }
+            else {
+                uiCard.posterTexture.id = 0;
+            }
+        }
+
         displayedMovies.push_back(uiCard);
     }
 
@@ -164,23 +190,23 @@ void Films::SyncDisplayWithDatabase() {
 }
 
 void Films::Update() {
-    // Check if this screen just became active
     bool isActive = (currentScreen != nullptr && *currentScreen == 4);
 
     if (isActive && !wasActive) {
-        // Just became active - consume pending clicks
         ConsumeMouseClicks();
         skipGridClickThisFrame = true;
         justActivated = true;
         activationFrames = 0;
 
-        // Refresh the display when coming back to this screen
+        if (addMovieScreen && addMovieScreen->ShouldRefreshMovies()) {
+            pendingRefresh = true;
+        }
+
         SyncDisplayWithDatabase();
     }
 
     wasActive = isActive;
 
-    // Handle activation frames
     if (justActivated) {
         activationFrames++;
         if (activationFrames > 3) {
@@ -189,17 +215,20 @@ void Films::Update() {
         }
     }
 
-    // If not active, skip everything
-    if (!isActive) {
-        return;
+    if (!isActive) return;
+
+    if (pendingRefresh) {
+        SyncDisplayWithDatabase();
+        pendingRefresh = false;
+        if (addMovieScreen) {
+            addMovieScreen->SetRefreshMovies(false);
+        }
     }
 
     Vector2 mousePos = GetMousePosition();
 
-    if (!showDeleteConfirmation) {
-        if (!justActivated) {
-            skipGridClickThisFrame = false;
-        }
+    if (!showDeleteConfirmation && !justActivated) {
+        skipGridClickThisFrame = false;
     }
 
     if (IsKeyPressed(KEY_ESCAPE)) {
@@ -230,11 +259,8 @@ void Films::Update() {
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 if (movieService != nullptr) {
                     std::string movieTitle = movieToDelete.getTitle();
-
-                    // Delete from service (this will save to file)
                     movieService->deleteMovie(movieTitle);
 
-                    // Remove from underlyingMovies
                     auto it = std::find_if(underlyingMovies.begin(), underlyingMovies.end(),
                         [&movieTitle](const Movie& m) { return m.getTitle() == movieTitle; });
                     if (it != underlyingMovies.end()) {
@@ -248,7 +274,6 @@ void Films::Update() {
                         underlyingMovies.erase(it);
                     }
 
-                    // Force reload to ensure consistency
                     movieService->reloadMovies();
 
                     int layoutRows = ((int)displayedMovies.size() + 3) / 4;
@@ -355,9 +380,10 @@ void Films::DrawMovieGrid(float startY) {
             );
         }
         else {
+            // If the texture context id is 0, render a fallback visual rectangle
             DrawRectangleRec(posterRect, DARKGRAY);
             if (customFont.texture.id != 0) {
-                DrawTextEx(customFont, "No Image", { x + 80, y + posterHeight / 2 }, 20, 1, WHITE);
+                DrawTextEx(customFont, "Missing Image", { x + 55, y + posterHeight / 2 - 10 }, 22, 1, WHITE);
             }
         }
 
@@ -387,7 +413,6 @@ void Films::DrawMovieGrid(float startY) {
                 if (!isLoggedIn) {
                     if (currentScreen != nullptr) {
                         *currentScreen = 1;
-                        EndScissorMode();
                         return;
                     }
                 }
@@ -395,7 +420,6 @@ void Films::DrawMovieGrid(float startY) {
                     lastClickedMovie = underlyingMovies[i];
                     hasSelectedMovieChanged = true;
                     *currentScreen = 7;
-                    EndScissorMode();
                     return;
                 }
             }
@@ -408,23 +432,14 @@ void Films::DrawNavigationBar() {
     float navWidth = screenWidth * 0.9f;
     float navHeight = 100.0f;
 
-    Rectangle navBarRect =
-    {
-        (screenWidth - navWidth) / 2,
-        20,
-        navWidth,
-        navHeight
-    };
-
+    Rectangle navBarRect = { (screenWidth - navWidth) / 2, 20, navWidth, navHeight };
     DrawRectangleRounded(navBarRect, 0.5f, 10, WHITE);
 
-    if (logo.id != 0)
-    {
+    if (logo.id != 0) {
         DrawTextureEx(logo, { navBarRect.x - 2, navBarRect.y - 20 }, 0.0f, 0.3f, WHITE);
     }
 
-    if (customFont.texture.id != 0)
-    {
+    if (customFont.texture.id != 0) {
         DrawTextEx(customFont, "Vanema", { navBarRect.x + 130, navBarRect.y + 40 }, 34, 1, BLACK);
     }
 
@@ -433,25 +448,19 @@ void Films::DrawNavigationBar() {
 
     float spacing = 94.0f;
     float startX = navBarRect.x + 930;
-
     Vector2 mousePos = GetMousePosition();
 
-    for (int i = 0; i < 4; i++)
-    {
+    for (int i = 0; i < 4; i++) {
         float itemX = startX + (i * spacing);
-
         Rectangle btnRect = { itemX, navBarRect.y, 110, navHeight };
         bool isHovered = CheckCollisionPointRec(mousePos, btnRect);
         Color tint = (i == activeIndex) ? BLUE : DARKBLUE;
 
-        if (isHovered && !showDeleteConfirmation && !skipGridClickThisFrame && !justActivated)
-        {
+        if (isHovered && !showDeleteConfirmation && !skipGridClickThisFrame && !justActivated) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-            {
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 activeIndex = i;
-                if (currentScreen != nullptr)
-                {
+                if (currentScreen != nullptr) {
                     if (i == 0) *currentScreen = 2;
                     else if (i == 1) *currentScreen = 5;
                     else if (i == 2) *currentScreen = 4;
@@ -460,13 +469,11 @@ void Films::DrawNavigationBar() {
             }
         }
 
-        if (icons[i].id != 0)
-        {
+        if (icons[i].id != 0) {
             DrawTextureEx(icons[i], { itemX + 50, navBarRect.y + 5 }, 0.0f, 0.1f, tint);
         }
 
-        if (customFont.texture.id != 0)
-        {
+        if (customFont.texture.id != 0) {
             DrawTextEx(customFont, labels[i], { itemX + 58, navBarRect.y + 70 }, 20, 1, BLACK);
         }
     }
@@ -474,39 +481,22 @@ void Films::DrawNavigationBar() {
     Rectangle profileRect = { navBarRect.x + navWidth - 70, navBarRect.y + 15, 50, 50 };
     bool isProfileHovered = CheckCollisionPointRec(mousePos, profileRect);
 
-    if (isProfileHovered && !showDeleteConfirmation && !skipGridClickThisFrame && !justActivated)
-    {
+    if (isProfileHovered && !showDeleteConfirmation && !skipGridClickThisFrame && !justActivated) {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr)
-        {
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr) {
             *currentScreen = 1;
         }
     }
-    if (iconProfile.id != 0)
-    {
+
+    if (iconProfile.id != 0) {
         float iconYOffset = isLoggedIn ? -5.0f : 10.0f;
-
-        DrawTextureEx(
-            iconProfile,
-            { profileRect.x - 15, profileRect.y + iconYOffset },
-            0.0f,
-            0.1f,
-            isProfileHovered ? BLUE : DARKBLUE
-        );
+        DrawTextureEx(iconProfile, { profileRect.x - 15, profileRect.y + iconYOffset }, 0.0f, 0.1f, isProfileHovered ? BLUE : DARKBLUE);
     }
-    if (isLoggedIn && !userName.empty())
-    {
-        float fontSize = 22.0f;
-        Color nameColor = BLACK;
 
-        if (customFont.texture.id != 0)
-        {
-            Vector2 textSize = MeasureTextEx(customFont, userName.c_str(), fontSize, 1);
-            float textX = profileRect.x + (profileRect.width / 2.0f) - (textSize.x / 1.5f);
-            float textY = profileRect.y + profileRect.height + 5.0f;
-
-            DrawTextEx(customFont, userName.c_str(), { textX, textY }, fontSize, 1, nameColor);
-        }
+    if (isLoggedIn && !userName.empty() && customFont.texture.id != 0) {
+        Vector2 textSize = MeasureTextEx(customFont, userName.c_str(), 22, 1);
+        float textX = profileRect.x + (profileRect.width / 2.0f) - (textSize.x / 1.5f);
+        DrawTextEx(customFont, userName.c_str(), { textX, profileRect.y + profileRect.height + 5.0f }, 22, 1, BLACK);
     }
 }
 
@@ -542,7 +532,8 @@ void Films::Draw() {
 
     Rectangle navBarRect = { navBarX, 20, navWidth, navHeight };
 
-    BeginScissorMode((int)navBarRect.x, (int)(navBarRect.y + navBarRect.height), (int)navBarRect.width, GetScreenHeight() - (int)(navBarRect.y + navBarRect.height));
+    // Set scissor coordinates cleanly to global application parameters
+    BeginScissorMode(0, (int)(navBarRect.y + navBarRect.height + 10), GetScreenWidth(), GetScreenHeight() - (int)(navBarRect.y + navBarRect.height + 10));
 
     float currentY = navBarRect.y + navBarRect.height + 35.0f - scrollOffset;
 
