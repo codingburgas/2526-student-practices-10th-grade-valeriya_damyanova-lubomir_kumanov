@@ -9,8 +9,8 @@ private:
     std::string posterPath;
     std::string genre;
     float rating;
-    std::string description; // NEW
-    int duration;           // NEW (in minutes)
+    std::string description; 
+    int duration;           
 
 public:
     Movie();
@@ -22,14 +22,14 @@ public:
     std::string getPosterPath() const;
     std::string getGenre() const;
     float getRating() const;
-    std::string getDescription() const; // NEW
-    int getDuration() const;           // NEW
+    std::string getDescription() const; 
+    int getDuration() const;           
 
     void setId(int id);
     void setTitle(const std::string& title);
     void setPosterPath(const std::string& posterPath);
     void setGenre(const std::string& genre);
     void setRating(float rating);
-    void setDescription(const std::string& description); // NEW
-    void setDuration(int duration);                     // NEW
+    void setDescription(const std::string& description); 
+    void setDuration(int duration);                     
 };

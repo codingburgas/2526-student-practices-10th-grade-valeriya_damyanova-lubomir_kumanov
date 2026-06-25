@@ -319,7 +319,7 @@ void Login::Draw()
     DrawTextEx(
         bodyFont,
         "Don't have an account?",
-        { formRect.x + 100, formRect.y + 555 },
+        { formRect.x + 80, formRect.y + 555 },
         30,
         2,
         BLACK
@@ -330,7 +330,7 @@ void Login::Draw()
     DrawTextEx(
         bodyFont,
         "Sign up",
-        { signupLink.x , signupLink.y },
+        { signupLink.x + 10, signupLink.y },
         30,
         2,
         hover ? DARKBLUE : BLUE
@@ -340,9 +340,9 @@ void Login::Draw()
     {
         DrawLine(
             signupLink.x - 3,
-            signupLink.y + 22,
-            signupLink.x + 76,
-            signupLink.y + 22,
+            signupLink.y + 25,
+            signupLink.x + 106,
+            signupLink.y + 25,
             DARKBLUE
         );
     }

@@ -12,7 +12,6 @@
 #include <unistd.h>
 #endif
 
-// Global or local static flag to prevent click bleed-through between frames
 static bool skipGridClickThisFrame = false;
 
 Booking::Booking()
@@ -63,7 +62,6 @@ Booking::Booking()
     showDeleteConfirmation = false;
     hasSelectedMovieChanged = false;
 
-    // Disable Raylib's default ESC key behavior
     SetExitKey(KEY_NULL);
 
     printf("Booking initialized successfully!\n");
@@ -227,7 +225,6 @@ void Booking::ProcessMoviePosterClicks(Vector2 mousePos)
     float startPosterX = navBarRect.x + 120;
     float startPosterY = contentY + 80;
 
-    // Check Suggested Movies
     for (size_t i = 0; i < currentSuggestedMovies.size() && i < 4; i++)
     {
         float x = startPosterX + i * (posterWidth + spacingX);
@@ -250,8 +247,6 @@ void Booking::ProcessMoviePosterClicks(Vector2 mousePos)
             }
         }
     }
-
-    // Check Top Rated Movies
     float topRatedSectionY = startPosterY + posterHeight + 150;
     Rectangle topRatedBg = {
         navBarRect.x + 20,

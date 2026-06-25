@@ -8,7 +8,6 @@
 class Booking
 {
 private:
-    // --- Original UI and Asset Design Layout Assets ---
     Texture2D background;
     Texture2D logo;
     Texture2D iconHome;
@@ -20,7 +19,6 @@ private:
     Texture2D topRatedPhotos[4];
     Font customFont;
 
-    // --- Scrolling and Grid State Layout Properties ---
     std::vector<Movie> currentSuggestedMovies;
     std::vector<Movie> topRatedMovies;
     float scrollOffset;
@@ -28,17 +26,14 @@ private:
     int activeIndex;
     int mouseScrollAccumulator;
 
-    // --- User Session States ---
     bool isLoggedIn = false;
     std::string userName = "";
     bool isAdmin = false;
 
-    // --- Integrated Admin Deletion Logic States ---
     bool isDeleteMode = false;
     bool showDeleteConfirmation = false;
     Movie movieToDelete;
 
-    // --- Private Methods ---
     void ProcessMoviePosterClicks(Vector2 mousePos);
 
 public:

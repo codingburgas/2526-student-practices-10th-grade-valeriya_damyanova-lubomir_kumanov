@@ -21,8 +21,6 @@ void SignUp::Init()
     errorPopupTimer = 0.0f;
     successPopupTimer = 0.0f;
     errorMessage = "";
-
-    currentScreen = nullptr;  
 }
 
 void SignUp::Unload()
@@ -45,7 +43,9 @@ void SignUp::Update()
     Rectangle nameBox = { formRect.x + 35, formRect.y + 470, formRect.width - 70, 40 };
 
     Rectangle signupBtn = { formRect.x + (formRect.width - 200) / 2, formRect.y + 560, 200, 50 };
-    Rectangle backLink = { formRect.x + 395, formRect.y + 640, 200, 30 };
+
+    // Position shifted slightly right from 395 to 402
+    Rectangle backLink = { formRect.x + 402, formRect.y + 640, 75, 30 };
 
     if (CheckCollisionPointRec(mouse, usernameBox) ||
         CheckCollisionPointRec(mouse, emailBox) ||
@@ -65,10 +65,10 @@ void SignUp::Update()
     {
         activeField = -1;
 
-        if (CheckCollisionPointRec(mouse, usernameBox))      activeField = 0; 
-        else if (CheckCollisionPointRec(mouse, emailBox))    activeField = 1; 
-        else if (CheckCollisionPointRec(mouse, passBox))     activeField = 2; 
-        else if (CheckCollisionPointRec(mouse, nameBox))     activeField = 3; 
+        if (CheckCollisionPointRec(mouse, usernameBox))      activeField = 0;
+        else if (CheckCollisionPointRec(mouse, emailBox))    activeField = 1;
+        else if (CheckCollisionPointRec(mouse, passBox))     activeField = 2;
+        else if (CheckCollisionPointRec(mouse, nameBox))     activeField = 3;
 
         if (CheckCollisionPointRec(mouse, signupBtn))
         {
@@ -89,7 +89,6 @@ void SignUp::Update()
             }
 
             std::string serviceError;
-            // Passes UI input strings down to database layer checking uniqueness constraints
             if (userService.registerUser(username, email, password, name, serviceError))
             {
                 showSuccessPopup = true;
@@ -97,7 +96,6 @@ void SignUp::Update()
             }
             else
             {
-                // Display specific database constraint errors (e.g., Email already registered)
                 errorMessage = serviceError;
                 showErrorPopup = true;
                 errorPopupTimer = 2.0f;
@@ -164,64 +162,22 @@ void SignUp::Draw()
 
     Rectangle formRect = { 500, 100, 570, 720 };
 
-    Rectangle nameBox = {
-        formRect.x + 35,
-        formRect.y + 470,
-        formRect.width - 70,
-        40
-    };
-
-    Rectangle emailBox = {
-        formRect.x + 35,
-        formRect.y + 330,
-        formRect.width - 70,
-        40
-    };
-
-    Rectangle usernameBox = {
-        formRect.x + 35,
-        formRect.y + 260,
-        formRect.width - 70,
-        40
-    };
-
-    Rectangle passBox = {
-        formRect.x + 35,
-        formRect.y + 400,
-        formRect.width - 70,
-        40
-    };
-
-    Rectangle signupBtn = {
-        formRect.x + (formRect.width - 200) / 2,
-        formRect.y + 560,
-        200,
-        50
-    };
+    Rectangle nameBox = { formRect.x + 35, formRect.y + 470, formRect.width - 70, 40 };
+    Rectangle emailBox = { formRect.x + 35, formRect.y + 330, formRect.width - 70, 40 };
+    Rectangle usernameBox = { formRect.x + 35, formRect.y + 260, formRect.width - 70, 40 };
+    Rectangle passBox = { formRect.x + 35, formRect.y + 400, formRect.width - 70, 40 };
+    Rectangle signupBtn = { formRect.x + (formRect.width - 200) / 2, formRect.y + 560, 200, 50 };
 
     for (int i = 8; i > 0; i--)
     {
-        DrawRectangle(
-            formRect.x + i,
-            formRect.y + i,
-            formRect.width,
-            formRect.height,
-            Fade(BLACK, 0.03f)
-        );
+        DrawRectangle(formRect.x + i, formRect.y + i, formRect.width, formRect.height, Fade(BLACK, 0.03f));
     }
 
     for (int i = 20; i > 0; i--)
     {
         DrawRectangleRounded(
-            {
-                formRect.x + i * 0.5f,
-                formRect.y + i * 0.5f,
-                formRect.width,
-                formRect.height
-            },
-            0.08f,
-            10,
-            Fade(GRAY, 0.02f)
+            { formRect.x + i * 0.5f, formRect.y + i * 0.5f, formRect.width, formRect.height },
+            0.08f, 10, Fade(GRAY, 0.02f)
         );
     }
 
@@ -230,69 +186,33 @@ void SignUp::Draw()
 
     float logoScale = 0.35f;
     float logoWidth = logo.width * logoScale;
-
-    Vector2 logoPos = {
-        formRect.x + (formRect.width / 2) - (logoWidth / 2),
-        formRect.y + 10
-    };
+    Vector2 logoPos = { formRect.x + (formRect.width / 2) - (logoWidth / 2), formRect.y + 10 };
 
     DrawTextureEx(logo, logoPos, 0.0f, logoScale, WHITE);
 
-    DrawTextEx(
-        headerFont,
-        "SIGN UP",
-        { formRect.x + 195, formRect.y + 150 },
-        50,
-        3,
-        BLACK
-    );
+    DrawTextEx(headerFont, "SIGN UP", { formRect.x + 195, formRect.y + 140 }, 50, 3, BLACK);
 
     DrawRectangleRounded(nameBox, 0.2f, 10, WHITE);
     DrawRectangleRounded(emailBox, 0.2f, 10, WHITE);
     DrawRectangleRounded(usernameBox, 0.2f, 10, WHITE);
     DrawRectangleRounded(passBox, 0.2f, 10, WHITE);
-    
+
     DrawRectangleRoundedLines(usernameBox, 0.2f, 10, 2, activeField == 0 ? BLUE : GRAY);
     DrawRectangleRoundedLines(emailBox, 0.2f, 10, 2, activeField == 1 ? BLUE : GRAY);
     DrawRectangleRoundedLines(passBox, 0.2f, 10, 2, activeField == 2 ? BLUE : GRAY);
     DrawRectangleRoundedLines(nameBox, 0.2f, 10, 2, activeField == 3 ? BLUE : GRAY);
-    
 
+    if (name.empty()) DrawTextEx(bodyFont, "Name", { nameBox.x + 10, nameBox.y + 5 }, 30, 3, GRAY);
+    else DrawText(name.c_str(), nameBox.x + 10, nameBox.y + 10, 20, BLACK);
 
-    if (name.empty())
-    {
-        DrawTextEx(bodyFont, "Name", { nameBox.x + 10, nameBox.y + 5 }, 30, 3, GRAY);
-    }
-    else
-    {
-        DrawText(name.c_str(), nameBox.x + 10, nameBox.y + 10, 20, BLACK);
-    }
+    if (username.empty()) DrawTextEx(bodyFont, "Username", { usernameBox.x + 10, usernameBox.y + 5 }, 30, 3, GRAY);
+    else DrawText(username.c_str(), usernameBox.x + 10, usernameBox.y + 10, 20, BLACK);
 
-    if (username.empty())
-    {
-        DrawTextEx(bodyFont, "Username", { usernameBox.x + 10, usernameBox.y + 5 }, 30, 3, GRAY);
-    }
-    else
-    {
-        DrawText(username.c_str(), usernameBox.x + 10, usernameBox.y + 10, 20, BLACK);
-    }
-        
-    if (email.empty())
-    {
-        DrawTextEx(bodyFont, "Email", { emailBox.x + 10, emailBox.y + 5 }, 30, 3, GRAY);
-    }
-    else
-    {
-        DrawText(email.c_str(), emailBox.x + 10, emailBox.y + 10, 20, BLACK);
-    }
-        
+    if (email.empty()) DrawTextEx(bodyFont, "Email", { emailBox.x + 10, emailBox.y + 5 }, 30, 3, GRAY);
+    else DrawText(email.c_str(), emailBox.x + 10, emailBox.y + 10, 20, BLACK);
 
-    if (password.empty())
-    {
-        DrawTextEx(bodyFont, "Password", { passBox.x + 10, passBox.y + 5 }, 30, 3, GRAY);
-    } 
-    else
-    {
+    if (password.empty()) DrawTextEx(bodyFont, "Password", { passBox.x + 10, passBox.y + 5 }, 30, 3, GRAY);
+    else {
         string masked(password.length(), '*');
         DrawText(masked.c_str(), passBox.x + 10, passBox.y + 10, 20, BLACK);
     }
@@ -308,18 +228,18 @@ void SignUp::Draw()
 
     DrawRectangleRounded(signupBtn, 0.3f, 10, buttonColor);
     DrawRectangleRoundedLines(signupBtn, 0.3f, 10, 2, buttonColor);
+    DrawTextEx(headerFont, "Sign Up", { signupBtn.x + 45, signupBtn.y + 7 }, 35, 2, BLACK);
 
-    DrawTextEx(headerFont, "Sign Up", { signupBtn.x + 45, signupBtn.y + 5 }, 35, 2, BLACK);
-
-    Rectangle backLink = { formRect.x + 185, formRect.y + 640, 200, 30 };
+    // Position shifted slightly right from 395 to 402 to clear the question mark
+    Rectangle backLink = { formRect.x + 402, formRect.y + 640, 75, 30 };
     bool hoverBack = CheckCollisionPointRec(mouse, backLink);
 
-    DrawTextEx(bodyFont, "Already have an account?", { formRect.x + 105, formRect.y + 640 }, 28, 2, BLACK);
-    DrawTextEx(bodyFont, "Login", { backLink.x + 205, backLink.y }, 28, 2, hoverBack ? DARKBLUE : BLUE);
+    DrawTextEx(bodyFont, "Already have an account? ", { formRect.x + 90, formRect.y + 640 }, 28, 2, BLACK);
+    DrawTextEx(bodyFont, "Login", { backLink.x, backLink.y }, 28, 2, hoverBack ? DARKBLUE : BLUE);
 
     if (hoverBack)
     {
-        DrawLine(backLink.x + 172, backLink.y + 22, backLink.x + 240, backLink.y + 22, DARKBLUE);
+        DrawLine(backLink.x, backLink.y + 25, backLink.x + 68, backLink.y + 25, DARKBLUE);
     }
 
     if (showErrorPopup)
@@ -332,7 +252,6 @@ void SignUp::Draw()
         DrawRectangle(x + 4, y + 4, w, h, Fade(BLACK, 0.2f));
         DrawRectangle(x, y, w, h, LIGHTGRAY);
         DrawRectangleLinesEx({ x, y, w, h }, 3, RED);
-
         DrawText(errorMessage.c_str(), x + 25, y + 40, 24, BLACK);
     }
 
@@ -346,7 +265,6 @@ void SignUp::Draw()
         DrawRectangle(x + 4, y + 4, w, h, Fade(BLACK, 0.2f));
         DrawRectangle(x, y, w, h, LIGHTGRAY);
         DrawRectangleLinesEx({ x, y, w, h }, 3, GREEN);
-
         DrawText("Account created successfully!", x + 70, y + 40, 24, BLACK);
     }
 }

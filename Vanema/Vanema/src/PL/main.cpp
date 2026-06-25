@@ -35,7 +35,7 @@ int main()
 
     booking.movieService = &movieService;
     films.movieService = &movieService;
-    addMovie.movieService = &movieService; 
+    addMovie.movieService = &movieService;
 
     booking.loadRandomSuggestions();
     films.SyncDisplayWithDatabase();
@@ -49,7 +49,7 @@ int main()
     spots.currentScreen = &currentScreen;
     offers.currentScreen = &currentScreen;
     movieDetails.currentScreen = &currentScreen;
-    addMovie.currentScreen = &currentScreen; 
+    addMovie.currentScreen = &currentScreen;
 
     login.Init();
     signup.Init();
@@ -103,7 +103,7 @@ int main()
         {
             movieDetails.Update();
         }
-        else if (currentScreen == 8) 
+        else if (currentScreen == 8)
         {
             addMovie.Update();
         }
@@ -154,7 +154,7 @@ int main()
         {
             movieDetails.Draw();
         }
-        else if (currentScreen == 8) 
+        else if (currentScreen == 8)
         {
             addMovie.Draw();
         }

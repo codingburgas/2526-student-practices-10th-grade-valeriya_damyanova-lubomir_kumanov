@@ -1,17 +1,15 @@
 #include "UserSeeder.h"
-#include "bcrypt.h" // Replace with your crypto hashing header location
+#include "bcrypt.h" 
 
 void UserSeeder::SeedIfEmpty(UserRepository& repo) {
     if (!repo.getAllUsers().empty()) {
-        return; // System already populated
+        return; 
     }
 
-    // 1. Seed System Admin Profile
     std::string adminHash = Crypto::hashPassword("admin123");
     User admin(0, "admin", "admin@vanema.com", adminHash, "System Administrator", UserRole::ADMIN);
     repo.addUser(admin);
 
-    // 2. Seed Standard User Test Accounts
     std::string userPass1 = Crypto::hashPassword("alex99");
     User user1(0, "alex_jones", "alex@mail.com", userPass1, "Alex Jones", UserRole::STANDARD);
     repo.addUser(user1);

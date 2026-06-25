@@ -13,7 +13,7 @@ private:
     int id;
     std::string username;
     std::string email;
-    std::string passwordHash; // Modified from plain password to hash
+    std::string passwordHash; 
     std::string name;
     UserRole role;
 
@@ -22,7 +22,6 @@ public:
     User(int id, const std::string& username, const std::string& email,
         const std::string& passwordHash, const std::string& name, UserRole role);
 
-    // Getters
     int getId() const;
     std::string getUsername() const;
     std::string getEmail() const;
@@ -31,7 +30,6 @@ public:
     UserRole getRole() const;
     std::string getRoleAsString() const;
 
-    // Setters
     void setId(int id);
     void setUsername(const std::string& username);
     void setEmail(const std::string& email);

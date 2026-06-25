@@ -335,8 +335,6 @@ void Films::DrawMovieGrid(float startY) {
         }
     }
 }
-
-// Fixed class tracking from Booking:: to Films::
 void Films::DrawNavigationBar() {
     int screenWidth = GetScreenWidth();
     float navWidth = screenWidth * 0.9f;
