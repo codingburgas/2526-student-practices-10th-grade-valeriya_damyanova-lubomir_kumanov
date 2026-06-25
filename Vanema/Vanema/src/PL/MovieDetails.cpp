@@ -1,8 +1,26 @@
 #include "MovieDetails.h"
-#include "BLL/Movie.h"
 #include <sstream>
 #include <cstring>
 #include <iostream>
+#include <vector>
+#include <algorithm>
+#include <ctime> 
+
+static std::string g_liveDates[3];
+static void UpdateLiveDateBuffers() {
+    for (int i = 0; i < 3; i++) {
+        std::time_t t = std::time(nullptr);
+        std::tm* localTime = std::localtime(&t);
+        if (localTime) {
+            localTime->tm_mday += i;
+            std::mktime(localTime); 
+            char buf[64];
+            if (i == 0) std::strftime(buf, sizeof(buf), "Today, %b %d", localTime);
+            else std::strftime(buf, sizeof(buf), "%a, %b %d", localTime);
+            g_liveDates[i] = buf;
+        }
+    }
+}
 
 MovieDetails::MovieDetails() : textureLoaded(false), posterTexture{} {
     customFont = LoadFont("assets/fonts/Roboto-Medium.ttf");
@@ -20,7 +38,9 @@ MovieDetails::MovieDetails() : textureLoaded(false), posterTexture{} {
 
     selectedShowtimeIndex = 2;
     calendarDropdownOpen = false;
-    selectedDateText = "Today, May 25";
+
+    UpdateLiveDateBuffers();
+    selectedDateText = g_liveDates[0].c_str();
 }
 
 MovieDetails::~MovieDetails() {
@@ -45,15 +65,42 @@ void MovieDetails::LoadMovie(const Movie& movie) {
     UnloadCurrentPoster();
     currentMovie = movie;
 
-    if (!currentMovie.getPosterPath().empty()) {
-        posterTexture = LoadTexture(currentMovie.getPosterPath().c_str());
+    std::string rawPath = currentMovie.getPosterPath();
+    std::replace(rawPath.begin(), rawPath.end(), '\\', '/');
+
+    std::string verifiedPath = "";
+    std::vector<std::string> pathVariants = {
+        rawPath, "assets/" + rawPath, "../assets/" + rawPath,
+        "Vanema/" + rawPath, "Vanema/assets/" + rawPath, "../" + rawPath
+    };
+
+    for (const auto& variant : pathVariants) {
+        if (FileExists(variant.c_str())) {
+            verifiedPath = variant;
+            break;
+        }
+    }
+
+    if (!verifiedPath.empty()) {
+        posterTexture = LoadTexture(verifiedPath.c_str());
         textureLoaded = (posterTexture.id != 0);
+    }
+    else {
+        if (FileExists("assets/placeholder.png")) {
+            posterTexture = LoadTexture("assets/placeholder.png");
+            textureLoaded = (posterTexture.id != 0);
+        }
+        else {
+            posterTexture.id = 0;
+            textureLoaded = false;
+        }
     }
 }
 
 void MovieDetails::UnloadCurrentPoster() {
-    if (textureLoaded) {
+    if (textureLoaded && posterTexture.id != 0) {
         UnloadTexture(posterTexture);
+        posterTexture.id = 0;
         textureLoaded = false;
     }
 }
@@ -65,6 +112,7 @@ DetailScreenResult MovieDetails::Update() {
     float navBarX = (screenWidth - navWidth) / 2.0f;
 
     SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+    UpdateLiveDateBuffers(); 
 
     float startX = navBarX + 930;
     float spacing = 94.0f;
@@ -93,21 +141,23 @@ DetailScreenResult MovieDetails::Update() {
     if (CheckCollisionPointRec(mousePos, backLinkRect)) {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            if (currentScreen != nullptr) {
+                *currentScreen = 4;
+            }
             return DetailScreenResult::BACK;
         }
     }
 
     float rightColumnX = navBarX + 820;
-    Rectangle dateSelectorRect = { rightColumnX + 20, 650, 180, 36 };
+    Rectangle dateSelectorRect = { rightColumnX + 20, 675, 180, 36 };
 
     if (calendarDropdownOpen) {
-        const char* dates[] = { "Today, May 25", "Tue, May 26", "Wed, May 27" };
         for (int i = 0; i < 3; i++) {
-            Rectangle optionRect = { dateSelectorRect.x, dateSelectorRect.y + 36 + (i * 30), dateSelectorRect.width, 30 };
+            Rectangle optionRect = { rightColumnX + 20, 711 + (i * 30), 180, 30 };
             if (CheckCollisionPointRec(mousePos, optionRect)) {
                 SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-                    selectedDateText = dates[i];
+                    selectedDateText = g_liveDates[i].c_str(); 
                     calendarDropdownOpen = false;
                     return DetailScreenResult::NONE;
                 }
@@ -128,7 +178,7 @@ DetailScreenResult MovieDetails::Update() {
     for (int i = 0; i < 6; i++) {
         float row = i / 3;
         float col = i % 3;
-        Rectangle timeBoxRect = { (rightColumnX + 20) + (col * 92), 705 + (row * 52), 82, 44 };
+        Rectangle timeBoxRect = { (rightColumnX + 20) + (col * 92), 737 + (row * 52), 82, 44 };
         if (CheckCollisionPointRec(mousePos, timeBoxRect)) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -166,6 +216,8 @@ void MovieDetails::Draw() {
     Color navIconBlue = Color{ 24, 119, 242, 255 };
     Color darkNavy = Color{ 14, 21, 61, 255 };
 
+    UpdateLiveDateBuffers(); // Keep rendering buffers contextually up-to-date
+
     Rectangle backLinkRect = { navBarX + 20, 195, 130, 48 };
     bool backHovered = CheckCollisionPointRec(mousePos, backLinkRect);
     Color backBgColor = backHovered ? darkNavy : navIconBlue;
@@ -179,7 +231,7 @@ void MovieDetails::Draw() {
     }
 
     Rectangle posterRect = { navBarX + 20, 280, 360, 530 };
-    if (textureLoaded) {
+    if (textureLoaded && posterTexture.id != 0) {
         DrawTexturePro(posterTexture, { 0, 0, (float)posterTexture.width, (float)posterTexture.height },
             posterRect, { 0, 0 }, 0.0f, WHITE);
     }
@@ -211,7 +263,7 @@ void MovieDetails::Draw() {
 
     Rectangle bookBtnRect = { centerColumnX, 745, 340, 65 };
     bool bookHovered = CheckCollisionPointRec(mousePos, bookBtnRect);
-    Color bookBtnColor = bookHovered ? navIconBlue : navIconBlue;
+    Color bookBtnColor = bookHovered ? Color{ 41, 128, 185, 255 } : navIconBlue;
 
     DrawRectangleRounded(bookBtnRect, 0.2f, 6, bookBtnColor);
 
@@ -309,19 +361,18 @@ void MovieDetails::Draw() {
     }
 
     if (calendarDropdownOpen) {
-        const char* dates[] = { "Today, May 25", "Tue, May 26", "Wed, May 27" };
         Rectangle dropdownBox = { rightColumnX + 20, 711, 180, 90 };
 
         DrawRectangleRec(dropdownBox, WHITE);
         DrawRectangleLinesEx(dropdownBox, 1, Color{ 200, 210, 225, 255 });
 
         for (int i = 0; i < 3; i++) {
-            Rectangle optionRect = { dropdownBox.x, dropdownBox.y + (i * 30), dropdownBox.width, 40 };
+            Rectangle optionRect = { dropdownBox.x, dropdownBox.y + (i * 30), dropdownBox.width, 30 };
             if (CheckCollisionPointRec(mousePos, optionRect)) {
                 DrawRectangleRec(optionRect, Color{ 235, 241, 250, 255 });
             }
             if (customFont.texture.id != 0) {
-                DrawTextEx(customFont, dates[i], { optionRect.x + 12, optionRect.y + 6 }, 16, 1, darkNavy);
+                DrawTextEx(customFont, g_liveDates[i].c_str(), { optionRect.x + 12, optionRect.y + 6 }, 16, 1, darkNavy);
             }
         }
     }

@@ -15,11 +15,6 @@ void SignUp::Init() {
     password.clear();
 
     activeField = -1;
-    showErrorPopup = false;
-    showSuccessPopup = false;
-    errorPopupTimer = 0.0f;
-    successPopupTimer = 0.0f;
-    errorMessage = "";
 }
 
 void SignUp::Unload() {
@@ -75,31 +70,18 @@ void SignUp::Update() {
         {
             if (name.empty() || email.empty() || username.empty() || password.empty())
             {
-                errorMessage = "Please fill in all fields";
-                showErrorPopup = true;
-                errorPopupTimer = 2.0f;
                 return;
             }
 
             if (password.length() < 6)
             {
-                errorMessage = "Password must be at least 6 characters";
-                showErrorPopup = true;
-                errorPopupTimer = 2.0f;
                 return;
             }
 
             std::string serviceError;
             if (userService.registerUser(username, email, password, name, serviceError))
             {
-                showSuccessPopup = true;
-                successPopupTimer = 2.0f;
-            }
-            else
-            {
-                errorMessage = serviceError;
-                showErrorPopup = true;
-                errorPopupTimer = 2.0f;
+                if (currentScreen != nullptr) *currentScreen = 1;
             }
         }
 
@@ -133,22 +115,6 @@ void SignUp::Update() {
         else if (activeField == 1 && !email.empty()) email.pop_back();
         else if (activeField == 2 && !password.empty()) password.pop_back();
         else if (activeField == 3 && !name.empty()) name.pop_back();
-    }
-
-    if (showErrorPopup)
-    {
-        errorPopupTimer -= GetFrameTime();
-        if (errorPopupTimer <= 0.0f) showErrorPopup = false;
-    }
-
-    if (showSuccessPopup)
-    {
-        successPopupTimer -= GetFrameTime();
-        if (successPopupTimer <= 0.0f)
-        {
-            showSuccessPopup = false;
-            if (currentScreen != nullptr) *currentScreen = 1;
-        }
     }
 }
 
@@ -244,31 +210,5 @@ void SignUp::Draw() {
     if (hoverBack)
     {
         DrawLine(backLink.x, backLink.y + 25, backLink.x + 68, backLink.y + 25, DARKBLUE);
-    }
-
-    if (showErrorPopup)
-    {
-        float w = 400;
-        float h = 100;
-        float x = (GetScreenWidth() - w) / 2;
-        float y = 400;
-
-        DrawRectangle(x + 4, y + 4, w, h, Fade(BLACK, 0.2f));
-        DrawRectangle(x, y, w, h, LIGHTGRAY);
-        DrawRectangleLinesEx({ x, y, w, h }, 3, RED);
-        DrawText(errorMessage.c_str(), x + 25, y + 40, 24, BLACK);
-    }
-
-    if (showSuccessPopup)
-    {
-        float w = 400;
-        float h = 100;
-        float x = (GetScreenWidth() - w) / 2;
-        float y = 400;
-
-        DrawRectangle(x + 4, y + 4, w, h, Fade(BLACK, 0.2f));
-        DrawRectangle(x, y, w, h, LIGHTGRAY);
-        DrawRectangleLinesEx({ x, y, w, h }, 3, GREEN);
-        DrawText("Account created successfully!", x + 70, y + 40, 24, BLACK);
     }
 }

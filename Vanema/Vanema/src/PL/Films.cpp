@@ -54,6 +54,10 @@ Films::Films() {
     activationFrames = 0;
     wasActive = false;
     pendingRefresh = false;
+
+    lastScreen = -1;
+    isTransitioning = false;
+    clickCooldown = 0;
 }
 
 Films::~Films() {
@@ -61,7 +65,6 @@ Films::~Films() {
 }
 
 void Films::ConsumeMouseClicks() {
-    while (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {}
     while (GetCharPressed() != 0) {}
     while (GetKeyPressed() != 0) {}
     GetGestureDetected();
@@ -105,7 +108,6 @@ void Films::Unload() {
 void Films::SyncDisplayWithDatabase() {
     if (movieService == nullptr) return;
 
-    // Unload old textures from memory
     for (size_t i = 0; i < displayedMovies.size(); i++) {
         if (displayedMovies[i].posterTexture.id != 0) {
             UnloadTexture(displayedMovies[i].posterTexture);
@@ -135,20 +137,12 @@ void Films::SyncDisplayWithDatabase() {
         uiCard.rating = TextFormat("Rating: %.1f", item.getRating());
 
         std::string rawPath = item.getPosterPath();
-
-        // Normalize backslashes to forward slashes just in case Windows paths were saved
         std::replace(rawPath.begin(), rawPath.end(), '\\', '/');
 
         std::string verifiedPath = "";
-
-        // Checking path variants
         std::vector<std::string> pathVariants = {
-            rawPath,
-            "assets/" + rawPath,
-            "../assets/" + rawPath,
-            "Vanema/" + rawPath,
-            "Vanema/assets/" + rawPath,
-            "../" + rawPath
+            rawPath, "assets/" + rawPath, "../assets/" + rawPath,
+            "Vanema/" + rawPath, "Vanema/assets/" + rawPath, "../" + rawPath
         };
 
         for (const auto& variant : pathVariants) {
@@ -160,37 +154,46 @@ void Films::SyncDisplayWithDatabase() {
 
         if (!verifiedPath.empty()) {
             uiCard.posterTexture = LoadTexture(verifiedPath.c_str());
-            if (uiCard.posterTexture.id == 0) {
-                std::cout << "[ERROR] Raylib failed to load verified file into VRAM: " << verifiedPath << std::endl;
-            }
-            else {
-                std::cout << "[SUCCESS] Loaded poster for " << uiCard.title << " from: " << verifiedPath << std::endl;
-            }
         }
         else {
-            std::cout << "[WARNING] File completely missing across all check variations for: " << uiCard.title << " (Raw path: " << rawPath << ")" << std::endl;
-            // Attempt generic placeholder fallback asset 
             if (FileExists("assets/placeholder.png")) {
                 uiCard.posterTexture = LoadTexture("assets/placeholder.png");
-            }
-            else if (FileExists("../assets/placeholder.png")) {
-                uiCard.posterTexture = LoadTexture("../assets/placeholder.png");
             }
             else {
                 uiCard.posterTexture.id = 0;
             }
         }
-
         displayedMovies.push_back(uiCard);
     }
 
     int layoutRows = ((int)displayedMovies.size() + 3) / 4;
     maxScroll = 550.0f + (layoutRows * 520.0f) - GetScreenHeight();
     if (maxScroll < 600.0f) maxScroll = 600.0f;
+
+    isTransitioning = false;
+    hasSelectedMovieChanged = false;
 }
 
 void Films::Update() {
     bool isActive = (currentScreen != nullptr && *currentScreen == 4);
+
+    if (currentScreen) {
+        int currentScreenValue = *currentScreen;
+        if (currentScreenValue != lastScreen) {
+            hasSelectedMovieChanged = false;
+            skipGridClickThisFrame = true;
+            isTransitioning = false;
+            clickCooldown = 5;
+            lastScreen = currentScreenValue;
+
+            if (currentScreenValue != 4) {
+                wasActive = isActive;
+                return;
+            }
+        }
+    }
+
+    if (clickCooldown > 0) clickCooldown--;
 
     if (isActive && !wasActive) {
         ConsumeMouseClicks();
@@ -201,7 +204,6 @@ void Films::Update() {
         if (addMovieScreen && addMovieScreen->ShouldRefreshMovies()) {
             pendingRefresh = true;
         }
-
         SyncDisplayWithDatabase();
     }
 
@@ -220,14 +222,12 @@ void Films::Update() {
     if (pendingRefresh) {
         SyncDisplayWithDatabase();
         pendingRefresh = false;
-        if (addMovieScreen) {
-            addMovieScreen->SetRefreshMovies(false);
-        }
+        if (addMovieScreen) addMovieScreen->SetRefreshMovies(false);
     }
 
     Vector2 mousePos = GetMousePosition();
 
-    if (!showDeleteConfirmation && !justActivated) {
+    if (!showDeleteConfirmation && !justActivated && clickCooldown == 0) {
         skipGridClickThisFrame = false;
     }
 
@@ -247,8 +247,7 @@ void Films::Update() {
         Rectangle modalContainer = {
             ((float)GetScreenWidth() - mWidth) / 2.0f,
             ((float)GetScreenHeight() - mHeight) / 2.0f,
-            mWidth,
-            mHeight
+            mWidth, mHeight
         };
 
         Rectangle yesBtn = { modalContainer.x + 60, modalContainer.y + 140, 150, 45 };
@@ -273,7 +272,6 @@ void Films::Update() {
                         }
                         underlyingMovies.erase(it);
                     }
-
                     movieService->reloadMovies();
 
                     int layoutRows = ((int)displayedMovies.size() + 3) / 4;
@@ -309,14 +307,12 @@ void Films::Update() {
 
     Rectangle searchBox = { navBarX + navWidth - 280, 155, 260, 50 };
 
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !justActivated) {
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !justActivated && clickCooldown == 0) {
         if (CheckCollisionPointRec(mousePos, searchBox)) {
             searchActive = true;
         }
         else {
-            if (mousePos.y > 140) {
-                searchActive = false;
-            }
+            if (mousePos.y > 140) searchActive = false;
         }
     }
 
@@ -346,6 +342,8 @@ void Films::Update() {
 }
 
 void Films::DrawMovieGrid(float startY) {
+    if (isTransitioning) return;
+
     int screenWidth = GetScreenWidth();
     float navWidth = screenWidth * 0.9f;
 
@@ -367,24 +365,15 @@ void Films::DrawMovieGrid(float startY) {
         float y = startPosterY + targetRow * (posterHeight + 110.0f);
         Rectangle posterRect = { x, y, posterWidth, posterHeight };
 
-        bool hovered = !showDeleteConfirmation && CheckCollisionPointRec(mousePos, posterRect);
+        bool hovered = !showDeleteConfirmation && !isTransitioning && CheckCollisionPointRec(mousePos, posterRect);
 
         if (displayedMovies[i].posterTexture.id != 0) {
-            DrawTexturePro(
-                displayedMovies[i].posterTexture,
+            DrawTexturePro(displayedMovies[i].posterTexture,
                 { 0, 0, (float)displayedMovies[i].posterTexture.width, (float)displayedMovies[i].posterTexture.height },
-                posterRect,
-                { 0, 0 },
-                0.0f,
-                hovered ? LIGHTGRAY : WHITE
-            );
+                posterRect, { 0, 0 }, 0.0f, hovered ? LIGHTGRAY : WHITE);
         }
         else {
-            // If the texture context id is 0, render a fallback visual rectangle
             DrawRectangleRec(posterRect, DARKGRAY);
-            if (customFont.texture.id != 0) {
-                DrawTextEx(customFont, "Missing Image", { x + 55, y + posterHeight / 2 - 10 }, 22, 1, WHITE);
-            }
         }
 
         if (customFont.texture.id != 0) {
@@ -393,15 +382,16 @@ void Films::DrawMovieGrid(float startY) {
             DrawTextEx(customFont, displayedMovies[i].genre.c_str(), { x + 10, y + posterHeight + 55 }, 23, 1, BLACK);
         }
 
-        DrawRectangleRoundedLines(
-            posterRect,
-            0.08f,
-            8,
-            4,
-            hovered ? (isDeleteMode ? RED : BLUE) : (isDeleteMode ? ORANGE : WHITE)
-        );
+        DrawRectangleRoundedLines(posterRect, 0.08f, 8, 4,
+            hovered ? (isDeleteMode ? RED : BLUE) : (isDeleteMode ? ORANGE : WHITE));
 
-        if (hovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !skipGridClickThisFrame && !justActivated) {
+        if (hovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) &&
+            !skipGridClickThisFrame && !justActivated && clickCooldown == 0 && !isTransitioning) {
+
+            ConsumeMouseClicks();
+            skipGridClickThisFrame = true;
+            clickCooldown = 10;
+
             if (isDeleteMode) {
                 if (i < underlyingMovies.size()) {
                     movieToDelete = underlyingMovies[i];
@@ -410,16 +400,10 @@ void Films::DrawMovieGrid(float startY) {
                 }
             }
             else {
-                if (!isLoggedIn) {
-                    if (currentScreen != nullptr) {
-                        *currentScreen = 1;
-                        return;
-                    }
-                }
-                else if (currentScreen != nullptr && i < underlyingMovies.size()) {
+                if (currentScreen != nullptr && i < underlyingMovies.size()) {
                     lastClickedMovie = underlyingMovies[i];
                     hasSelectedMovieChanged = true;
-                    *currentScreen = 7;
+                    isTransitioning = true;
                     return;
                 }
             }
@@ -435,13 +419,8 @@ void Films::DrawNavigationBar() {
     Rectangle navBarRect = { (screenWidth - navWidth) / 2, 20, navWidth, navHeight };
     DrawRectangleRounded(navBarRect, 0.5f, 10, WHITE);
 
-    if (logo.id != 0) {
-        DrawTextureEx(logo, { navBarRect.x - 2, navBarRect.y - 20 }, 0.0f, 0.3f, WHITE);
-    }
-
-    if (customFont.texture.id != 0) {
-        DrawTextEx(customFont, "Vanema", { navBarRect.x + 130, navBarRect.y + 40 }, 34, 1, BLACK);
-    }
+    if (logo.id != 0) DrawTextureEx(logo, { navBarRect.x - 2, navBarRect.y - 20 }, 0.0f, 0.3f, WHITE);
+    if (customFont.texture.id != 0) DrawTextEx(customFont, "Vanema", { navBarRect.x + 130, navBarRect.y + 40 }, 34, 1, BLACK);
 
     const char* labels[] = { "Home", "Spots", "Films", "Offers" };
     Texture2D icons[] = { iconHome, iconMap, iconFilms, iconOffers };
@@ -456,7 +435,7 @@ void Films::DrawNavigationBar() {
         bool isHovered = CheckCollisionPointRec(mousePos, btnRect);
         Color tint = (i == activeIndex) ? BLUE : DARKBLUE;
 
-        if (isHovered && !showDeleteConfirmation && !skipGridClickThisFrame && !justActivated) {
+        if (isHovered && !showDeleteConfirmation && !skipGridClickThisFrame && !justActivated && !isTransitioning) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 activeIndex = i;
@@ -469,23 +448,16 @@ void Films::DrawNavigationBar() {
             }
         }
 
-        if (icons[i].id != 0) {
-            DrawTextureEx(icons[i], { itemX + 50, navBarRect.y + 5 }, 0.0f, 0.1f, tint);
-        }
-
-        if (customFont.texture.id != 0) {
-            DrawTextEx(customFont, labels[i], { itemX + 58, navBarRect.y + 70 }, 20, 1, BLACK);
-        }
+        if (icons[i].id != 0) DrawTextureEx(icons[i], { itemX + 50, navBarRect.y + 5 }, 0.0f, 0.1f, tint);
+        if (customFont.texture.id != 0) DrawTextEx(customFont, labels[i], { itemX + 58, navBarRect.y + 70 }, 20, 1, BLACK);
     }
 
     Rectangle profileRect = { navBarRect.x + navWidth - 70, navBarRect.y + 15, 50, 50 };
     bool isProfileHovered = CheckCollisionPointRec(mousePos, profileRect);
 
-    if (isProfileHovered && !showDeleteConfirmation && !skipGridClickThisFrame && !justActivated) {
+    if (isProfileHovered && !showDeleteConfirmation && !skipGridClickThisFrame && !justActivated && !isTransitioning) {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr) {
-            *currentScreen = 1;
-        }
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr) *currentScreen = 1;
     }
 
     if (iconProfile.id != 0) {
@@ -511,13 +483,16 @@ void Films::DrawScrollbar() {
 
     float thumbHeight = 110;
     float thumbY = scrollbarY;
-    if (maxScroll > 0) {
-        thumbY = scrollbarY + (scrollOffset / maxScroll) * (scrollbarHeight - thumbHeight);
-    }
+    if (maxScroll > 0) thumbY = scrollbarY + (scrollOffset / maxScroll) * (scrollbarHeight - thumbHeight);
     DrawRectangleRounded({ scrollbarX, thumbY, scrollbarWidth, thumbHeight }, 0.5f, 8, DARKBLUE);
 }
 
 void Films::Draw() {
+    if (isTransitioning) {
+        ClearBackground(RAYWHITE);
+        return;
+    }
+
     if (background.id != 0) {
         DrawTexturePro(background, { 0, 0, (float)background.width, (float)background.height }, { 0, 0, (float)GetScreenWidth(), (float)GetScreenHeight() }, { 0, 0 }, 0.0f, WHITE);
     }
@@ -532,7 +507,6 @@ void Films::Draw() {
 
     Rectangle navBarRect = { navBarX, 20, navWidth, navHeight };
 
-    // Set scissor coordinates cleanly to global application parameters
     BeginScissorMode(0, (int)(navBarRect.y + navBarRect.height + 10), GetScreenWidth(), GetScreenHeight() - (int)(navBarRect.y + navBarRect.height + 10));
 
     float currentY = navBarRect.y + navBarRect.height + 35.0f - scrollOffset;
@@ -578,18 +552,18 @@ void Films::Draw() {
         bool hoverAdd = !showDeleteConfirmation && CheckCollisionPointRec(mousePos, addBtn);
         bool hoverDelete = !showDeleteConfirmation && CheckCollisionPointRec(mousePos, deleteBtn);
 
-        if ((hoverAdd || hoverDelete) && !skipGridClickThisFrame && !justActivated) {
+        if ((hoverAdd || hoverDelete) && !skipGridClickThisFrame && !justActivated && !isTransitioning) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         }
 
-        if (hoverAdd && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !skipGridClickThisFrame && !justActivated) {
+        if (hoverAdd && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !skipGridClickThisFrame && !justActivated && !isTransitioning) {
             if (currentScreen != nullptr) {
                 *currentScreen = 8;
                 EndScissorMode();
                 return;
             }
         }
-        if (hoverDelete && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !skipGridClickThisFrame && !justActivated) {
+        if (hoverDelete && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !skipGridClickThisFrame && !justActivated && !isTransitioning) {
             isDeleteMode = !isDeleteMode;
         }
 
@@ -669,7 +643,7 @@ void Films::DrawGenreBar(float startY) {
         bool isVisible = (pillRect.x >= baseStartX - 5.0f) && (pillRect.x + pillRect.width <= viewRightBoundary + 5.0f);
         bool isHovered = !showDeleteConfirmation && isVisible && CheckCollisionPointRec(mousePos, pillRect);
 
-        if (isHovered && !skipGridClickThisFrame && !justActivated) {
+        if (isHovered && !skipGridClickThisFrame && !justActivated && !isTransitioning) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 selectedGenreIndex = (int)i;
@@ -712,7 +686,7 @@ void Films::DrawGenreBar(float startY) {
         DrawRectangleRoundedLines(leftBtn, 0.45f, 8, 1, Color{ 220, 226, 235, 255 });
         DrawText("<", leftBtn.x + 18, leftBtn.y + 13, 24, BLACK);
 
-        if (leftHover && !skipGridClickThisFrame && !justActivated) {
+        if (leftHover && !skipGridClickThisFrame && !justActivated && !isTransitioning) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 targetGenreScrollX += stepSlideAmount;
@@ -729,7 +703,7 @@ void Films::DrawGenreBar(float startY) {
         DrawRectangleRoundedLines(rightBtn, 0.45f, 8, 1, Color{ 220, 226, 235, 255 });
         DrawText(">", rightBtn.x + 20, rightBtn.y + 13, 24, BLACK);
 
-        if (rightHover && !skipGridClickThisFrame && !justActivated) {
+        if (rightHover && !skipGridClickThisFrame && !justActivated && !isTransitioning) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 targetGenreScrollX -= stepSlideAmount;
@@ -737,4 +711,11 @@ void Films::DrawGenreBar(float startY) {
             }
         }
     }
+}
+
+void Films::ResetSelectionState() {
+    hasSelectedMovieChanged = false;
+    isTransitioning = false;
+    skipGridClickThisFrame = true;
+    justActivated = true;
 }

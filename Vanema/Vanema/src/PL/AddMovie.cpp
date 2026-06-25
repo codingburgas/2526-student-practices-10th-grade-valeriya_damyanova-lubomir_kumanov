@@ -1,8 +1,8 @@
 #include "AddMovie.h"
 #include "BLL/MovieService.h"
 #include "BLL/Movie.h"
-#include <filesystem> // Added for forcing and locking the Working Directory
-#include <algorithm>   // Added for std::replace
+#include <filesystem> 
+#include <algorithm>  
 
 std::string OpenPosterFileDialog();
 
@@ -195,16 +195,13 @@ void AddMovie::Update() {
         }
 
         if (hoverChooseFile) {
-            // Save current working directory before Windows file dialog alters it
             std::filesystem::path originalCwd = std::filesystem::current_path();
 
             std::string pathResult = OpenPosterFileDialog();
 
-            // Explicitly force the app directory context back to your project root
             std::filesystem::current_path(originalCwd);
 
             if (!pathResult.empty()) {
-                // Normalize windows backslashes to forward slashes instantly
                 std::replace(pathResult.begin(), pathResult.end(), '\\', '/');
                 posterPathInput = pathResult;
             }
@@ -226,7 +223,6 @@ void AddMovie::Update() {
                 newMovie.setDescription(plotInput);
                 newMovie.setGenre(genreInput);
 
-                // Path Sanitization Strategy
                 std::string sanitizedPath = posterPathInput;
                 size_t assetsPos = sanitizedPath.find("assets/");
                 if (assetsPos != std::string::npos) {

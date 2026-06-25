@@ -1,6 +1,6 @@
-#define WIN32_LEAN_AND_MEAN // Disables wincrypt, bcrypt, etc. to prevent Raylib conflicts
-#include <string>           // C++ Standard Library headers go next
-#include <windows.h>        // Safe now!
+#define WIN32_LEAN_AND_MEAN 
+#include <string>           
+#include <windows.h>        
 #include <commdlg.h>
 
 std::string OpenPosterFileDialog() {

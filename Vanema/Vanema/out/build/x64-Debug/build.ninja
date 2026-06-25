@@ -280,6 +280,17 @@ build CMakeFiles\Vanema.dir\src\PL\FilePicker.cpp.obj: CXX_COMPILER__Vanema_unsc
   TARGET_PDB = bin\Debug\Vanema.pdb
   TARGET_SUPPORT_DIR = CMakeFiles\Vanema.dir
 
+build CMakeFiles\Vanema.dir\src\PL\AddSpots.cpp.obj: CXX_COMPILER__Vanema_unscanned_Debug C$:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL\AddSpots.cpp || cmake_object_order_depends_target_Vanema
+  CONFIG = Debug
+  DEFINES = -DSQLITECPP_COMPILE_DLL -DSQLITE_ENABLE_COLUMN_METADATA
+  FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FIC:/Users/TP14s/2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov/Vanema/Vanema/Vanema.h
+  INCLUDES = -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\PL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\BLL -IC:\Users\TP14s\2526-student-practices-10th-grade-valeriya_damyanova-lubomir_kumanov\Vanema\Vanema\src\DAL -external:IC:\Users\TP14s\vcpkg\installed\x64-windows\include -external:W0
+  OBJECT_DIR = CMakeFiles\Vanema.dir
+  OBJECT_FILE_DIR = CMakeFiles\Vanema.dir\src\PL
+  TARGET_COMPILE_PDB = CMakeFiles\Vanema.dir\
+  TARGET_PDB = bin\Debug\Vanema.pdb
+  TARGET_SUPPORT_DIR = CMakeFiles\Vanema.dir
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target Vanema
@@ -288,7 +299,7 @@ build CMakeFiles\Vanema.dir\src\PL\FilePicker.cpp.obj: CXX_COMPILER__Vanema_unsc
 #############################################
 # Link the executable bin\Debug\Vanema.exe
 
-build bin\Debug\Vanema.exe: CXX_EXECUTABLE_LINKER__Vanema_Debug CMakeFiles\Vanema.dir\src\PL\main.cpp.obj CMakeFiles\Vanema.dir\src\PL\Booking.cpp.obj CMakeFiles\Vanema.dir\src\PL\Films.cpp.obj CMakeFiles\Vanema.dir\src\PL\Login.cpp.obj CMakeFiles\Vanema.dir\src\PL\Menu.cpp.obj CMakeFiles\Vanema.dir\src\PL\MovieDetails.cpp.obj CMakeFiles\Vanema.dir\src\PL\Offers.cpp.obj CMakeFiles\Vanema.dir\src\PL\SignUp.cpp.obj CMakeFiles\Vanema.dir\src\PL\Spots.cpp.obj CMakeFiles\Vanema.dir\src\BLL\Movie.cpp.obj CMakeFiles\Vanema.dir\src\BLL\MovieService.cpp.obj CMakeFiles\Vanema.dir\src\BLL\User.cpp.obj CMakeFiles\Vanema.dir\src\BLL\UserService.cpp.obj CMakeFiles\Vanema.dir\src\DAL\bcrypt.cpp.obj CMakeFiles\Vanema.dir\src\DAL\DAL.cpp.obj CMakeFiles\Vanema.dir\src\DAL\DataSeeder.cpp.obj CMakeFiles\Vanema.dir\src\DAL\MovieRepository.cpp.obj CMakeFiles\Vanema.dir\src\DAL\UserRepository.cpp.obj CMakeFiles\Vanema.dir\src\DAL\UserSeeder.cpp.obj CMakeFiles\Vanema.dir\src\PL\AddMovie.cpp.obj CMakeFiles\Vanema.dir\src\PL\FilePicker.cpp.obj | C$:\Users\TP14s\vcpkg\installed\x64-windows\debug\lib\raylib.lib C$:\Users\TP14s\vcpkg\installed\x64-windows\debug\lib\SQLiteCpp.lib C$:\Users\TP14s\vcpkg\installed\x64-windows\debug\lib\raylib.lib
+build bin\Debug\Vanema.exe: CXX_EXECUTABLE_LINKER__Vanema_Debug CMakeFiles\Vanema.dir\src\PL\main.cpp.obj CMakeFiles\Vanema.dir\src\PL\Booking.cpp.obj CMakeFiles\Vanema.dir\src\PL\Films.cpp.obj CMakeFiles\Vanema.dir\src\PL\Login.cpp.obj CMakeFiles\Vanema.dir\src\PL\Menu.cpp.obj CMakeFiles\Vanema.dir\src\PL\MovieDetails.cpp.obj CMakeFiles\Vanema.dir\src\PL\Offers.cpp.obj CMakeFiles\Vanema.dir\src\PL\SignUp.cpp.obj CMakeFiles\Vanema.dir\src\PL\Spots.cpp.obj CMakeFiles\Vanema.dir\src\BLL\Movie.cpp.obj CMakeFiles\Vanema.dir\src\BLL\MovieService.cpp.obj CMakeFiles\Vanema.dir\src\BLL\User.cpp.obj CMakeFiles\Vanema.dir\src\BLL\UserService.cpp.obj CMakeFiles\Vanema.dir\src\DAL\bcrypt.cpp.obj CMakeFiles\Vanema.dir\src\DAL\DAL.cpp.obj CMakeFiles\Vanema.dir\src\DAL\DataSeeder.cpp.obj CMakeFiles\Vanema.dir\src\DAL\MovieRepository.cpp.obj CMakeFiles\Vanema.dir\src\DAL\UserRepository.cpp.obj CMakeFiles\Vanema.dir\src\DAL\UserSeeder.cpp.obj CMakeFiles\Vanema.dir\src\PL\AddMovie.cpp.obj CMakeFiles\Vanema.dir\src\PL\FilePicker.cpp.obj CMakeFiles\Vanema.dir\src\PL\AddSpots.cpp.obj | C$:\Users\TP14s\vcpkg\installed\x64-windows\debug\lib\raylib.lib C$:\Users\TP14s\vcpkg\installed\x64-windows\debug\lib\SQLiteCpp.lib C$:\Users\TP14s\vcpkg\installed\x64-windows\debug\lib\raylib.lib
   CONFIG = Debug
   FLAGS = /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -MDd
   LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:console

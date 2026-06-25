@@ -90,6 +90,11 @@ void Spots::Unload() {
     if (uiFont.texture.id != 0) UnloadFont(uiFont);
 }
 
+void Spots::AddNewExperienceData(const std::string& title, const std::string& desc, const std::string& t1, const std::string& t2, const std::string& t3) {
+    experiences.push_back({ title, desc, t1, t2, t3 });
+    maxScroll += 260.0f;
+}
+
 void Spots::Update() {
     Vector2 mousePos = GetMousePosition();
     int screenWidth = GetScreenWidth();
@@ -121,6 +126,42 @@ void Spots::Update() {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             if (currentScreen != nullptr) { *currentScreen = 1; }
+        }
+    }
+
+    float contentWidth = screenWidth * 0.9f;
+    float startLayoutX = (screenWidth - contentWidth) / 2;
+    float trackingY = 150 - scrollOffset;
+    trackingY += 240;
+
+    const int cardsPerRow = 3;
+    float cardGap = 20.0f;
+    float cardHeight = 220;
+    int rows = (locations.size() + cardsPerRow - 1) / cardsPerRow;
+    trackingY += rows * (cardHeight + cardGap) + 20;
+    trackingY += 50;
+
+    const int expCardsPerRow = 2;
+    float gap = 24.0f;
+    float expWidth = (contentWidth - (expCardsPerRow - 1) * gap) / expCardsPerRow;
+    float expHeight = 240;
+
+    // FIX: Dynamically track button using internal index position offset configurations
+    int nextSlotIndex = (int)experiences.size();
+    int dynamicRow = nextSlotIndex / expCardsPerRow;
+    int dynamicCol = nextSlotIndex % expCardsPerRow;
+    float slotX = startLayoutX + dynamicCol * (expWidth + gap);
+    float slotY = trackingY + dynamicRow * (expHeight + gap);
+    Rectangle slotRect = { slotX, slotY, expWidth, expHeight };
+
+    if (isLoggedIn && isAdmin) {
+        if (CheckCollisionPointRec(mousePos, slotRect)) {
+            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                if (currentScreen != nullptr) {
+                    *currentScreen = 9;
+                }
+            }
         }
     }
 
@@ -206,9 +247,6 @@ void Spots::DrawSearchBarAndFilters() {
 
         if (CheckCollisionPointRec(mousePos, chipRect)) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-                activeCityIndex = (int)i;
-            }
         }
 
         Color bgCol = (i == activeCityIndex) ? Color{ 16, 25, 48, 255 } : WHITE;
@@ -313,9 +351,7 @@ void Spots::DrawExperiences(float& currentY) {
     const int cardsPerRow = 2;
     float gap = 24.0f;
     float expWidth = (contentWidth - (cardsPerRow - 1) * gap) / cardsPerRow;
-
     float expHeight = 240;
-    Texture2D expIcons[] = { iconBeach, iconPool, iconSofa };
 
     for (size_t i = 0; i < experiences.size(); i++) {
         int row = i / cardsPerRow;
@@ -328,7 +364,14 @@ void Spots::DrawExperiences(float& currentY) {
         DrawRectangleRounded(expRect, 0.06f, 10, WHITE);
         DrawRectangleRoundedLines(expRect, 0.06f, 10, 1.5f, Fade(LIGHTGRAY, 0.8f));
 
-        if (expIcons[i].id != 0) DrawTextureEx(expIcons[i], { ex + 30, ey + 62 }, 0.0f, 0.11f, Color{ 16, 25, 48, 255 });
+        // Use custom logic to handle fallback textures safely
+        Texture2D currentIcon = iconSofa;
+        if (i == 0) currentIcon = iconBeach;
+        else if (i == 1) currentIcon = iconPool;
+
+        if (currentIcon.id != 0) {
+            DrawTextureEx(currentIcon, { ex + 30, ey + 62 }, 0.0f, 0.11f, Color{ 16, 25, 48, 255 });
+        }
 
         float textX = ex + 145;
         if (uiFont.texture.id != 0) {
@@ -358,8 +401,10 @@ void Spots::DrawExperiences(float& currentY) {
         }
     }
 
-    int dynamicRow = 3 / cardsPerRow;
-    int dynamicCol = 3 % cardsPerRow;
+    // FIX: Dynamically anchor container block based on the modern array layout dimensions
+    int nextSlotIndex = (int)experiences.size();
+    int dynamicRow = nextSlotIndex / cardsPerRow;
+    int dynamicCol = nextSlotIndex % cardsPerRow;
     float slotX = startX + dynamicCol * (expWidth + gap);
     float slotY = currentY + dynamicRow * (expHeight + gap);
     Rectangle slotRect = { slotX, slotY, expWidth, expHeight };
@@ -402,7 +447,9 @@ void Spots::DrawExperiences(float& currentY) {
             DrawTextEx(uiFont, "We are designing new custom ways to watch cinema.", { midX - (sizeDesc.x / 2.0f), midY + 20 }, 22, 1, BLACK);
         }
     }
-    currentY += (2 * expHeight) + gap + 40;
+
+    int totalRowsNeeded = (nextSlotIndex + cardsPerRow) / cardsPerRow;
+    currentY += (totalRowsNeeded * expHeight) + (totalRowsNeeded * gap) + 40;
 }
 
 void Spots::DrawScrollbar() {

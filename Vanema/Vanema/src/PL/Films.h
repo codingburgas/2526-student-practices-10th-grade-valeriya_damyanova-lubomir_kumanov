@@ -1,55 +1,44 @@
 #ifndef FILMS_H
 #define FILMS_H
 
+#include "Movie.h"
+#include "MovieService.h"
 #include "raylib.h"
-#include <vector>
 #include <string>
-#include "BLL/MovieService.h"
-#include "BLL/Movie.h"
+#include <vector>
 
-// Forward declaration
 class AddMovie;
 
-struct Genre {
-    std::string name;
-};
-
-struct DisplayMovie {
-    std::string title;
-    std::string genre;
-    std::string rating;
-    Texture2D posterTexture;
-};
-
-class Films {
+class Films { 
 public:
-    // --- Public Members Accessed by Main Loop ---
-    int* currentScreen;
-    MovieService* movieService;
-    AddMovie* addMovieScreen;
-    bool hasSelectedMovieChanged;  // MOVED TO PUBLIC: Fixes main.cpp compiler access errors
-
-    // --- Constructor & Destructor ---
     Films();
     ~Films();
 
-    // --- Public Framework Methods ---
-    void Update();
-    void Draw();
+    void Update(); 
+    void Draw();   
+    void Unload(); 
+
     void SetUserData(bool loggedIn, const std::string& name, bool admin);
+    void SetMovieService(MovieService* service) { movieService = service; }
+    void SetCurrentScreenPointer(int* screenPtr) { currentScreen = screenPtr; }
+    void SetAddMovieScreen(AddMovie* addMovie) { addMovieScreen = addMovie; }
+    Movie GetLastClickedMovie() const { return lastClickedMovie; }
+    bool HasSelectedMovieChanged() const { return hasSelectedMovieChanged; }
+    void ResetSelectionState();
     void ConsumeMouseClicks();
 
-    // --- Database Synchronization Interface ---
-    void SyncDisplayWithDatabase(); // MOVED TO PUBLIC: Allows main.cpp to refresh movie lists directly
-
-    // --- Public Getter & State Control Methods ---
-    bool HasSelectedMovieChanged() const { return hasSelectedMovieChanged; }
-    Movie GetLastClickedMovie() const { return lastClickedMovie; }
-    void ResetSelectedMovieFlag() { hasSelectedMovieChanged = false; }
-    void RefreshDisplay() { SyncDisplayWithDatabase(); }
-
 private:
-    // --- Graphic Assets & Textures ---
+    struct DisplayMovie {
+        std::string title;
+        std::string genre;
+        std::string rating;
+        Texture2D posterTexture;
+    };
+
+    struct Genre {
+        std::string name;
+    };
+
     Texture2D background;
     Texture2D logo;
     Texture2D iconHome;
@@ -59,51 +48,51 @@ private:
     Texture2D iconProfile;
     Font customFont;
 
-    // --- UI Layout & Component States ---
     std::vector<Genre> genres;
     std::vector<DisplayMovie> displayedMovies;
     std::vector<Movie> underlyingMovies;
-    int activeIndex;
+    MovieService* movieService;
+    AddMovie* addMovieScreen;
+    int* currentScreen;
+
+    // UI State
     float scrollOffset;
     float maxScroll;
-    bool isLoggedIn;
-    std::string userName;
-    bool isAdmin;
-
-    // --- Live Text Search Sub-System ---
+    int activeIndex;
     bool searchActive;
-    int letterCount;
     char searchQuery[64];
-
-    // --- Dynamic Genre Filter Bar State ---
+    int letterCount;
     int selectedGenreIndex;
     int lastSelectedGenreIndex;
+
     float genreScrollX;
     float targetGenreScrollX;
     float maxGenreScrollWidth;
 
-    // --- Record Erasure / Delete Modal Sub-System ---
+    bool isLoggedIn;
+    std::string userName;
+    bool isAdmin;
+
+    Movie lastClickedMovie;
+    bool hasSelectedMovieChanged;
+
     bool isDeleteMode;
     bool showDeleteConfirmation;
     Movie movieToDelete;
 
-    // --- Layout Click Buffering & Debounce Control ---
     bool justActivated;
     int activationFrames;
     bool wasActive;
-
-    // --- Async Refresh Tracking ---
     bool pendingRefresh;
+    int lastScreen;
+    bool isTransitioning;
+    int clickCooldown;
 
-    // --- Selected Item Storage ---
-    Movie lastClickedMovie;
-
-    // --- Internal Fragment Rendering Routines ---
-    void Unload();
+    void SyncDisplayWithDatabase();
     void DrawMovieGrid(float startY);
     void DrawNavigationBar();
-    void DrawScrollbar();
     void DrawGenreBar(float startY);
+    void DrawScrollbar();
 };
 
-#endif // FILMS_H
+#endif 

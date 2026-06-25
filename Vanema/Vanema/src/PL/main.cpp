@@ -9,12 +9,12 @@
 #include "Offers.h"
 #include "MovieDetails.h" 
 #include "AddMovie.h"
+#include "AddSpots.h"
 #include "DAL/MovieRepository.h"
 #include "DAL/DataSeeder.h"
 #include "BLL/MovieService.h"
 
-int main()
-{
+int main() {
     InitWindow(1600, 980, "Vanema");
     SetTargetFPS(60);
 
@@ -32,42 +32,31 @@ int main()
     Offers offers;
     MovieDetails movieDetails;
     AddMovie addMovie;
+    AddSpots addSpots;
 
-    // Use direct pointer assignments matching your class variables
     booking.movieService = &movieService;
-    films.movieService = &movieService;
+    films.SetMovieService(&movieService);
     addMovie.movieService = &movieService;
 
     booking.loadRandomSuggestions();
-    films.SyncDisplayWithDatabase();
 
     int currentScreen = 0;
 
-    // Assign screen pointer variables safely
     login.currentScreen = &currentScreen;
     signup.currentScreen = &currentScreen;
     booking.currentScreen = &currentScreen;
-    films.currentScreen = &currentScreen;
+    films.SetCurrentScreenPointer(&currentScreen);
     spots.currentScreen = &currentScreen;
     offers.currentScreen = &currentScreen;
     movieDetails.currentScreen = &currentScreen;
     addMovie.currentScreen = &currentScreen;
+    addSpots.SetScreenPointer(&currentScreen);
 
     login.Init();
     signup.Init();
 
-    while (!WindowShouldClose())
-    {
-        // Global Synchronization Watch: Check if any screen explicitly requested a database refresh
-        if (addMovie.ShouldRefreshMovies())
-        {
-            films.SyncDisplayWithDatabase();
-            booking.loadRandomSuggestions(); // Keeps recommendations matching the DB
-            addMovie.SetRefreshMovies(false); // Reset the trigger flag
-        }
-
-        if (currentScreen == 0)
-        {
+    while (!WindowShouldClose()) {
+        if (currentScreen == 0) {
             menu.Update();
 
             if (menu.IsStartPressed())
@@ -76,52 +65,71 @@ int main()
             if (menu.IsExitPressed())
                 break;
         }
-        else if (currentScreen == 1)
-        {
+        else if (currentScreen == 1) {
             login.Update();
         }
-        else if (currentScreen == 2)
-        {
+        else if (currentScreen == 2) {
             booking.Update();
-            if (booking.hasSelectedMovieChanged)
-            {
-                movieDetails.LoadMovie(booking.GetLastClickedMovie());
-                booking.hasSelectedMovieChanged = false;
-            }
         }
-        else if (currentScreen == 3)
-        {
+        else if (currentScreen == 3) {
             signup.Update();
         }
-        else if (currentScreen == 4)
-        {
+        else if (currentScreen == 4) {
             films.Update();
-            if (films.hasSelectedMovieChanged)
-            {
-                movieDetails.LoadMovie(films.GetLastClickedMovie());
-                films.hasSelectedMovieChanged = false;
-            }
         }
-        else if (currentScreen == 5)
-        {
+        else if (currentScreen == 5) {
             spots.Update();
         }
-        else if (currentScreen == 6)
-        {
+        else if (currentScreen == 6) {
             offers.Update();
         }
-        else if (currentScreen == 7)
-        {
-            movieDetails.Update();
+        else if (currentScreen == 7) {
+            DetailScreenResult result = movieDetails.Update();
+            switch (result) {
+            case DetailScreenResult::BACK:
+                currentScreen = 4;
+                break;
+            case DetailScreenResult::BOOKING:
+                currentScreen = 2;
+                break;
+            default:
+                break;
+            }
         }
-        else if (currentScreen == 8)
-        {
+        else if (currentScreen == 8) {
             addMovie.Update();
         }
+        else if (currentScreen == 9) {
+            addSpots.Update();
 
-        // Sync authentication and administrative states
-        if (login.IsLoggedIn())
-        {
+            if (addSpots.shouldRefreshExperiences) {
+                if (!addSpots.titleInput.empty() && !addSpots.descInput.empty()) {
+                    spots.AddNewExperienceData(
+                        addSpots.titleInput,
+                        addSpots.descInput,
+                        addSpots.tag1Input,
+                        addSpots.tag2Input,
+                        addSpots.tag3Input
+                    );
+                }
+                addSpots.shouldRefreshExperiences = false;
+                addSpots.ResetForm();
+            }
+        }
+
+        if (films.HasSelectedMovieChanged()) {
+            movieDetails.LoadMovie(films.GetLastClickedMovie());
+            films.ResetSelectionState();
+            currentScreen = 7;
+        }
+
+        if (booking.hasSelectedMovieChanged) {
+            movieDetails.LoadMovie(booking.GetLastClickedMovie());
+            booking.hasSelectedMovieChanged = false;
+            currentScreen = 7;
+        }
+
+        if (login.IsLoggedIn()) {
             std::string currentRealName = login.GetUserDisplayName();
             bool isAdminUser = login.IsAdmin();
 
@@ -130,6 +138,7 @@ int main()
             spots.SetUserData(true, currentRealName, isAdminUser);
             offers.SetUserData(true, currentRealName, isAdminUser);
             addMovie.SetUserData(true, currentRealName, isAdminUser);
+            addSpots.SetUserData(true, currentRealName, isAdminUser);
         }
 
         BeginDrawing();
@@ -144,6 +153,7 @@ int main()
         else if (currentScreen == 6)        offers.Draw();
         else if (currentScreen == 7)        movieDetails.Draw();
         else if (currentScreen == 8)        addMovie.Draw();
+        else if (currentScreen == 9)        addSpots.Draw();
 
         EndDrawing();
     }

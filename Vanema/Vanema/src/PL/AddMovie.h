@@ -4,33 +4,26 @@
 #include "raylib.h"
 #include <string>
 #include "BLL/MovieService.h"
-
-// Forward declaration for Films class
 class Films;
 
 class AddMovie {
 public:
-    // Public members
     int* currentScreen;
     MovieService* movieService;
-    Films* filmsScreen;  // Added this
+    Films* filmsScreen;  
 
-    // Constructor & Destructor
     AddMovie();
     ~AddMovie();
 
-    // Public methods
     void Update();
     void Draw();
     void SetUserData(bool loggedIn, const std::string& name, bool admin);
     void ResetForm();
 
-    // Getter and Setter for refresh flag
     bool ShouldRefreshMovies() const;
     void SetRefreshMovies(bool refresh);
 
 private:
-    // Textures
     Texture2D background;
     Texture2D logo;
     Texture2D iconHome;
@@ -40,17 +33,14 @@ private:
     Texture2D iconProfile;
     Font customFont;
 
-    // UI State
     int activeIndex;
     bool isLoggedIn;
     std::string userName;
     bool isAdmin;
 
-    // Scroll
     float scrollYOffset;
     float maxScrollY;
 
-    // Form inputs
     std::string titleInput;
     std::string plotInput;
     std::string yearInput;
@@ -61,17 +51,14 @@ private:
     std::string posterPathInput;
     int activeField;
 
-    // Transition state tracking
     bool isTransitioning;
     int transitionFrames;
 
-    // Refresh flag to signal when movies need reloading
     bool shouldRefreshMovies;
 
-    // Private helper methods
     void Unload();
     void ConsumeMouseClicks();
     void DrawNavigationBar();
 };
 
-#endif // ADDMOVIE_H
+#endif 
