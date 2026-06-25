@@ -33,6 +33,7 @@ int main()
     MovieDetails movieDetails;
     AddMovie addMovie;
 
+    // Use direct pointer assignments matching your class variables
     booking.movieService = &movieService;
     films.movieService = &movieService;
     addMovie.movieService = &movieService;
@@ -42,6 +43,7 @@ int main()
 
     int currentScreen = 0;
 
+    // Assign screen pointer directly via member fields
     login.currentScreen = &currentScreen;
     signup.currentScreen = &currentScreen;
     booking.currentScreen = &currentScreen;
@@ -56,15 +58,6 @@ int main()
 
     while (!WindowShouldClose())
     {
-        if (booking.hasSelectedMovieChanged)
-        {
-            movieDetails.LoadMovie(booking.GetLastClickedMovie());
-        }
-        else if (films.hasSelectedMovieChanged)
-        {
-            movieDetails.LoadMovie(films.GetLastClickedMovie());
-        }
-
         if (currentScreen == 0)
         {
             menu.Update();
@@ -82,6 +75,11 @@ int main()
         else if (currentScreen == 2)
         {
             booking.Update();
+            if (booking.hasSelectedMovieChanged)
+            {
+                movieDetails.LoadMovie(booking.GetLastClickedMovie());
+                booking.hasSelectedMovieChanged = false;
+            }
         }
         else if (currentScreen == 3)
         {
@@ -90,6 +88,11 @@ int main()
         else if (currentScreen == 4)
         {
             films.Update();
+            if (films.hasSelectedMovieChanged)
+            {
+                movieDetails.LoadMovie(films.GetLastClickedMovie());
+                films.hasSelectedMovieChanged = false;
+            }
         }
         else if (currentScreen == 5)
         {
@@ -108,10 +111,12 @@ int main()
             addMovie.Update();
         }
 
+        // Sync authentication and administrative states
         if (login.IsLoggedIn())
         {
             std::string currentRealName = login.GetUserDisplayName();
             bool isAdminUser = login.IsAdmin();
+
             films.SetUserData(true, currentRealName, isAdminUser);
             booking.SetUserData(true, currentRealName, isAdminUser);
             spots.SetUserData(true, currentRealName, isAdminUser);
@@ -122,42 +127,15 @@ int main()
         BeginDrawing();
         ClearBackground(WHITE);
 
-        if (currentScreen == 0)
-        {
-            menu.Draw();
-        }
-        else if (currentScreen == 1)
-        {
-            login.Draw();
-        }
-        else if (currentScreen == 2)
-        {
-            booking.Draw();
-        }
-        else if (currentScreen == 3)
-        {
-            signup.Draw();
-        }
-        else if (currentScreen == 4)
-        {
-            films.Draw();
-        }
-        else if (currentScreen == 5)
-        {
-            spots.Draw();
-        }
-        else if (currentScreen == 6)
-        {
-            offers.Draw();
-        }
-        else if (currentScreen == 7)
-        {
-            movieDetails.Draw();
-        }
-        else if (currentScreen == 8)
-        {
-            addMovie.Draw();
-        }
+        if (currentScreen == 0)             menu.Draw();
+        else if (currentScreen == 1)        login.Draw();
+        else if (currentScreen == 2)        booking.Draw();
+        else if (currentScreen == 3)        signup.Draw();
+        else if (currentScreen == 4)        films.Draw();
+        else if (currentScreen == 5)        spots.Draw();
+        else if (currentScreen == 6)        offers.Draw();
+        else if (currentScreen == 7)        movieDetails.Draw();
+        else if (currentScreen == 8)        addMovie.Draw();
 
         EndDrawing();
     }

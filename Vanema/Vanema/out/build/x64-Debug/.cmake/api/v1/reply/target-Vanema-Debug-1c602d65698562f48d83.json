@@ -192,7 +192,8 @@
 				33,
 				35,
 				37,
-				39
+				39,
+				41
 			]
 		}
 	],
@@ -312,7 +313,8 @@
 				33,
 				35,
 				37,
-				39
+				39,
+				41
 			]
 		}
 	],
@@ -542,6 +544,12 @@
 			"backtrace" : 2,
 			"path" : "src/PL/AddMovie.h",
 			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "src/PL/FilePicker.cpp",
+			"sourceGroupIndex" : 1
 		}
 	],
 	"type" : "EXECUTABLE"

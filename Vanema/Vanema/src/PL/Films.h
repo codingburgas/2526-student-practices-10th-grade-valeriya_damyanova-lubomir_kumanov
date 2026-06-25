@@ -44,6 +44,7 @@ private:
     void DrawMovieGrid(float startY);
     void DrawGenreBar(float startY);
     void DrawScrollbar();
+    void ConsumeMouseClicks();
 
     Texture2D background;
     Texture2D logo;
@@ -80,6 +81,11 @@ private:
     bool showDeleteConfirmation;
     Movie movieToDelete;
     Movie lastClickedMovie;
+
+    // Click prevention members
+    bool justActivated;
+    int activationFrames;
+    bool wasActive;  // <-- Add this member
 };
 
 #endif

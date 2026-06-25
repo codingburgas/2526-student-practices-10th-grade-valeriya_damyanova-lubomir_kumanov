@@ -1,5 +1,39 @@
 #include "AddMovie.h"
-#include "raylib.h"
+#include "BLL/MovieService.h"
+#include "BLL/Movie.h"
+
+// Forward declaration telling the compiler that this function is implemented in FilePicker.cpp
+std::string OpenPosterFileDialog();
+
+// Helper function to safely draw text wrapped within bounds character-by-character
+void DrawTextWrapped(Font font, const char* text, Rectangle rec, float fontSize, float spacing, Color color) {
+    std::string textStr = text;
+    std::string line = "";
+    float cursorY = rec.y;
+
+    for (size_t i = 0; i < textStr.length(); i++) {
+        line += textStr[i];
+        Vector2 size = MeasureTextEx(font, line.c_str(), fontSize, spacing);
+
+        // If text line hits the boundary or contains a manual newline
+        if (size.x >= rec.width || textStr[i] == '\n') {
+            if (textStr[i] != '\n') {
+                line.pop_back(); // Pull back the overflowing character
+                DrawTextEx(font, line.c_str(), { rec.x, cursorY }, fontSize, spacing, color);
+                line = textStr[i]; // Start next row with the pulled character
+            }
+            else {
+                DrawTextEx(font, line.c_str(), { rec.x, cursorY }, fontSize, spacing, color);
+                line = "";
+            }
+            cursorY += fontSize + 6; // Shift down to the next row
+            if (cursorY + fontSize > rec.y + rec.height) return; // Prevent vertical box overflow
+        }
+    }
+    if (!line.empty()) {
+        DrawTextEx(font, line.c_str(), { rec.x, cursorY }, fontSize, spacing, color);
+    }
+}
 
 AddMovie::AddMovie() {
     background = LoadTexture("assets/booking.png");
@@ -21,7 +55,12 @@ AddMovie::AddMovie() {
     isAdmin = false;
 
     scrollYOffset = 0.0f;
-    maxScrollY = 550.0f; // Adjusted for comfortable scrolling room with the buttons at the bottom
+    maxScrollY = 550.0f;
+
+    // Initialize transition flags
+    isTransitioning = false;
+    transitionFrames = 0;
+    shouldRefreshMovies = false;
 
     ResetForm();
 }
@@ -64,13 +103,38 @@ void AddMovie::ResetForm() {
     posterPathInput = "";
     activeField = -1;
     scrollYOffset = 0.0f;
+    isTransitioning = false;
+    transitionFrames = 0;
+    // Don't reset shouldRefreshMovies here - it should persist until handled
+}
+
+void AddMovie::ConsumeMouseClicks() {
+    // This function is now empty - it was causing the freeze
+    // We keep it to maintain compatibility with the header
 }
 
 void AddMovie::Update() {
+    // Handle screen transition
+    if (isTransitioning) {
+        transitionFrames++;
+        if (transitionFrames > 3) { // Wait 3 frames
+            isTransitioning = false;
+            transitionFrames = 0;
+            if (currentScreen != nullptr) {
+                // Set flag to refresh movies before navigating back
+                shouldRefreshMovies = true;
+                *currentScreen = 4;
+                ResetForm();
+            }
+        }
+        return; // Skip all other updates during transition
+    }
+
     Vector2 mousePos = GetMousePosition();
 
     if (IsKeyPressed(KEY_ESCAPE)) {
         if (currentScreen != nullptr) {
+            shouldRefreshMovies = true;
             *currentScreen = 4;
             ResetForm();
             return;
@@ -88,7 +152,6 @@ void AddMovie::Update() {
     float panelW = screenWidth * 0.92f;
     float panelX = (screenWidth - panelW) / 2.0f;
 
-    // Layout matrix configurations
     float centerContentWidth = 1140.0f;
     float contentStartX = panelX + (panelW - centerContentWidth) / 2.0f;
 
@@ -98,21 +161,20 @@ void AddMovie::Update() {
     float baseContentY = 320.0f - scrollYOffset;
 
     Rectangle fields[7] = {
-        { contentStartX,     baseContentY + 90.0f,  1140, 60 },   // Title
-        { contentStartX,     baseContentY + 230.0f, 1140, 180 },  // Plot / Description
-        { formFieldsStartX,  baseContentY + 490.0f, 360,  60 },   // Release Year
-        { subColSplitX,      baseContentY + 490.0f, 360,  60 },   // Genre
-        { formFieldsStartX,  baseContentY + 620.0f, 360,  60 },   // Duration
-        { subColSplitX,      baseContentY + 620.0f, 360,  60 },   // Language
-        { formFieldsStartX,  baseContentY + 750.0f, 760,  60 }    // Rating
+        { contentStartX,     baseContentY + 90.0f,  1140, 60 },
+        { contentStartX,     baseContentY + 230.0f, 1140, 180 }, // Plot Field Box
+        { formFieldsStartX,  baseContentY + 490.0f, 360,  60 },
+        { subColSplitX,      baseContentY + 490.0f, 360,  60 },
+        { formFieldsStartX,  baseContentY + 620.0f, 360,  60 },
+        { subColSplitX,      baseContentY + 620.0f, 360,  60 },
+        { formFieldsStartX,  baseContentY + 750.0f, 760,  60 }
     };
 
     float posterX = contentStartX;
     float posterY = baseContentY + 490.0f;
     Rectangle chooseFileBtn = { posterX + (posterW - 160.0f) / 2.0f, posterY + 310.0f, 160, 45 };
 
-    // --- ACTIONS BUTTONS REPOSITIONED DIRECTLY UNDER RATING FIELD ---
-    float buttonsYStart = fields[6].y + fields[6].height + 40.0f; // Sits 40px below the rating box
+    float buttonsYStart = fields[6].y + fields[6].height + 40.0f;
     Rectangle submitBtnBounds = { formFieldsStartX, buttonsYStart, 760, 55 };
     Rectangle cancelBtnBounds = { formFieldsStartX, buttonsYStart + 75.0f, 760, 55 };
 
@@ -132,13 +194,19 @@ void AddMovie::Update() {
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         if (hoverBack || hoverCancel) {
-            if (currentScreen != nullptr) *currentScreen = 4;
+            if (currentScreen != nullptr) {
+                shouldRefreshMovies = true; // Always refresh when leaving
+                *currentScreen = 4;
+            }
             ResetForm();
             return;
         }
 
         if (hoverChooseFile) {
-            posterPathInput = "assets/posters/custom.png";
+            std::string pathResult = OpenPosterFileDialog();
+            if (!pathResult.empty()) {
+                posterPathInput = pathResult;
+            }
         }
 
         activeField = -1;
@@ -151,8 +219,50 @@ void AddMovie::Update() {
 
         if (hoverSubmit) {
             if (!titleInput.empty() && movieService != nullptr) {
-                if (currentScreen != nullptr) *currentScreen = 4;
-                ResetForm();
+                Movie newMovie;
+
+                newMovie.setTitle(titleInput);
+                newMovie.setDescription(plotInput);
+                newMovie.setGenre(genreInput);
+                newMovie.setPosterPath(posterPathInput);
+
+                // Parse year if provided - store as string or int if your Movie class supports it
+                // If your Movie class doesn't have setYear, store year in description or skip
+                // You might need to add a setYear method to Movie class
+
+                // For now, if your Movie class has a setYear method, uncomment this:
+                // if (!yearInput.empty()) {
+                //     try {
+                //         int parsedYear = std::stoi(yearInput);
+                //         newMovie.setYear(parsedYear);
+                //     }
+                //     catch (...) {
+                //         // Handle error
+                //     }
+                // }
+
+                try {
+                    int parsedDuration = durationInput.empty() ? 0 : std::stoi(durationInput);
+                    float parsedRating = ratingInput.empty() ? 0.0f : std::stof(ratingInput);
+
+                    newMovie.setDuration(parsedDuration);
+                    newMovie.setRating(parsedRating);
+                }
+                catch (...) {
+                    newMovie.setDuration(0);
+                    newMovie.setRating(0.0f);
+                }
+
+                // Add the movie to the service (addMovie returns void, not bool)
+                movieService->addMovie(newMovie);
+
+                // Set flag to refresh movies
+                shouldRefreshMovies = true;
+
+                // Start transition to go back to films list
+                isTransitioning = true;
+                transitionFrames = 0;
+
                 return;
             }
         }
@@ -223,13 +333,13 @@ void AddMovie::Draw() {
     float posterX = contentStartX;
     float posterY = baseContentY + 490.0f;
 
-    // Draw Movie Poster Container
     DrawTextEx(customFont, "Movie Poster", { posterX, posterY - 28 }, 24, 1, Color{ 14, 21, 61, 255 });
     Rectangle dashBound = { posterX, posterY, posterW, posterH };
     DrawRectangleRoundedLines(dashBound, 0.03f, 8, 2, Color{ 195, 207, 225, 255 });
 
     DrawCircleV(Vector2{ posterX + posterW / 2.0f, posterY + 160.0f }, 34.0f, Color{ 232, 238, 248, 255 });
     DrawTextEx(customFont, "+", { posterX + posterW / 2.0f - 10, posterY + 142.0f }, 38, 1, linkBlue);
+    DrawTextureEx(iconFilms, { posterX + (posterW - 40.0f) / 2.0f, posterY + 140.0f }, 0.0f, 0.08f, linkBlue);
     DrawTextEx(customFont, "Upload Poster", { posterX + (posterW - MeasureTextEx(customFont, "Upload Poster", 22, 1).x) / 2.0f, posterY + 225.0f }, 22, 1, Color{ 14, 21, 61, 255 });
     DrawTextEx(customFont, "JPG, PNG or WEBP. Max size 5MB.", { posterX + (posterW - MeasureTextEx(customFont, "JPG, PNG or WEBP. Max size 5MB.", 15, 1).x) / 2.0f, posterY + 260.0f }, 15, 1, GRAY);
 
@@ -242,13 +352,12 @@ void AddMovie::Draw() {
         DrawTextEx(customFont, "[File Loaded]", { posterX + (posterW - MeasureTextEx(customFont, "[File Loaded]", 18, 1).x) / 2.0f, posterY + 370.0f }, 18, 1, Color{ 46, 204, 113, 255 });
     }
 
-    // Input Form Fields Matrix Setup
     float formFieldsStartX = contentStartX + posterW + 80.0f;
     float subColSplitX = formFieldsStartX + 400.0f;
 
     Rectangle fields[7] = {
         { contentStartX,     baseContentY + 90.0f,  1140, 60 },
-        { contentStartX,     baseContentY + 230.0f, 1140, 180 },
+        { contentStartX,     baseContentY + 230.0f, 1140, 180 }, // Plot Field
         { formFieldsStartX,  baseContentY + 490.0f, 360,  60 },
         { subColSplitX,      baseContentY + 490.0f, 360,  60 },
         { formFieldsStartX,  baseContentY + 620.0f, 360,  60 },
@@ -264,8 +373,16 @@ void AddMovie::Draw() {
         DrawRectangleRounded(fields[i], i == 1 ? 0.02f : 0.15f, 6, WHITE);
         DrawRectangleRoundedLines(fields[i], i == 1 ? 0.02f : 0.15f, 6, 1, (activeField == i) ? linkBlue : Color{ 215, 222, 235, 255 });
 
-        float textYOffset = (i == 1) ? (fields[i].y + 15.0f) : (fields[i].y + (fields[i].height - 28.0f) / 2.0f);
-        DrawTextEx(customFont, contents[i].c_str(), { fields[i].x + 15, textYOffset }, 26, 1, BLACK);
+        if (i == 1) {
+            // FIX FOR TEXT OVERFLOW BUG:
+            // Use character-by-character text wrapping bounded inside the Plot box constraints
+            Rectangle textInnerBounds = { fields[i].x + 15, fields[i].y + 15, fields[i].width - 30, fields[i].height - 30 };
+            DrawTextWrapped(customFont, contents[i].c_str(), textInnerBounds, 26, 1, BLACK);
+        }
+        else {
+            float textYOffset = fields[i].y + (fields[i].height - 28.0f) / 2.0f;
+            DrawTextEx(customFont, contents[i].c_str(), { fields[i].x + 15, textYOffset }, 26, 1, BLACK);
+        }
     }
 
     float buttonsYStart = fields[6].y + fields[6].height + 40.0f;
@@ -292,23 +409,14 @@ void AddMovie::DrawNavigationBar() {
     float navWidth = screenWidth * 0.9f;
     float navHeight = 100.0f;
 
-    Rectangle navBarRect =
-    {
-        (screenWidth - navWidth) / 2,
-        20,
-        navWidth,
-        navHeight
-    };
-
+    Rectangle navBarRect = { (screenWidth - navWidth) / 2, 20, navWidth, navHeight };
     DrawRectangleRounded(navBarRect, 0.5f, 10, WHITE);
 
-    if (logo.id != 0)
-    {
+    if (logo.id != 0) {
         DrawTextureEx(logo, { navBarRect.x - 2, navBarRect.y - 20 }, 0.0f, 0.3f, WHITE);
     }
 
-    if (customFont.texture.id != 0)
-    {
+    if (customFont.texture.id != 0) {
         DrawTextEx(customFont, "Vanema", { navBarRect.x + 130, navBarRect.y + 40 }, 34, 1, BLACK);
     }
 
@@ -317,25 +425,23 @@ void AddMovie::DrawNavigationBar() {
 
     float spacing = 94.0f;
     float startX = navBarRect.x + 930;
-
     Vector2 mousePos = GetMousePosition();
 
-    for (int i = 0; i < 4; i++)
-    {
+    for (int i = 0; i < 4; i++) {
         float itemX = startX + (i * spacing);
-
         Rectangle btnRect = { itemX, navBarRect.y, 110, navHeight };
         bool isHovered = CheckCollisionPointRec(mousePos, btnRect);
         Color tint = (i == activeIndex) ? BLUE : DARKBLUE;
 
-        if (isHovered)
-        {
+        if (isHovered) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-            {
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 activeIndex = i;
-                if (currentScreen != nullptr)
-                {
+                if (currentScreen != nullptr) {
+                    // Set refresh flag when navigating to films
+                    if (i == 2) {
+                        shouldRefreshMovies = true;
+                    }
                     if (i == 0) *currentScreen = 0;
                     else if (i == 1) *currentScreen = 5;
                     else if (i == 2) *currentScreen = 4;
@@ -344,13 +450,11 @@ void AddMovie::DrawNavigationBar() {
             }
         }
 
-        if (icons[i].id != 0)
-        {
+        if (icons[i].id != 0) {
             DrawTextureEx(icons[i], { itemX + 50, navBarRect.y + 5 }, 0.0f, 0.1f, tint);
         }
 
-        if (customFont.texture.id != 0)
-        {
+        if (customFont.texture.id != 0) {
             DrawTextEx(customFont, labels[i], { itemX + 58, navBarRect.y + 70 }, 20, 1, BLACK);
         }
     }
@@ -358,38 +462,35 @@ void AddMovie::DrawNavigationBar() {
     Rectangle profileRect = { navBarRect.x + navWidth - 70, navBarRect.y + 15, 50, 50 };
     bool isProfileHovered = CheckCollisionPointRec(mousePos, profileRect);
 
-    if (isProfileHovered)
-    {
+    if (isProfileHovered) {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr)
-        {
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr) {
             *currentScreen = 1;
         }
     }
-    if (iconProfile.id != 0)
-    {
+    if (iconProfile.id != 0) {
         float iconYOffset = isLoggedIn ? -5.0f : 10.0f;
-
-        DrawTextureEx(
-            iconProfile,
-            { profileRect.x - 15, profileRect.y + iconYOffset },
-            0.0f,
-            0.1f,
-            isProfileHovered ? BLUE : DARKBLUE
-        );
+        DrawTextureEx(iconProfile, { profileRect.x - 15, profileRect.y + iconYOffset }, 0.0f, 0.1f, isProfileHovered ? BLUE : DARKBLUE);
     }
-    if (isLoggedIn && !userName.empty())
-    {
+    if (isLoggedIn && !userName.empty()) {
         float fontSize = 22.0f;
         Color nameColor = BLACK;
 
-        if (customFont.texture.id != 0)
-        {
+        if (customFont.texture.id != 0) {
             Vector2 textSize = MeasureTextEx(customFont, userName.c_str(), fontSize, 1);
             float textX = profileRect.x + (profileRect.width / 2.0f) - (textSize.x / 1.5f);
             float textY = profileRect.y + profileRect.height + 5.0f;
-
             DrawTextEx(customFont, userName.c_str(), { textX, textY }, fontSize, 1, nameColor);
         }
     }
+}
+
+// Getter for refresh flag
+bool AddMovie::ShouldRefreshMovies() const {
+    return shouldRefreshMovies;
+}
+
+// Setter for refresh flag
+void AddMovie::SetRefreshMovies(bool refresh) {
+    shouldRefreshMovies = refresh;
 }

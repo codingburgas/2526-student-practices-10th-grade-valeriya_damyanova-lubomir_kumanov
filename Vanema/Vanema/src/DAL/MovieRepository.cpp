@@ -66,24 +66,6 @@ Movie MovieRepository::getMovieById(int id) {
     return Movie();
 }
 
-bool MovieRepository::addMovie(const Movie& movie) {
-    try {
-        SQLite::Statement query(db, "INSERT INTO movies (title, poster_path, genre, rating, description, duration) VALUES (?, ?, ?, ?, ?, ?);");
-        query.bind(1, movie.getTitle());
-        query.bind(2, movie.getPosterPath());
-        query.bind(3, movie.getGenre());
-        query.bind(4, movie.getRating());
-        query.bind(5, movie.getDescription());
-        query.bind(6, movie.getDuration());
-
-        return (query.exec() > 0);
-    }
-    catch (std::exception& e) {
-        std::cerr << "Database error: " << e.what() << std::endl;
-        return false;
-    }
-}
-
 std::vector<Movie> MovieRepository::getMoviesByGenre(const std::string& genre) {
     std::vector<Movie> movies;
     try {
@@ -96,8 +78,8 @@ std::vector<Movie> MovieRepository::getMoviesByGenre(const std::string& genre) {
                 query.getColumn(2).getText(),
                 query.getColumn(3).getText(),
                 static_cast<float>(query.getColumn(4).getDouble()),
-                query.getColumn(5).getText(),   
-                query.getColumn(6).getInt()     
+                query.getColumn(5).getText(),
+                query.getColumn(6).getInt()
             );
         }
     }
@@ -118,8 +100,8 @@ std::vector<Movie> MovieRepository::getTopRatedMovies() {
                 query.getColumn(2).getText(),
                 query.getColumn(3).getText(),
                 static_cast<float>(query.getColumn(4).getDouble()),
-                query.getColumn(5).getText(),   
-                query.getColumn(6).getInt()    
+                query.getColumn(5).getText(),
+                query.getColumn(6).getInt()
             );
         }
     }
@@ -143,8 +125,8 @@ std::vector<Movie> MovieRepository::searchMovies(const std::string& queryStr) {
                 query.getColumn(2).getText(),
                 query.getColumn(3).getText(),
                 static_cast<float>(query.getColumn(4).getDouble()),
-                query.getColumn(5).getText(),   
-                query.getColumn(6).getInt()     
+                query.getColumn(5).getText(),
+                query.getColumn(6).getInt()
             );
         }
     }
@@ -169,8 +151,8 @@ std::vector<Movie> MovieRepository::getRandomMoviePerGenre() {
                 query.getColumn(2).getText(),
                 query.getColumn(3).getText(),
                 static_cast<float>(query.getColumn(4).getDouble()),
-                query.getColumn(5).getText(),   
-                query.getColumn(6).getInt()    
+                query.getColumn(5).getText(),
+                query.getColumn(6).getInt()
             );
         }
     }
@@ -178,4 +160,93 @@ std::vector<Movie> MovieRepository::getRandomMoviePerGenre() {
         std::cerr << "Database error: " << e.what() << std::endl;
     }
     return movies;
+}
+
+bool MovieRepository::addMovie(const Movie& movie) {
+    try {
+        SQLite::Statement query(db, "INSERT INTO movies (title, poster_path, genre, rating, description, duration) VALUES (?, ?, ?, ?, ?, ?);");
+        query.bind(1, movie.getTitle());
+        query.bind(2, movie.getPosterPath());
+        query.bind(3, movie.getGenre());
+        query.bind(4, movie.getRating());
+        query.bind(5, movie.getDescription());
+        query.bind(6, movie.getDuration());
+
+        return (query.exec() > 0);
+    }
+    catch (std::exception& e) {
+        std::cerr << "Database error adding movie: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+// NEW: Delete movie by ID
+bool MovieRepository::deleteMovieById(int id) {
+    try {
+        SQLite::Statement query(db, "DELETE FROM movies WHERE id = ?;");
+        query.bind(1, id);
+        int rowsAffected = query.exec();
+        if (rowsAffected > 0) {
+            std::cout << "Movie with ID " << id << " deleted successfully." << std::endl;
+            return true;
+        }
+        else {
+            std::cout << "No movie found with ID " << id << std::endl;
+            return false;
+        }
+    }
+    catch (std::exception& e) {
+        std::cerr << "Database error deleting movie by ID: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+// NEW: Delete movie by Title
+bool MovieRepository::deleteMovieByTitle(const std::string& title) {
+    try {
+        SQLite::Statement query(db, "DELETE FROM movies WHERE title = ?;");
+        query.bind(1, title);
+        int rowsAffected = query.exec();
+        if (rowsAffected > 0) {
+            std::cout << "Movie with title '" << title << "' deleted successfully." << std::endl;
+            return true;
+        }
+        else {
+            std::cout << "No movie found with title '" << title << "'" << std::endl;
+            return false;
+        }
+    }
+    catch (std::exception& e) {
+        std::cerr << "Database error deleting movie by title: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+// NEW: Update movie
+bool MovieRepository::updateMovie(const Movie& movie) {
+    try {
+        SQLite::Statement query(db,
+            "UPDATE movies SET title = ?, poster_path = ?, genre = ?, rating = ?, description = ?, duration = ? WHERE id = ?;");
+        query.bind(1, movie.getTitle());
+        query.bind(2, movie.getPosterPath());
+        query.bind(3, movie.getGenre());
+        query.bind(4, movie.getRating());
+        query.bind(5, movie.getDescription());
+        query.bind(6, movie.getDuration());
+        query.bind(7, movie.getId());
+
+        int rowsAffected = query.exec();
+        if (rowsAffected > 0) {
+            std::cout << "Movie with ID " << movie.getId() << " updated successfully." << std::endl;
+            return true;
+        }
+        else {
+            std::cout << "No movie found with ID " << movie.getId() << std::endl;
+            return false;
+        }
+    }
+    catch (std::exception& e) {
+        std::cerr << "Database error updating movie: " << e.what() << std::endl;
+        return false;
+    }
 }

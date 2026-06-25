@@ -2,6 +2,7 @@
 #include "raylib.h"
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <algorithm>
 
 static bool skipGridClickThisFrame = false;
@@ -44,10 +45,34 @@ Films::Films() {
 
     isDeleteMode = false;
     showDeleteConfirmation = false;
+    hasSelectedMovieChanged = false;
+
+    // Initialize click prevention
+    justActivated = false;
+    activationFrames = 0;
+    wasActive = false;
 }
 
 Films::~Films() {
     Unload();
+}
+
+void Films::ConsumeMouseClicks() {
+    // Clear any pending mouse button presses
+    while (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        // Read and discard the event
+    }
+
+    // Clear input buffers
+    while (GetCharPressed() != 0) {
+        // Discard all pending characters
+    }
+    while (GetKeyPressed() != 0) {
+        // Discard all pending keys
+    }
+
+    // Clear gesture detection
+    GetGestureDetected();
 }
 
 void Films::SetUserData(bool loggedIn, const std::string& name, bool admin) {
@@ -88,6 +113,7 @@ void Films::Unload() {
 void Films::SyncDisplayWithDatabase() {
     if (movieService == nullptr) return;
 
+    // Unload old textures
     for (size_t i = 0; i < displayedMovies.size(); i++) {
         if (displayedMovies[i].posterTexture.id != 0) {
             UnloadTexture(displayedMovies[i].posterTexture);
@@ -95,6 +121,9 @@ void Films::SyncDisplayWithDatabase() {
     }
     displayedMovies.clear();
     underlyingMovies.clear();
+
+    // Force reload from file to get latest data
+    movieService->reloadMovies();
 
     std::string contextGenre = genres[selectedGenreIndex].name;
     std::vector<Movie> rawDbMovies;
@@ -135,10 +164,42 @@ void Films::SyncDisplayWithDatabase() {
 }
 
 void Films::Update() {
+    // Check if this screen just became active
+    bool isActive = (currentScreen != nullptr && *currentScreen == 4);
+
+    if (isActive && !wasActive) {
+        // Just became active - consume pending clicks
+        ConsumeMouseClicks();
+        skipGridClickThisFrame = true;
+        justActivated = true;
+        activationFrames = 0;
+
+        // Refresh the display when coming back to this screen
+        SyncDisplayWithDatabase();
+    }
+
+    wasActive = isActive;
+
+    // Handle activation frames
+    if (justActivated) {
+        activationFrames++;
+        if (activationFrames > 3) {
+            justActivated = false;
+            skipGridClickThisFrame = false;
+        }
+    }
+
+    // If not active, skip everything
+    if (!isActive) {
+        return;
+    }
+
     Vector2 mousePos = GetMousePosition();
 
     if (!showDeleteConfirmation) {
-        skipGridClickThisFrame = false;
+        if (!justActivated) {
+            skipGridClickThisFrame = false;
+        }
     }
 
     if (IsKeyPressed(KEY_ESCAPE)) {
@@ -169,8 +230,11 @@ void Films::Update() {
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 if (movieService != nullptr) {
                     std::string movieTitle = movieToDelete.getTitle();
+
+                    // Delete from service (this will save to file)
                     movieService->deleteMovie(movieTitle);
 
+                    // Remove from underlyingMovies
                     auto it = std::find_if(underlyingMovies.begin(), underlyingMovies.end(),
                         [&movieTitle](const Movie& m) { return m.getTitle() == movieTitle; });
                     if (it != underlyingMovies.end()) {
@@ -183,6 +247,9 @@ void Films::Update() {
                         }
                         underlyingMovies.erase(it);
                     }
+
+                    // Force reload to ensure consistency
+                    movieService->reloadMovies();
 
                     int layoutRows = ((int)displayedMovies.size() + 3) / 4;
                     maxScroll = 550.0f + (layoutRows * 520.0f) - GetScreenHeight();
@@ -217,7 +284,7 @@ void Films::Update() {
 
     Rectangle searchBox = { navBarX + navWidth - 280, 155, 260, 50 };
 
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !justActivated) {
         if (CheckCollisionPointRec(mousePos, searchBox)) {
             searchActive = true;
         }
@@ -308,7 +375,7 @@ void Films::DrawMovieGrid(float startY) {
             hovered ? (isDeleteMode ? RED : BLUE) : (isDeleteMode ? ORANGE : WHITE)
         );
 
-        if (hovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !skipGridClickThisFrame) {
+        if (hovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !skipGridClickThisFrame && !justActivated) {
             if (isDeleteMode) {
                 if (i < underlyingMovies.size()) {
                     movieToDelete = underlyingMovies[i];
@@ -335,6 +402,7 @@ void Films::DrawMovieGrid(float startY) {
         }
     }
 }
+
 void Films::DrawNavigationBar() {
     int screenWidth = GetScreenWidth();
     float navWidth = screenWidth * 0.9f;
@@ -376,7 +444,7 @@ void Films::DrawNavigationBar() {
         bool isHovered = CheckCollisionPointRec(mousePos, btnRect);
         Color tint = (i == activeIndex) ? BLUE : DARKBLUE;
 
-        if (isHovered && !showDeleteConfirmation && !skipGridClickThisFrame)
+        if (isHovered && !showDeleteConfirmation && !skipGridClickThisFrame && !justActivated)
         {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -406,7 +474,7 @@ void Films::DrawNavigationBar() {
     Rectangle profileRect = { navBarRect.x + navWidth - 70, navBarRect.y + 15, 50, 50 };
     bool isProfileHovered = CheckCollisionPointRec(mousePos, profileRect);
 
-    if (isProfileHovered && !showDeleteConfirmation && !skipGridClickThisFrame)
+    if (isProfileHovered && !showDeleteConfirmation && !skipGridClickThisFrame && !justActivated)
     {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr)
@@ -519,18 +587,18 @@ void Films::Draw() {
         bool hoverAdd = !showDeleteConfirmation && CheckCollisionPointRec(mousePos, addBtn);
         bool hoverDelete = !showDeleteConfirmation && CheckCollisionPointRec(mousePos, deleteBtn);
 
-        if ((hoverAdd || hoverDelete) && !skipGridClickThisFrame) {
+        if ((hoverAdd || hoverDelete) && !skipGridClickThisFrame && !justActivated) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         }
 
-        if (hoverAdd && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !skipGridClickThisFrame) {
+        if (hoverAdd && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !skipGridClickThisFrame && !justActivated) {
             if (currentScreen != nullptr) {
                 *currentScreen = 8;
                 EndScissorMode();
                 return;
             }
         }
-        if (hoverDelete && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !skipGridClickThisFrame) {
+        if (hoverDelete && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !skipGridClickThisFrame && !justActivated) {
             isDeleteMode = !isDeleteMode;
         }
 
@@ -610,7 +678,7 @@ void Films::DrawGenreBar(float startY) {
         bool isVisible = (pillRect.x >= baseStartX - 5.0f) && (pillRect.x + pillRect.width <= viewRightBoundary + 5.0f);
         bool isHovered = !showDeleteConfirmation && isVisible && CheckCollisionPointRec(mousePos, pillRect);
 
-        if (isHovered && !skipGridClickThisFrame) {
+        if (isHovered && !skipGridClickThisFrame && !justActivated) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 selectedGenreIndex = (int)i;
@@ -653,7 +721,7 @@ void Films::DrawGenreBar(float startY) {
         DrawRectangleRoundedLines(leftBtn, 0.45f, 8, 1, Color{ 220, 226, 235, 255 });
         DrawText("<", leftBtn.x + 18, leftBtn.y + 13, 24, BLACK);
 
-        if (leftHover && !skipGridClickThisFrame) {
+        if (leftHover && !skipGridClickThisFrame && !justActivated) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 targetGenreScrollX += stepSlideAmount;
@@ -670,7 +738,7 @@ void Films::DrawGenreBar(float startY) {
         DrawRectangleRoundedLines(rightBtn, 0.45f, 8, 1, Color{ 220, 226, 235, 255 });
         DrawText(">", rightBtn.x + 20, rightBtn.y + 13, 24, BLACK);
 
-        if (rightHover && !skipGridClickThisFrame) {
+        if (rightHover && !skipGridClickThisFrame && !justActivated) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 targetGenreScrollX -= stepSlideAmount;

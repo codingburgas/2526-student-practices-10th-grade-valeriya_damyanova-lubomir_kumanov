@@ -3,8 +3,7 @@
 
 using namespace std;
 
-void SignUp::Init()
-{
+void SignUp::Init() {
     background = LoadTexture("assets/login.png");
     logo = LoadTexture("assets/logo.png");
     headerFont = LoadFontEx("assets/fonts/Roboto-Bold.ttf", 60, 0, 0);
@@ -23,16 +22,14 @@ void SignUp::Init()
     errorMessage = "";
 }
 
-void SignUp::Unload()
-{
+void SignUp::Unload() {
     UnloadTexture(background);
     UnloadTexture(logo);
     UnloadFont(headerFont);
     UnloadFont(bodyFont);
 }
 
-void SignUp::Update()
-{
+void SignUp::Update() {
     Vector2 mouse = GetMousePosition();
 
     Rectangle formRect = { 500, 100, 570, 720 };
@@ -44,8 +41,12 @@ void SignUp::Update()
 
     Rectangle signupBtn = { formRect.x + (formRect.width - 200) / 2, formRect.y + 560, 200, 50 };
 
-    // Position shifted slightly right from 395 to 402
-    Rectangle backLink = { formRect.x + 402, formRect.y + 640, 75, 30 };
+    std::string textPrompt = "Already have an account? ";
+    Vector2 promptSize = MeasureTextEx(bodyFont, textPrompt.c_str(), 28, 2);
+    float totalBlockWidth = promptSize.x + 70.0f;
+    float blockStartX = formRect.x + (formRect.width - totalBlockWidth) / 2.0f;
+
+    Rectangle backLink = { blockStartX + promptSize.x, formRect.y + 640, 75, 30 };
 
     if (CheckCollisionPointRec(mouse, usernameBox) ||
         CheckCollisionPointRec(mouse, emailBox) ||
@@ -151,8 +152,7 @@ void SignUp::Update()
     }
 }
 
-void SignUp::Draw()
-{
+void SignUp::Draw() {
     DrawTexturePro(
         background,
         { 0, 0, (float)background.width, (float)background.height },
@@ -230,11 +230,15 @@ void SignUp::Draw()
     DrawRectangleRoundedLines(signupBtn, 0.3f, 10, 2, buttonColor);
     DrawTextEx(headerFont, "Sign Up", { signupBtn.x + 45, signupBtn.y + 7 }, 35, 2, BLACK);
 
-    // Position shifted slightly right from 395 to 402 to clear the question mark
-    Rectangle backLink = { formRect.x + 402, formRect.y + 640, 75, 30 };
+    std::string textPrompt = "Already have an account? ";
+    Vector2 promptSize = MeasureTextEx(bodyFont, textPrompt.c_str(), 28, 2);
+    float totalBlockWidth = promptSize.x + 70.0f;
+    float blockStartX = formRect.x + (formRect.width - totalBlockWidth) / 2.0f;
+
+    Rectangle backLink = { blockStartX + promptSize.x, formRect.y + 640, 75, 30 };
     bool hoverBack = CheckCollisionPointRec(mouse, backLink);
 
-    DrawTextEx(bodyFont, "Already have an account? ", { formRect.x + 90, formRect.y + 640 }, 28, 2, BLACK);
+    DrawTextEx(bodyFont, textPrompt.c_str(), { blockStartX, formRect.y + 640 }, 28, 2, BLACK);
     DrawTextEx(bodyFont, "Login", { backLink.x, backLink.y }, 28, 2, hoverBack ? DARKBLUE : BLUE);
 
     if (hoverBack)
