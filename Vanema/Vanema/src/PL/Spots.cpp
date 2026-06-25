@@ -91,6 +91,39 @@ void Spots::Unload() {
 }
 
 void Spots::Update() {
+    Vector2 mousePos = GetMousePosition();
+    int screenWidth = GetScreenWidth();
+    float navWidth = screenWidth * 0.9f;
+    float navBarX = (screenWidth - navWidth) / 2.0f;
+
+    SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+
+    float startX = navBarX + 930;
+    float spacing = 94.0f;
+    for (int i = 0; i < 4; i++) {
+        Rectangle btnRect = { startX + (i * spacing), 20, 110, 100 };
+        if (CheckCollisionPointRec(mousePos, btnRect)) {
+            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                activeIndex = i;
+                if (currentScreen != nullptr) {
+                    if (i == 0) { *currentScreen = 2; }
+                    else if (i == 1) { *currentScreen = 5; }
+                    else if (i == 2) { *currentScreen = 4; }
+                    else if (i == 3) { *currentScreen = 6; }
+                }
+            }
+        }
+    }
+
+    Rectangle profileRect = { navBarX + navWidth - 70, 35, 50, 50 };
+    if (CheckCollisionPointRec(mousePos, profileRect)) {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            if (currentScreen != nullptr) { *currentScreen = 1; }
+        }
+    }
+
     float wheelMove = GetMouseWheelMove();
     if (wheelMove != 0) {
         scrollOffset -= wheelMove * 45.0f;
@@ -124,25 +157,25 @@ void Spots::DrawNavigationBar() {
 
         if (isHovered) {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-                activeIndex = i;
-                if (currentScreen != nullptr) {
-                    if (i == 0) *currentScreen = 2;
-                    if (i == 2) *currentScreen = 4;
-                }
-            }
         }
         if (icons[i].id != 0) DrawTextureEx(icons[i], { itemX + 50, navBarRect.y + 5 }, 0.0f, 0.1f, tint);
         if (uiFont.texture.id != 0) DrawTextEx(uiFont, labels[i], { itemX + 58, navBarRect.y + 70 }, 20, 1, BLACK);
     }
 
     Rectangle profileRect = { navBarRect.x + navWidth - 70, navBarRect.y + 15, 50, 50 };
-    if (CheckCollisionPointRec(mousePos, profileRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr) {
-        *currentScreen = 1;
+    bool isProfileHovered = CheckCollisionPointRec(mousePos, profileRect);
+
+    if (isProfileHovered) {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
     }
-    if (iconProfile.id != 0) DrawTextureEx(iconProfile, { profileRect.x - 15, profileRect.y + (isLoggedIn ? -5.0f : 10.0f) }, 0.0f, 0.1f, DARKBLUE);
+    if (iconProfile.id != 0) {
+        DrawTextureEx(iconProfile, { profileRect.x - 15, profileRect.y + (isLoggedIn ? -5.0f : 10.0f) }, 0.0f, 0.1f, isProfileHovered ? BLUE : DARKBLUE);
+    }
     if (isLoggedIn && !userName.empty() && uiFont.texture.id != 0) {
-        DrawTextEx(uiFont, userName.c_str(), { profileRect.x, profileRect.y + profileRect.height + 5.0f }, 22, 1, BLACK);
+        Vector2 textSize = MeasureTextEx(uiFont, userName.c_str(), 22, 1);
+        float textX = profileRect.x + (profileRect.width / 2.0f) - (textSize.x / 1.5f);
+        float textY = profileRect.y + profileRect.height + 5.0f;
+        DrawTextEx(uiFont, userName.c_str(), { textX, textY }, 22, 1, BLACK);
     }
 }
 
@@ -163,12 +196,20 @@ void Spots::DrawSearchBarAndFilters() {
 
     float chipFontSize = 22.0f;
     float chipGap = 8.0f;
+    Vector2 mousePos = GetMousePosition();
 
     for (size_t i = 0; i < cities.size(); i++) {
         float textWidth = uiFont.texture.id != 0 ? MeasureTextEx(uiFont, cities[i].c_str(), chipFontSize, 1).x : 85;
 
         float chipWidth = textWidth + (i > 0 ? 56 : 30);
         Rectangle chipRect = { currentChipX, chipY, chipWidth, 50 };
+
+        if (CheckCollisionPointRec(mousePos, chipRect)) {
+            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                activeCityIndex = (int)i;
+            }
+        }
 
         Color bgCol = (i == activeCityIndex) ? Color{ 16, 25, 48, 255 } : WHITE;
         Color textCol = (i == activeCityIndex) ? WHITE : Color{ 16, 25, 48, 255 };

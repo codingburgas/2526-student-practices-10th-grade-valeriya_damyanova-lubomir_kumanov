@@ -187,7 +187,6 @@ void AddMovie::Update() {
 }
 
 void AddMovie::Draw() {
-    // 1. LAYER 0: Draw background texture across the entire screen window frame boundary
     if (background.id != 0) {
         DrawTexturePro(background, { 0, 0, (float)background.width, (float)background.height }, { 0, 0, (float)GetScreenWidth(), (float)GetScreenHeight() }, { 0, 0 }, 0.0f, WHITE);
     }
@@ -203,18 +202,15 @@ void AddMovie::Draw() {
     Color linkBlue = Color{ 54, 84, 218, 255 };
     Vector2 mousePos = GetMousePosition();
 
-    // 2. LAYER 1: Scissor Mode acts as window protection barrier for layout scroll behaviors
     BeginScissorMode(0, 135, GetScreenWidth(), GetScreenHeight() - 135);
 
     float baseContentY = 320.0f - scrollYOffset;
     float headerTopY = 165.0f - scrollYOffset;
 
-    // Header Meta Text
     DrawTextEx(customFont, "<- Back to Films", { panelX + 20, headerTopY }, 24, 1, linkBlue);
     DrawTextEx(customFont, "Add New Movie", { panelX + 20, headerTopY + 37.0f }, 46, 1, Color{ 14, 21, 61, 255 });
     DrawTextEx(customFont, "Fill in the details below to add a new movie to Vanema.", { panelX + 20, headerTopY + 92.0f }, 22, 1, GRAY);
 
-    // Dynamic Sizing Container Card
     float canvasCalculatedHeight = 1100.0f;
     Rectangle canvasRec = { panelX, baseContentY, panelW, canvasCalculatedHeight };
     DrawRectangleRounded(canvasRec, 0.015f, 8, WHITE);
@@ -272,7 +268,6 @@ void AddMovie::Draw() {
         DrawTextEx(customFont, contents[i].c_str(), { fields[i].x + 15, textYOffset }, 26, 1, BLACK);
     }
 
-    // Draw Vertically Stacked Action Buttons Below Rating Field
     float buttonsYStart = fields[6].y + fields[6].height + 40.0f;
     float buttonsWidth = fields[6].width;
 
@@ -289,7 +284,6 @@ void AddMovie::Draw() {
 
     EndScissorMode();
 
-    // 3. LAYER 2: Sticky Top Navigation Interface Bar sitting on top of background
     DrawNavigationBar();
 }
 
@@ -297,52 +291,105 @@ void AddMovie::DrawNavigationBar() {
     int screenWidth = GetScreenWidth();
     float navWidth = screenWidth * 0.9f;
     float navHeight = 100.0f;
-    float navBarX = (screenWidth - navWidth) / 2;
 
-    Rectangle navBarRect = { navBarX, 20, navWidth, navHeight };
+    Rectangle navBarRect =
+    {
+        (screenWidth - navWidth) / 2,
+        20,
+        navWidth,
+        navHeight
+    };
+
     DrawRectangleRounded(navBarRect, 0.5f, 10, WHITE);
 
-    if (logo.id != 0) DrawTextureEx(logo, { navBarRect.x - 2, navBarRect.y - 20 }, 0.0f, 0.3f, WHITE);
-    DrawTextEx(customFont, "Vanema", { navBarRect.x + 130, navBarRect.y + 40 }, 34, 1, BLACK);
+    if (logo.id != 0)
+    {
+        DrawTextureEx(logo, { navBarRect.x - 2, navBarRect.y - 20 }, 0.0f, 0.3f, WHITE);
+    }
+
+    if (customFont.texture.id != 0)
+    {
+        DrawTextEx(customFont, "Vanema", { navBarRect.x + 130, navBarRect.y + 40 }, 34, 1, BLACK);
+    }
 
     const char* labels[] = { "Home", "Spots", "Films", "Offers" };
     Texture2D icons[] = { iconHome, iconMap, iconFilms, iconOffers };
+
     float spacing = 94.0f;
     float startX = navBarRect.x + 930;
+
     Vector2 mousePos = GetMousePosition();
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++)
+    {
         float itemX = startX + (i * spacing);
+
         Rectangle btnRect = { itemX, navBarRect.y, 110, navHeight };
         bool isHovered = CheckCollisionPointRec(mousePos, btnRect);
         Color tint = (i == activeIndex) ? BLUE : DARKBLUE;
 
-        if (isHovered) {
+        if (isHovered)
+        {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr) {
-                if (i == 0) *currentScreen = 0;
-                if (i == 2) *currentScreen = 4;
-                return;
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+            {
+                activeIndex = i;
+                if (currentScreen != nullptr)
+                {
+                    if (i == 0) *currentScreen = 0;
+                    else if (i == 1) *currentScreen = 5;
+                    else if (i == 2) *currentScreen = 4;
+                    else if (i == 3) *currentScreen = 6;
+                }
             }
         }
-        if (icons[i].id != 0) DrawTextureEx(icons[i], { itemX + 50, navBarRect.y + 5 }, 0.0f, 0.1f, tint);
-        DrawTextEx(customFont, labels[i], { itemX + 58, navBarRect.y + 70 }, 20, 1, BLACK);
+
+        if (icons[i].id != 0)
+        {
+            DrawTextureEx(icons[i], { itemX + 50, navBarRect.y + 5 }, 0.0f, 0.1f, tint);
+        }
+
+        if (customFont.texture.id != 0)
+        {
+            DrawTextEx(customFont, labels[i], { itemX + 58, navBarRect.y + 70 }, 20, 1, BLACK);
+        }
     }
 
     Rectangle profileRect = { navBarRect.x + navWidth - 70, navBarRect.y + 15, 50, 50 };
-    if (CheckCollisionPointRec(mousePos, profileRect)) {
+    bool isProfileHovered = CheckCollisionPointRec(mousePos, profileRect);
+
+    if (isProfileHovered)
+    {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr) {
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr)
+        {
             *currentScreen = 1;
-            return;
         }
     }
-    if (iconProfile.id != 0) {
-        float iconYOffset = isLoggedIn ? -10.0f : 10.0f;
-        DrawTextureEx(iconProfile, { profileRect.x - 5, profileRect.y + iconYOffset }, 0.0f, 0.1f, DARKBLUE);
+    if (iconProfile.id != 0)
+    {
+        float iconYOffset = isLoggedIn ? -5.0f : 10.0f;
+
+        DrawTextureEx(
+            iconProfile,
+            { profileRect.x - 15, profileRect.y + iconYOffset },
+            0.0f,
+            0.1f,
+            isProfileHovered ? BLUE : DARKBLUE
+        );
     }
-    if (isLoggedIn && !userName.empty()) {
-        Vector2 textSize = MeasureTextEx(customFont, userName.c_str(), 22.0f, 1);
-        DrawTextEx(customFont, userName.c_str(), { profileRect.x + (profileRect.width / 2.0f) - (textSize.x / 2.0f), profileRect.y + profileRect.height + 5.0f }, 22.0f, 1, BLACK);
+    if (isLoggedIn && !userName.empty())
+    {
+        float fontSize = 22.0f;
+        Color nameColor = BLACK;
+
+        if (customFont.texture.id != 0)
+        {
+            Vector2 textSize = MeasureTextEx(customFont, userName.c_str(), fontSize, 1);
+            float textX = profileRect.x + (profileRect.width / 2.0f) - (textSize.x / 1.5f);
+            float textY = profileRect.y + profileRect.height + 5.0f;
+
+            DrawTextEx(customFont, userName.c_str(), { textX, textY }, fontSize, 1, nameColor);
+        }
     }
 }

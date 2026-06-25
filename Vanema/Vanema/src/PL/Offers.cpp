@@ -20,7 +20,7 @@ Offers::Offers() {
 
     scrollOffset = 0.0f;
     maxScroll = 600.0f;
-    activeIndex = 3; // Kept at 3 to highlight "Offers" on this screen natively
+    activeIndex = 3;
     activeCityIndex = 0;
 
     currentScreen = nullptr;
@@ -74,6 +74,39 @@ void Offers::Unload() {
 }
 
 void Offers::Update() {
+    Vector2 mousePos = GetMousePosition();
+    int screenWidth = GetScreenWidth();
+    float navWidth = screenWidth * 0.9f;
+    float navBarX = (screenWidth - navWidth) / 2.0f;
+
+    SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+
+    float startX = navBarX + 930;
+    float spacing = 94.0f;
+    for (int i = 0; i < 4; i++) {
+        Rectangle btnRect = { startX + (i * spacing), 20, 110, 100 };
+        if (CheckCollisionPointRec(mousePos, btnRect)) {
+            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                activeIndex = i;
+                if (currentScreen != nullptr) {
+                    if (i == 0) { *currentScreen = 2; }
+                    else if (i == 1) { *currentScreen = 5; }
+                    else if (i == 2) { *currentScreen = 4; }
+                    else if (i == 3) { *currentScreen = 6; }
+                }
+            }
+        }
+    }
+
+    Rectangle profileRect = { navBarX + navWidth - 70, 35, 50, 50 };
+    if (CheckCollisionPointRec(mousePos, profileRect)) {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            if (currentScreen != nullptr) { *currentScreen = 1; }
+        }
+    }
+
     float wheelMove = GetMouseWheelMove();
     if (wheelMove != 0) {
         scrollOffset -= wheelMove * 45.0f;
@@ -87,7 +120,8 @@ void Offers::DrawNavigationBar() {
     float navWidth = screenWidth * 0.9f;
     float navHeight = 100.0f;
 
-    Rectangle navBarRect = {
+    Rectangle navBarRect =
+    {
         (screenWidth - navWidth) / 2,
         20,
         navWidth,
@@ -96,11 +130,13 @@ void Offers::DrawNavigationBar() {
 
     DrawRectangleRounded(navBarRect, 0.5f, 10, WHITE);
 
-    if (logo.id != 0) {
+    if (logo.id != 0)
+    {
         DrawTextureEx(logo, { navBarRect.x - 2, navBarRect.y - 20 }, 0.0f, 0.3f, WHITE);
     }
 
-    if (uiFont.texture.id != 0) {
+    if (uiFont.texture.id != 0)
+    {
         DrawTextEx(uiFont, "Vanema", { navBarRect.x + 130, navBarRect.y + 40 }, 34, 1, BLACK);
     }
 
@@ -112,31 +148,26 @@ void Offers::DrawNavigationBar() {
 
     Vector2 mousePos = GetMousePosition();
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++)
+    {
         float itemX = startX + (i * spacing);
 
         Rectangle btnRect = { itemX, navBarRect.y, 110, navHeight };
         bool isHovered = CheckCollisionPointRec(mousePos, btnRect);
-        Color tint = (i == activeIndex) ? BLUE : DARKBLUE;
+        Color tint = (i == activeIndex) ? BLUE : DARKBLUE; 
 
-        if (isHovered) {
+        if (isHovered)
+        {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-                activeIndex = i;
-                if (currentScreen != nullptr) {
-                    if (i == 0)      *currentScreen = 0; // Synchronized to Booking's Home Index
-                    else if (i == 1) *currentScreen = 5; // Synchronized to Booking's Spots Index
-                    else if (i == 2) *currentScreen = 4; // Synchronized to Booking's Films Index
-                    else if (i == 3) *currentScreen = 6; // Synchronized to Booking's Offers Index
-                }
-            }
         }
 
-        if (icons[i].id != 0) {
+        if (icons[i].id != 0)
+        {
             DrawTextureEx(icons[i], { itemX + 50, navBarRect.y + 5 }, 0.0f, 0.1f, tint);
         }
 
-        if (uiFont.texture.id != 0) {
+        if (uiFont.texture.id != 0)
+        {
             DrawTextEx(uiFont, labels[i], { itemX + 58, navBarRect.y + 70 }, 20, 1, BLACK);
         }
     }
@@ -144,14 +175,12 @@ void Offers::DrawNavigationBar() {
     Rectangle profileRect = { navBarRect.x + navWidth - 70, navBarRect.y + 15, 50, 50 };
     bool isProfileHovered = CheckCollisionPointRec(mousePos, profileRect);
 
-    if (isProfileHovered) {
+    if (isProfileHovered)
+    {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr) {
-            *currentScreen = 1; // Login screen index
-        }
     }
-
-    if (iconProfile.id != 0) {
+    if (iconProfile.id != 0)
+    {
         float iconYOffset = isLoggedIn ? -5.0f : 10.0f;
 
         DrawTextureEx(
@@ -159,25 +188,21 @@ void Offers::DrawNavigationBar() {
             { profileRect.x - 15, profileRect.y + iconYOffset },
             0.0f,
             0.1f,
-            isProfileHovered ? BLUE : DARKBLUE 
+            isProfileHovered ? BLUE : DARKBLUE
         );
     }
-
-    if (isLoggedIn && !userName.empty()) {
+    if (isLoggedIn && !userName.empty())
+    {
         float fontSize = 22.0f;
         Color nameColor = BLACK;
 
-        if (uiFont.texture.id != 0) {
+        if (uiFont.texture.id != 0)
+        {
             Vector2 textSize = MeasureTextEx(uiFont, userName.c_str(), fontSize, 1);
-            float textX = profileRect.x + (profileRect.width / 2.0f) - (textSize.x / 1.5f); 
+            float textX = profileRect.x + (profileRect.width / 2.0f) - (textSize.x / 1.5f);
             float textY = profileRect.y + profileRect.height + 5.0f;
 
             DrawTextEx(uiFont, userName.c_str(), { textX, textY }, fontSize, 1, nameColor);
-        }
-        else {
-            int textWidth = MeasureText(userName.c_str(), 16);
-            int textX = profileRect.x + (profileRect.width / 2) - (textWidth / 2);
-            DrawText(userName.c_str(), textX, profileRect.y + profileRect.height + 5, 16, BLACK);
         }
     }
 }
@@ -215,6 +240,7 @@ void Offers::DrawSearchBarAndFilters() {
         Color bgCol = (i == activeCityIndex) ? Color{ 16, 25, 48, 255 } : WHITE;
         Color textCol = (i == activeCityIndex) ? WHITE : Color{ 16, 25, 48, 255 };
 
+        DrawRectangleRounded(chipRect, 0.25f, 8, bgCol);
         DrawRectangleRounded(chipRect, 0.25f, 8, bgCol);
         DrawRectangleRoundedLines(chipRect, 0.25f, 8, 1.5f, Fade(LIGHTGRAY, 0.8f));
 

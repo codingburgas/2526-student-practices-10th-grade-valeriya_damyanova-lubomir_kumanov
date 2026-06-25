@@ -336,19 +336,29 @@ void Films::DrawMovieGrid(float startY) {
     }
 }
 
+// Fixed class tracking from Booking:: to Films::
 void Films::DrawNavigationBar() {
     int screenWidth = GetScreenWidth();
     float navWidth = screenWidth * 0.9f;
     float navHeight = 100.0f;
 
-    Rectangle navBarRect = { (screenWidth - navWidth) / 2, 20, navWidth, navHeight };
+    Rectangle navBarRect =
+    {
+        (screenWidth - navWidth) / 2,
+        20,
+        navWidth,
+        navHeight
+    };
+
     DrawRectangleRounded(navBarRect, 0.5f, 10, WHITE);
 
-    if (logo.id != 0) {
+    if (logo.id != 0)
+    {
         DrawTextureEx(logo, { navBarRect.x - 2, navBarRect.y - 20 }, 0.0f, 0.3f, WHITE);
     }
 
-    if (customFont.texture.id != 0) {
+    if (customFont.texture.id != 0)
+    {
         DrawTextEx(customFont, "Vanema", { navBarRect.x + 130, navBarRect.y + 40 }, 34, 1, BLACK);
     }
 
@@ -357,59 +367,79 @@ void Films::DrawNavigationBar() {
 
     float spacing = 94.0f;
     float startX = navBarRect.x + 930;
+
     Vector2 mousePos = GetMousePosition();
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++)
+    {
         float itemX = startX + (i * spacing);
+
         Rectangle btnRect = { itemX, navBarRect.y, 110, navHeight };
-        bool isHovered = !showDeleteConfirmation && CheckCollisionPointRec(mousePos, btnRect);
+        bool isHovered = CheckCollisionPointRec(mousePos, btnRect);
         Color tint = (i == activeIndex) ? BLUE : DARKBLUE;
 
-        if (isHovered && !skipGridClickThisFrame) {
+        if (isHovered && !showDeleteConfirmation && !skipGridClickThisFrame)
+        {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+            {
                 activeIndex = i;
-                if (currentScreen != nullptr) {
-                    if (i == 0) {
-                        searchActive = false;
-                        *currentScreen = 0;
-                        return;
-                    }
-                    else if (i == 2) {
-                        *currentScreen = 4;
-                    }
+                if (currentScreen != nullptr)
+                {
+                    if (i == 0) *currentScreen = 2;
+                    else if (i == 1) *currentScreen = 5;
+                    else if (i == 2) *currentScreen = 4;
+                    else if (i == 3) *currentScreen = 6;
                 }
             }
         }
 
-        if (icons[i].id != 0) DrawTextureEx(icons[i], { itemX + 50, navBarRect.y + 5 }, 0.0f, 0.1f, tint);
-        if (customFont.texture.id != 0) DrawTextEx(customFont, labels[i], { itemX + 58, navBarRect.y + 70 }, 20, 1, BLACK);
-    }
+        if (icons[i].id != 0)
+        {
+            DrawTextureEx(icons[i], { itemX + 50, navBarRect.y + 5 }, 0.0f, 0.1f, tint);
+        }
 
-    Rectangle profileRect = { navBarRect.x + navWidth - 70, navBarRect.y + 15, 50, 50 };
-    bool isProfileHovered = !showDeleteConfirmation && CheckCollisionPointRec(mousePos, profileRect);
-
-    if (isProfileHovered && !skipGridClickThisFrame) {
-        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr) {
-            searchActive = false;
-            *currentScreen = 1;
-            return;
+        if (customFont.texture.id != 0)
+        {
+            DrawTextEx(customFont, labels[i], { itemX + 58, navBarRect.y + 70 }, 20, 1, BLACK);
         }
     }
 
-    if (iconProfile.id != 0) {
-        float iconYOffset = isLoggedIn ? -10.0f : 10.0f;
-        DrawTextureEx(iconProfile, { profileRect.x - 5, profileRect.y + iconYOffset }, 0.0f, 0.1f, isProfileHovered ? BLUE : DARKBLUE);
-    }
+    Rectangle profileRect = { navBarRect.x + navWidth - 70, navBarRect.y + 15, 50, 50 };
+    bool isProfileHovered = CheckCollisionPointRec(mousePos, profileRect);
 
-    if (isLoggedIn && !userName.empty()) {
+    if (isProfileHovered && !showDeleteConfirmation && !skipGridClickThisFrame)
+    {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && currentScreen != nullptr)
+        {
+            *currentScreen = 1;
+        }
+    }
+    if (iconProfile.id != 0)
+    {
+        float iconYOffset = isLoggedIn ? -5.0f : 10.0f;
+
+        DrawTextureEx(
+            iconProfile,
+            { profileRect.x - 15, profileRect.y + iconYOffset },
+            0.0f,
+            0.1f,
+            isProfileHovered ? BLUE : DARKBLUE
+        );
+    }
+    if (isLoggedIn && !userName.empty())
+    {
         float fontSize = 22.0f;
-        if (customFont.texture.id != 0) {
+        Color nameColor = BLACK;
+
+        if (customFont.texture.id != 0)
+        {
             Vector2 textSize = MeasureTextEx(customFont, userName.c_str(), fontSize, 1);
-            float textX = profileRect.x + (profileRect.width / 2.0f) - (textSize.x / 2.0f);
+            float textX = profileRect.x + (profileRect.width / 2.0f) - (textSize.x / 1.5f);
             float textY = profileRect.y + profileRect.height + 5.0f;
-            DrawTextEx(customFont, userName.c_str(), { textX, textY }, fontSize, 1, BLACK);
+
+            DrawTextEx(customFont, userName.c_str(), { textX, textY }, fontSize, 1, nameColor);
         }
     }
 }

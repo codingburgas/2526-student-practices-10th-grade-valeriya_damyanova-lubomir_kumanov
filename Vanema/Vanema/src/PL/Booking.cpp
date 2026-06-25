@@ -401,7 +401,6 @@ void Booking::DrawNavigationBar()
         navHeight
     };
 
-    // FIXED: Removed the artificial blue bar. The application background image will now seamlessly bleed right through here.
     DrawRectangleRounded(navBarRect, 0.5f, 10, WHITE);
 
     if (logo.id != 0)
@@ -438,7 +437,7 @@ void Booking::DrawNavigationBar()
                 activeIndex = i;
                 if (currentScreen != nullptr)
                 {
-                    if (i == 0) *currentScreen = 0;
+                    if (i == 0) *currentScreen = 2;
                     else if (i == 1) *currentScreen = 5;
                     else if (i == 2) *currentScreen = 4;
                     else if (i == 3) *currentScreen = 6;
@@ -509,8 +508,6 @@ void Booking::DrawMoviePosters()
         navWidth,
         navHeight
     };
-
-    // FIXED: Corrected scissor constraints so elements drop perfectly under the Navbar line while honoring full-screen backdrop assets
     BeginScissorMode(
         0,
         (int)(navBarRect.y + navBarRect.height + 30),
@@ -720,7 +717,6 @@ void Booking::DrawScrollbar()
 
 void Booking::Draw()
 {
-    // FIRST LAYER: Immediately paste the asset image across the whole window size outside constraints
     if (background.id != 0)
     {
         DrawTexturePro(
@@ -737,7 +733,6 @@ void Booking::Draw()
         ClearBackground(RAYWHITE);
     }
 
-    // Process sub-components cleanly over the background asset canvas
     DrawMoviePosters();
     DrawScrollbar();
     DrawNavigationBar();
